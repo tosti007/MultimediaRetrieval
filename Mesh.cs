@@ -23,14 +23,10 @@ namespace MultimediaRetrieval
 
         public static Mesh ReadMesh(string filepath)
         {
-            //Check if the file is a .ply or .off file:
+            //Check if the file is an .off file:
             string[] getext = filepath.Split('.');
             string ext = getext[getext.Length - 1];
-            if(ext == "ply")
-            {
-                return ReadPlyMesh(filepath);
-            }
-            else if (ext == "off")
+            if (ext == "off")
             {
                 return ReadOffMesh(filepath);
             }
@@ -40,15 +36,9 @@ namespace MultimediaRetrieval
             }
         }
 
-        private static Mesh ReadPlyMesh(string filepath)
-        {
-            throw new NotImplementedException();
-        }
-
+        //OFF mesh reader, based on work by Philip Shilane, Patrick Min, Michael Kazhdan, and Thomas Funkhouser (Princeton Shape Benchmark)
         private static Mesh ReadOffMesh(string filepath)
         {
-            int i;
-
             // Open file
             string[] lines = File.ReadAllLines(filepath);
 
@@ -112,7 +102,7 @@ namespace MultimediaRetrieval
                     }
 
                     faces[readfaces] = new int[nverts];
-                    for (i = 0; i < nverts; i++)
+                    for (int i = 0; i < nverts; i++)
                         faces[readfaces][i] = int.Parse(face[i + 1]);
                     /* 
                     // Compute normal for face
@@ -141,7 +131,7 @@ namespace MultimediaRetrieval
                     }
                     */
 
-                    readfaces++;
+				readfaces++;
                 }
                 else
                 {
