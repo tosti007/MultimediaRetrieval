@@ -8,53 +8,22 @@ namespace MultimediaRetrieval
 {
     public class Game : GameWindow
     {
+        private Mesh _mesh;
+        private Camera _camera;
         private Shader _shader;
-
-        private readonly float[,] _vertices =
-        {
-            { -0.5f, -0.5f, -0.5f },//LOA 0
-            { -0.5f, -0.5f,  0.5f },//LOV 1
-            { -0.5f,  0.5f, -0.5f },//LBA 2
-            { -0.5f,  0.5f,  0.5f },//LBV 3
-            {  0.5f, -0.5f, -0.5f },//ROA 4
-            {  0.5f, -0.5f,  0.5f },//ROV 5
-            {  0.5f,  0.5f, -0.5f },//RBA 6
-            {  0.5f,  0.5f,  0.5f },//RBV 7
-        };
-
-        private readonly uint[,] _faces =
-        {
-            { 3, 2, 0 },
-            { 0, 1, 3 },
-
-            { 1, 5, 7 },
-            { 7, 3, 1 },
-
-            { 0, 4, 6 }, // Plane vooraan
-            { 6, 2, 0 },
-
-            { 7, 6, 4 },
-            { 4, 5, 7 },
-
-            { 0, 4, 5 },
-            { 5, 1, 0 },
-
-            { 2, 6, 7 },
-            { 7, 3, 2 },
-        };
 
         private int _vertexArrayObject; // VAO = Attribute properties
         private int _vertexBufferObject; // VBO = Data
         private int _elementBufferObject; // EBO = Indices
 
-        private Mesh _mesh;
-
-        private Camera _camera;
-
-        private bool _timeDown = false;
         private bool _stepTime = true;
+        private bool _stepTimeDown = false;
 
-        public Game(int width, int height, string title, Mesh mesh, Camera camera) : base(width, height, GraphicsMode.Default, title)
+        private int _drawMode = 3;
+        private bool _drawModeDown = false;
+
+        public Game(int width, int height, string title, Mesh mesh, Camera camera)
+            : base(width, height, GraphicsMode.Default, title)
         {
             _mesh = mesh;
             _camera = camera;
@@ -62,28 +31,32 @@ namespace MultimediaRetrieval
 
         protected override void OnLoad(EventArgs e)
         {
+            // Setup global openGL settings
             CursorVisible = false;
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             GL.LineWidth(3f);
-            GL.Enable(EnableCap.DepthTest);
+            GL.Enable(EnableCap.DepthTest); // Enable Z-Buffer testing
 
+            // Setup the shader
             _shader = new Shader("../../shader.vert", "../../shader.frag");
             _shader.Use();
             _shader.SetMatrix4("model", _mesh.Model);
             RefreshCameraMatrix();
 
+            // Setup vertices
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Length * sizeof(float), _vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, _mesh.vertices.Length * sizeof(float), _mesh.vertices, BufferUsageHint.StaticDraw);
 
+            // Setup faces
             _elementBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, _faces.Length * sizeof(uint), _faces, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, _mesh.faces.Length * sizeof(uint), _mesh.faces, BufferUsageHint.StaticDraw);
 
+            // Setup VAO
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
-
-            var vertexLocation = _shader.GetAttribLocation("aPosition");
+            var vertexLocation = _shader.GetAttribLocation("position");
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(vertexLocation);
 
@@ -95,23 +68,27 @@ namespace MultimediaRetrieval
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             _shader.Use();
 
-            if (_stepTime)
-            {
-                _mesh.Model = _mesh.Model * Matrix4.CreateRotationY((float)MathHelper.DegreesToRadians(10.0 * e.Time));
-                _shader.SetMatrix4("model", _mesh.Model);
-            }
-
-            // Bind the EBO & VBO to the VAO, so when we use the VAO it uses the same EBO & VBO
+            // Bind the mesh to the current draw
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
 
+            // Bind the settings
             GL.BindVertexArray(_vertexArrayObject);
 
-            _shader.SetVector3("drawColor", new Vector3(0.7f));
-            GL.DrawElements(PrimitiveType.Triangles, _faces.Length, DrawElementsType.UnsignedInt, 0);
-
-            _shader.SetVector3("drawColor", new Vector3(0f));
-            GL.DrawElements(PrimitiveType.LineStrip, _faces.Length, DrawElementsType.UnsignedInt, 0);
+            if ((_drawMode & 1) > 0)
+            {
+                // Draw the triangles
+                _shader.SetVector3("drawColor", new Vector3(0.7f));
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+                GL.DrawElements(PrimitiveType.Triangles, _mesh.faces.Length, DrawElementsType.UnsignedInt, 0);
+            }
+            if ((_drawMode & 2) > 0)
+            {
+                // Draw the lines
+                _shader.SetVector3("drawColor", new Vector3(0f));
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+                GL.DrawElements(PrimitiveType.Triangles, _mesh.faces.Length, DrawElementsType.UnsignedInt, 0);
+            }
 
             Context.SwapBuffers();
             base.OnRenderFrame(e);
@@ -131,6 +108,12 @@ namespace MultimediaRetrieval
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
+            if (_stepTime)
+            {
+                _mesh.Model = _mesh.Model * Matrix4.CreateRotationY((float)MathHelper.DegreesToRadians(10.0 * e.Time));
+                _shader.SetMatrix4("model", _mesh.Model);
+            }
+
             if (!Focused)
                 return;
 
@@ -139,9 +122,13 @@ namespace MultimediaRetrieval
             if (input.IsKeyDown(Key.Escape))
                 Exit();
 
-            if (input.IsKeyUp(Key.T) && _timeDown)
+            if (input.IsKeyUp(Key.T) && _stepTimeDown)
                 _stepTime = !_stepTime;
-            _timeDown = input.IsKeyDown(Key.T);
+            _stepTimeDown = input.IsKeyDown(Key.T);
+
+            if (input.IsKeyUp(Key.Tab) && _drawModeDown)
+                _drawMode = Math.Max((_drawMode + 1) & 3, 1);
+            _drawModeDown = input.IsKeyDown(Key.Tab);
 
             if (_camera.HandleInput(e, input))
                 RefreshCameraMatrix();
