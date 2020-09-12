@@ -34,7 +34,7 @@ namespace MultimediaRetrieval
         public void HandleInput(FrameEventArgs e, KeyboardState input)
         {
             if (input.IsKeyDown(Key.W))
-                Position += Direction * Direction * (float)e.Time; //Forward 
+                Position += Direction * Speed * (float)e.Time; //Forward 
 
             if (input.IsKeyDown(Key.S))
                 Position -= Direction * Speed * (float)e.Time; //Backwards

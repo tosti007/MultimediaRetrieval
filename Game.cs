@@ -22,7 +22,7 @@ namespace MultimediaRetrieval
              0.5f,  0.5f,  0.5f,//RBV 7
         };
 
-        private readonly uint[] _indices =
+        private readonly uint[] _faces =
         {
             3, 2, 0,
             0, 1, 3,
@@ -71,7 +71,7 @@ namespace MultimediaRetrieval
 
             _elementBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, _faces.Length * sizeof(uint), _faces, BufferUsageHint.StaticDraw);
 
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
@@ -109,10 +109,10 @@ namespace MultimediaRetrieval
             GL.BindVertexArray(_vertexArrayObject);
 
             _shader.SetVector3("drawColor", new Vector3(0.7f));
-            GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(PrimitiveType.Triangles, _faces.Length, DrawElementsType.UnsignedInt, 0);
 
             _shader.SetVector3("drawColor", new Vector3(0f));
-            GL.DrawElements(PrimitiveType.LineStrip, _indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(PrimitiveType.LineStrip, _faces.Length, DrawElementsType.UnsignedInt, 0);
 
             Context.SwapBuffers();
             base.OnRenderFrame(e);
