@@ -8,15 +8,17 @@ namespace MultimediaRetrieval
 {
     public class Mesh
     {
-        public float[,] vertices;
+        public float[,] vertexPos;
+        public float[,] faceNorm;
         public uint[,] faces;
 
         public Matrix4 Model = Matrix4.Identity;
 
-        public Mesh(float[,] vertices, uint[,] faces)
+        public Mesh(float[,] vertexPos, uint[,] faces, float[,] faceNorm)
         {
-            this.vertices = vertices;
+            this.vertexPos = vertexPos;
             this.faces = faces;
+            this.faceNorm = faceNorm;
         }
 
         public static Mesh ReadMesh(string filepath)
@@ -43,6 +45,7 @@ namespace MultimediaRetrieval
             // Read file
             float[,] vertices = new float[0,0];
             uint[,] faces = new uint[0,0];
+            float[,] faceNorm = new float[0,0];
             int readverts = 0;
             int readfaces = 0;
             int line_count = -1;
@@ -76,6 +79,7 @@ namespace MultimediaRetrieval
                         // Allocate memory for mesh
                         vertices = new float[int.Parse(counts[0]),3];
                         faces = new uint[int.Parse(counts[1]),3];
+                        faceNorm = new float[int.Parse(counts[1]), 3];
                     }
                 }
                 else if (readverts < vertices.GetLength(0))
@@ -107,32 +111,32 @@ namespace MultimediaRetrieval
                     faces[readfaces, 0] = face[1];
                     faces[readfaces, 1] = face[2];
                     faces[readfaces, 2] = face[3];
-                    /* 
+                    
                     // Compute normal for face
-                    face.normal[0] = face.normal[1] = face.normal[2] = 0;
-                    Vertex* v1 = face.verts[face.nverts - 1];
-                    for (i = 0; i < face.nverts; i++)
+                    faceNorm[readfaces,0] = faceNorm[readfaces,1] = faceNorm[readfaces, 2] = 0;
+                    uint v1_index = faces[readfaces, face[0] - 1]; //Remember, face[0] is the amount of indices per face.
+                    for (int i = 0; i < face[0]; i++)
                     {
-                        Vertex* v2 = face.verts[i];
-                        face.normal[0] += (v1->y - v2->y) * (v1->z + v2->z);
-                        face.normal[1] += (v1->z - v2->z) * (v1->x + v2->x);
-                        face.normal[2] += (v1->x - v2->x) * (v1->y + v2->y);
-                        v1 = v2;
+                        uint v2_index = faces[readfaces, i];
+                        faceNorm[readfaces, 0] += (vertices[v1_index, 1] - vertices[v2_index, 1]) * (vertices[v1_index, 2] + vertices[v2_index, 2]);
+                        faceNorm[readfaces, 1] += (vertices[v1_index, 2] - vertices[v2_index, 2]) * (vertices[v1_index, 0] + vertices[v2_index, 0]);
+                        faceNorm[readfaces, 2] += (vertices[v1_index, 0] - vertices[v2_index, 0]) * (vertices[v1_index, 1] + vertices[v2_index, 1]);
+                        v1_index = v2_index;
                     }
 
                     // Normalize normal for face
-                    float squared_normal_length = 0.0;
-                    squared_normal_length += face.normal[0] * face.normal[0];
-                    squared_normal_length += face.normal[1] * face.normal[1];
-                    squared_normal_length += face.normal[2] * face.normal[2];
-                    float normal_length = sqrt(squared_normal_length);
+                    double squared_normal_length = 0.0f;
+                    squared_normal_length += faceNorm[readfaces, 0] * faceNorm[readfaces, 0];
+                    squared_normal_length += faceNorm[readfaces, 1] * faceNorm[readfaces, 1];
+                    squared_normal_length += faceNorm[readfaces, 2] * faceNorm[readfaces, 2];
+                    float normal_length = (float)Math.Sqrt(squared_normal_length);
                     if (normal_length > 1.0E-6)
                     {
-                        face.normal[0] /= normal_length;
-                        face.normal[1] /= normal_length;
-                        face.normal[2] /= normal_length;
+                        faceNorm[readfaces, 0] /= normal_length;
+                        faceNorm[readfaces, 1] /= normal_length;
+                        faceNorm[readfaces, 2] /= normal_length;
                     }
-                    */
+                    
 
 				    readfaces++;
                 }
@@ -150,7 +154,7 @@ namespace MultimediaRetrieval
             }
 
             // Return mesh 
-            return new Mesh(vertices, faces);
+            return new Mesh(vertices, faces, faceNorm);
         }
     }
 

@@ -46,7 +46,7 @@ namespace MultimediaRetrieval
             // Setup vertices
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, _mesh.vertices.Length * sizeof(float), _mesh.vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, _mesh.vertexPos.Length * sizeof(float), _mesh.vertexPos, BufferUsageHint.StaticDraw);
 
             // Setup faces
             _elementBufferObject = GL.GenBuffer();
