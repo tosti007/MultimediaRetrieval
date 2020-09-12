@@ -12,10 +12,10 @@ namespace MultimediaRetrieval
 {
     public class Mesh
     {
-        public float[][] vertices;
-        public int[][] faces;
+        public float[,] vertices;
+        public uint[,] faces;
 
-        public Mesh(float[][] vertices, int[][] faces)
+        public Mesh(float[,] vertices, uint[,] faces)
         {
             this.vertices = vertices;
             this.faces = faces;
@@ -43,8 +43,8 @@ namespace MultimediaRetrieval
             string[] lines = File.ReadAllLines(filepath);
 
             // Read file
-            float[][] vertices = new float[0][];
-            int[][] faces = new int[0][];
+            float[,] vertices = new float[0,0];
+            uint[,] faces = new uint[0,0];
             int readverts = 0;
             int readfaces = 0;
             int line_count = -1;
@@ -69,41 +69,46 @@ namespace MultimediaRetrieval
                     if (!(line == "OFF"))
                     {
                         // Read mesh counts
-                        string[] counts = line.Split(' ');
+                        string[] counts = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                         if (counts.Length != 3)
                         {
                             throw new Exception($"Syntax error reading header on line {line_count} in file {filepath}");
                         }
 
                         // Allocate memory for mesh
-                        vertices = new float[int.Parse(counts[0])][];
-                        faces = new int[int.Parse(counts[1])][];
+                        vertices = new float[int.Parse(counts[0]),3];
+                        faces = new uint[int.Parse(counts[1]),3];
                     }
                 }
-                else if (readverts < vertices.Length)
+                else if (readverts < vertices.GetLength(0))
                 {
                     // Read vertex coordinates
-                    string[] vertex = line.Split(' ');
+                    float[] vertex = Array.ConvertAll(line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries), float.Parse);
                     if (vertex.Length != 3)
                     {
                         throw new Exception($"Syntax error reading vertex on line {line_count} in file {filepath}");
                     }
-                    vertices[readverts] = new float[3] { float.Parse(vertex[0]), float.Parse(vertex[1]), float.Parse(vertex[2]) };
+                    vertices[readverts, 0] = vertex[0];
+                    vertices[readverts, 1] = vertex[1];
+                    vertices[readverts, 2] = vertex[2];
                     readverts++;
                 }
-                else if (readfaces < faces.Length)
+                else if (readfaces < faces.GetLength(0))
                 {
                     // Read face:
-                    string[] face = line.Split(' ');
-                    int nverts = int.Parse(face[0]);
-                    if (face.Length < nverts + 1)
-                    {
+                    uint[] face = Array.ConvertAll(line.Split(new char[]{ ' ' }, StringSplitOptions.RemoveEmptyEntries), uint.Parse);
+                    if (face.Length < face[0] + 1)
                         throw new Exception($"Syntax error reading face on line {line_count} in file {filepath}");
-                    }
 
-                    faces[readfaces] = new int[nverts];
-                    for (int i = 0; i < nverts; i++)
-                        faces[readfaces][i] = int.Parse(face[i + 1]);
+                    if (face[0] < 3)
+                        throw new Exception($"Face found containing only 2 vertices on line {line_count} in file {filepath}");
+
+                    if (face[0] > 3)
+                        throw new NotImplementedException($"Only triangles currently supported");
+
+                    faces[readfaces, 0] = face[1];
+                    faces[readfaces, 1] = face[2];
+                    faces[readfaces, 2] = face[3];
                     /* 
                     // Compute normal for face
                     face.normal[0] = face.normal[1] = face.normal[2] = 0;
@@ -131,19 +136,19 @@ namespace MultimediaRetrieval
                     }
                     */
 
-				readfaces++;
+				    readfaces++;
                 }
                 else
                 {
-                    // Should never get here
-                    throw new Exception($"Found extra text starting at line {line_count} in file {filepath}");
+                    // Silently discard unused data.
+                    break;
                 }
             }
 
             // Check whether read all faces
-            if (faces.Length != readfaces)
+            if (faces.GetLength(0) != readfaces)
             {
-                throw new Exception($"Expected {faces.Length} faces, but read only {readfaces} faces in file {filepath}");
+                throw new Exception($"Expected {faces.GetLength(0)} faces, but read only {readfaces} faces in file {filepath}");
             }
 
             // Return mesh 
