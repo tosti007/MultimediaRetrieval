@@ -10,37 +10,37 @@ namespace MultimediaRetrieval
     {
         private Shader _shader;
 
-        private readonly float[] _vertices =
+        private readonly float[,] _vertices =
         {
-            -0.5f, -0.5f, -0.5f,//LOA 0
-            -0.5f, -0.5f,  0.5f,//LOV 1
-            -0.5f,  0.5f, -0.5f,//LBA 2
-            -0.5f,  0.5f,  0.5f,//LBV 3
-             0.5f, -0.5f, -0.5f,//ROA 4
-             0.5f, -0.5f,  0.5f,//ROV 5
-             0.5f,  0.5f, -0.5f,//RBA 6
-             0.5f,  0.5f,  0.5f,//RBV 7
+            { -0.5f, -0.5f, -0.5f },//LOA 0
+            { -0.5f, -0.5f,  0.5f },//LOV 1
+            { -0.5f,  0.5f, -0.5f },//LBA 2
+            { -0.5f,  0.5f,  0.5f },//LBV 3
+            {  0.5f, -0.5f, -0.5f },//ROA 4
+            {  0.5f, -0.5f,  0.5f },//ROV 5
+            {  0.5f,  0.5f, -0.5f },//RBA 6
+            {  0.5f,  0.5f,  0.5f },//RBV 7
         };
 
-        private readonly uint[] _faces =
+        private readonly uint[,] _faces =
         {
-            3, 2, 0,
-            0, 1, 3,
+            { 3, 2, 0 },
+            { 0, 1, 3 },
 
-            1, 5, 7,
-            7, 3, 1,
+            { 1, 5, 7 },
+            { 7, 3, 1 },
 
-            0, 4, 6, // Plane vooraan
-            6, 2, 0,
+            { 0, 4, 6 }, // Plane vooraan
+            { 6, 2, 0 },
 
-            7, 6, 4,
-            4, 5, 7,
+            { 7, 6, 4 },
+            { 4, 5, 7 },
 
-            0, 4, 5,
-            5, 1, 0,
+            { 0, 4, 5 },
+            { 5, 1, 0 },
 
-            2, 6, 7,
-            7, 3, 2,
+            { 2, 6, 7 },
+            { 7, 3, 2 },
         };
 
         private int _vertexArrayObject; // VAO = Attribute properties
