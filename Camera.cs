@@ -26,9 +26,9 @@ namespace MultimediaRetrieval
             FOV = 45f;
         }
 
-        public Matrix4 GetViewMatrix()
+        public Matrix4 GetViewMatrix(int width, int height)
         {
-            return Matrix4.LookAt(Position, Position + Direction, _up);
+            return Matrix4.LookAt(Position, Position + Direction, _up) * Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(FOV), width / (float)height, 0.1f, 100.0f);
         }
 
         public bool HandleInput(FrameEventArgs e, KeyboardState input)

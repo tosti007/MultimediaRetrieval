@@ -70,6 +70,7 @@ namespace MultimediaRetrieval
             _shader = new Shader("../../shader.vert", "../../shader.frag");
             _shader.Use();
             _shader.SetMatrix4("model", _mesh.Model);
+            RefreshCameraMatrix();
 
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
@@ -100,10 +101,6 @@ namespace MultimediaRetrieval
                 _shader.SetMatrix4("model", _mesh.Model);
             }
 
-            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(_camera.FOV), Width / (float)Height, 0.1f, 100.0f);
-            _shader.SetMatrix4("view", _camera.GetViewMatrix());
-            _shader.SetMatrix4("projection", projection);
-            
             // Bind the EBO & VBO to the VAO, so when we use the VAO it uses the same EBO & VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
@@ -120,9 +117,15 @@ namespace MultimediaRetrieval
             base.OnRenderFrame(e);
         }
 
+        protected void RefreshCameraMatrix()
+        {
+            _shader.SetMatrix4("camera", _camera.GetViewMatrix(Width, Height));
+        }
+
         protected override void OnResize(EventArgs e)
         {
             GL.Viewport(0, 0, Width, Height);
+            RefreshCameraMatrix();
             base.OnResize(e);
         }
 
@@ -140,7 +143,8 @@ namespace MultimediaRetrieval
                 _stepTime = !_stepTime;
             _timeDown = input.IsKeyDown(Key.T);
 
-            _camera.HandleInput(e, input);
+            if (_camera.HandleInput(e, input))
+                RefreshCameraMatrix();
 
             base.OnUpdateFrame(e);
         }
