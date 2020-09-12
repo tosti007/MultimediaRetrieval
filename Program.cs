@@ -6,8 +6,9 @@ namespace MultimediaRetrieval
     {
         public static void Main(string[] args)
         {
-            Mesh m = Mesh.ReadMesh("m0.off");
-            using (Game game = new Game(800, 600, "MultimediaRetrieval"))
+            Mesh mesh = Mesh.ReadMesh("m0.off");
+            Camera camera = new Camera(1.5f, 30f, 45f);
+            using (Game game = new Game(800, 600, "MultimediaRetrieval", mesh, camera))
             {
                 game.Run(60.0);
             }

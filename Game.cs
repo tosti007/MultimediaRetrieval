@@ -47,13 +47,18 @@ namespace MultimediaRetrieval
         private int _vertexBufferObject; // VBO = Data
         private int _elementBufferObject; // EBO = Indices
 
+        private Mesh _mesh;
+
         private Camera _camera;
 
         private bool _timeDown = false;
         private bool _stepTime = true;
-        private double _time;
 
-        public Game(int width, int height, string title) : base(width, height, GraphicsMode.Default, title) { }
+        public Game(int width, int height, string title, Mesh mesh, Camera camera) : base(width, height, GraphicsMode.Default, title)
+        {
+            _mesh = mesh;
+            _camera = camera;
+        }
 
         protected override void OnLoad(EventArgs e)
         {
@@ -64,6 +69,7 @@ namespace MultimediaRetrieval
 
             _shader = new Shader("../../shader.vert", "../../shader.frag");
             _shader.Use();
+            _shader.SetMatrix4("model", _mesh.Model);
 
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
@@ -80,8 +86,6 @@ namespace MultimediaRetrieval
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(vertexLocation);
 
-            _camera = new Camera(1.5f, 30f, 45f);
-
             base.OnLoad(e);
         }
 
@@ -91,14 +95,12 @@ namespace MultimediaRetrieval
             _shader.Use();
 
             if (_stepTime)
-                _time += 10.0 * e.Time;
-            if (_time >= 360)
-                _time -= 360;
+            {
+                _mesh.Model = _mesh.Model * Matrix4.CreateRotationY((float)MathHelper.DegreesToRadians(10.0 * e.Time));
+                _shader.SetMatrix4("model", _mesh.Model);
+            }
 
-            Matrix4 model = Matrix4.Identity * Matrix4.CreateRotationY((float)MathHelper.DegreesToRadians(_time));
             Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(_camera.FOV), Width / (float)Height, 0.1f, 100.0f);
-
-            _shader.SetMatrix4("model", model);
             _shader.SetMatrix4("view", _camera.GetViewMatrix());
             _shader.SetMatrix4("projection", projection);
             

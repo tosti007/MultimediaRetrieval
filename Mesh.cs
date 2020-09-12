@@ -2,11 +2,7 @@
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using OpenTK;
 
 namespace MultimediaRetrieval
 {
@@ -14,6 +10,8 @@ namespace MultimediaRetrieval
     {
         public float[,] vertices;
         public uint[,] faces;
+
+        public Matrix4 Model = Matrix4.Identity;
 
         public Mesh(float[,] vertices, uint[,] faces)
         {
