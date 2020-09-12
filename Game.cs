@@ -76,10 +76,6 @@ namespace MultimediaRetrieval
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
 
-            // Bind the EBO & VBO to the VAO, so when we use the VAO it uses the same EBO & VBO
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
-
             var vertexLocation = _shader.GetAttribLocation("aPosition");
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(vertexLocation);
@@ -105,6 +101,10 @@ namespace MultimediaRetrieval
             _shader.SetMatrix4("model", model);
             _shader.SetMatrix4("view", _camera.GetViewMatrix());
             _shader.SetMatrix4("projection", projection);
+            
+            // Bind the EBO & VBO to the VAO, so when we use the VAO it uses the same EBO & VBO
+            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
 
             GL.BindVertexArray(_vertexArrayObject);
 
