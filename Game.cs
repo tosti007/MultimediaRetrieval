@@ -46,7 +46,7 @@ namespace MultimediaRetrieval
             // Setup vertices
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, _mesh.vertexPos.Length * sizeof(float), _mesh.vertexPos, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, _mesh.Vertices().Length * sizeof(float), _mesh.Vertices(), BufferUsageHint.StaticDraw);
 
             // Setup faces
             _elementBufferObject = GL.GenBuffer();
@@ -56,9 +56,13 @@ namespace MultimediaRetrieval
             // Setup VAO
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
-            var vertexLocation = _shader.GetAttribLocation("position");
-            GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-            GL.EnableVertexAttribArray(vertexLocation);
+            var vertexPosition = _shader.GetAttribLocation("position");
+            GL.VertexAttribPointer(vertexPosition, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+            GL.EnableVertexAttribArray(vertexPosition);
+
+            var vertexNormal = _shader.GetAttribLocation("normal");
+            GL.VertexAttribPointer(vertexNormal, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3);
+            GL.EnableVertexAttribArray(vertexNormal);
 
             base.OnLoad(e);
         }
@@ -78,16 +82,21 @@ namespace MultimediaRetrieval
             if ((_drawMode & 1) > 0)
             {
                 // Draw the triangles
-                _shader.SetVector3("drawColor", new Vector3(0.7f));
+                _shader.SetVector3("ambientColor", new Vector3(0.1f));
+                _shader.SetVector3("objectColor", new Vector3(1.0f, 0f, 0f));
+                _shader.SetVector3("lightColor", new Vector3(1f));
+                _shader.SetVector3("lightPosition", _camera.Position);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
                 GL.DrawElements(PrimitiveType.Triangles, _mesh.faces.Length, DrawElementsType.UnsignedInt, 0);
             }
             if ((_drawMode & 2) > 0)
             {
-                // Draw the lines
-                _shader.SetVector3("drawColor", new Vector3(0f));
+                // Draw the lines           
+                _shader.SetVector3("ambientColor", new Vector3(0f));
+                _shader.SetVector3("lightColor", new Vector3(0f));
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
                 GL.DrawElements(PrimitiveType.Triangles, _mesh.faces.Length, DrawElementsType.UnsignedInt, 0);
+                
             }
 
             Context.SwapBuffers();
