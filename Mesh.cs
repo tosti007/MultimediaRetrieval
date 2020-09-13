@@ -3,6 +3,7 @@ using OpenTK.Graphics.OpenGL;
 using System;
 using System.IO;
 using OpenTK;
+using System.Globalization;
 
 namespace MultimediaRetrieval
 {
@@ -85,7 +86,7 @@ namespace MultimediaRetrieval
                 else if (readverts < vertices.GetLength(0))
                 {
                     // Read vertex coordinates
-                    float[] vertex = Array.ConvertAll(line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries), float.Parse);
+                    float[] vertex = Array.ConvertAll(line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries), (s) => float.Parse(s, CultureInfo.InvariantCulture));
                     if (vertex.Length != 3)
                     {
                         throw new Exception($"Syntax error reading vertex on line {line_count} in file {filepath}");
