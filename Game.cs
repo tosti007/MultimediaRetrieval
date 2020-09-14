@@ -65,7 +65,7 @@ namespace MultimediaRetrieval
             GL.EnableVertexAttribArray(vertexPosition);
 
             var vertexNormal = _shader.GetAttribLocation("normal");
-            GL.VertexAttribPointer(vertexNormal, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3);
+            GL.VertexAttribPointer(vertexNormal, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(vertexNormal);
 
             base.OnLoad(e);
