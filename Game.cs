@@ -42,11 +42,14 @@ namespace MultimediaRetrieval
             _shader.Use();
             _shader.SetMatrix4("model", _mesh.Model);
             RefreshCameraMatrix();
+            _shader.SetVector3("ambientColor", new Vector3(0.1f));
+            _shader.SetVector3("lightColor", new Vector3(1f));
 
             // Setup vertices
+            var vertices = _mesh.Vertices();
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, _mesh.Vertices().Length * sizeof(float), _mesh.Vertices(), BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
 
             // Setup faces
             _elementBufferObject = GL.GenBuffer();
@@ -56,6 +59,7 @@ namespace MultimediaRetrieval
             // Setup VAO
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
+
             var vertexPosition = _shader.GetAttribLocation("position");
             GL.VertexAttribPointer(vertexPosition, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
             GL.EnableVertexAttribArray(vertexPosition);
@@ -82,18 +86,14 @@ namespace MultimediaRetrieval
             if ((_drawMode & 1) > 0)
             {
                 // Draw the triangles
-                _shader.SetVector3("ambientColor", new Vector3(0.1f));
                 _shader.SetVector3("objectColor", new Vector3(1.0f, 0f, 0f));
-                _shader.SetVector3("lightColor", new Vector3(1f));
-                _shader.SetVector3("lightPosition", _camera.Position);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
                 GL.DrawElements(PrimitiveType.Triangles, _mesh.faces.Length, DrawElementsType.UnsignedInt, 0);
             }
             if ((_drawMode & 2) > 0)
             {
                 // Draw the lines           
-                _shader.SetVector3("ambientColor", new Vector3(0f));
-                _shader.SetVector3("lightColor", new Vector3(0f));
+                _shader.SetVector3("objectColor", Vector3.Zero);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
                 GL.DrawElements(PrimitiveType.Triangles, _mesh.faces.Length, DrawElementsType.UnsignedInt, 0);
                 
@@ -106,6 +106,7 @@ namespace MultimediaRetrieval
         protected void RefreshCameraMatrix()
         {
             _shader.SetMatrix4("camera", _camera.GetViewMatrix(Width, Height));
+            _shader.SetVector3("lightPosition", _camera.Position);
         }
 
         protected override void OnResize(EventArgs e)

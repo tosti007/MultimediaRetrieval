@@ -54,10 +54,8 @@ namespace MultimediaRetrieval
             {
                 return ReadOffMesh(filepath);
             }
-            else
-            {
-                throw new Exception("Unknown filetype: " + ext);
-            }
+
+            throw new Exception("Unknown filetype: " + ext);
         }
 
         //OFF mesh reader, based on work by Philip Shilane, Patrick Min, Michael Kazhdan, and Thomas Funkhouser (Princeton Shape Benchmark)
