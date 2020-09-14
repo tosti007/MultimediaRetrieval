@@ -12,8 +12,9 @@ void main()
 {
     // This is reversed from the expected order, this is due OpenTK and OpenGL
     // having transposed matrix coordinates
-    gl_Position = vec4(inPosition, 1.0) * model * camera;
-    outPosition = vec3(vec4(inPosition, 1.0) * model);
+    vec4 position = vec4(inPosition, 1.0) * model;
+    gl_Position = position * camera;
+    outPosition = vec3(position);
 
-    outNormal = inNormal;
+    outNormal = vec3(vec4(inNormal, 1.0) * model);
 }
