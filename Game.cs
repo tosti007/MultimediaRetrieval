@@ -60,11 +60,11 @@ namespace MultimediaRetrieval
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
 
-            var vertexPosition = _shader.GetAttribLocation("position");
+            var vertexPosition = _shader.GetAttribLocation("inPosition");
             GL.VertexAttribPointer(vertexPosition, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
             GL.EnableVertexAttribArray(vertexPosition);
 
-            var vertexNormal = _shader.GetAttribLocation("normal");
+            var vertexNormal = _shader.GetAttribLocation("inNormal");
             GL.VertexAttribPointer(vertexNormal, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(vertexNormal);
 
