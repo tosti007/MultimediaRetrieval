@@ -22,6 +22,9 @@ namespace MultimediaRetrieval
         private int _drawMode = 3;
         private bool _drawModeDown = false;
 
+        private float[,] vertices;
+        private uint[,] faces;
+
         public Game(int width, int height, string title, Mesh mesh, Camera camera)
             : base(width, height, GraphicsMode.Default, title)
         {
@@ -46,15 +49,16 @@ namespace MultimediaRetrieval
             _shader.SetVector3("lightColor", new Vector3(1f));
 
             // Setup vertices
-            var vertices = _mesh.Vertices();
+            vertices = _mesh.BufferVertices();
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
             GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
 
             // Setup faces
+            faces = _mesh.BufferFaces();
             _elementBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, _mesh.faces.Length * sizeof(uint), _mesh.faces, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, faces.Length * sizeof(uint), faces, BufferUsageHint.StaticDraw);
 
             // Setup VAO
             _vertexArrayObject = GL.GenVertexArray();
@@ -88,14 +92,14 @@ namespace MultimediaRetrieval
                 // Draw the triangles
                 _shader.SetVector3("objectColor", new Vector3(1.0f, 0f, 0f));
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-                GL.DrawElements(PrimitiveType.Triangles, _mesh.faces.Length, DrawElementsType.UnsignedInt, 0);
+                GL.DrawElements(PrimitiveType.Triangles, faces.Length, DrawElementsType.UnsignedInt, 0);
             }
             if ((_drawMode & 2) > 0)
             {
                 // Draw the lines           
                 _shader.SetVector3("objectColor", Vector3.Zero);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-                GL.DrawElements(PrimitiveType.Triangles, _mesh.faces.Length, DrawElementsType.UnsignedInt, 0);
+                GL.DrawElements(PrimitiveType.Triangles, faces.Length, DrawElementsType.UnsignedInt, 0);
                 
             }
 

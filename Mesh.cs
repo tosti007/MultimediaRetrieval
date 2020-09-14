@@ -1,47 +1,77 @@
 ﻿using OpenTK.Graphics.ES11;
 using OpenTK.Graphics.OpenGL;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using OpenTK;
 using System.Globalization;
 
 namespace MultimediaRetrieval
 {
+    public class Vertex
+    {
+        public Vector3 position;
+        public Vector3 normal;
+        public Vertex(Vector3 position, Vector3 normal)
+        {
+            this.position = position;
+            this.normal = normal;
+        }
+    }
+
+    public struct Face
+    {
+        public List<uint> indices;
+        public Vector3 normal;
+        public Face(List<uint> indices, Vector3 normal)
+        {
+            this.indices = indices;
+            this.normal = normal;
+        }
+    }
+
     public class Mesh
     {
-        float[,] vertexPos;
-        float[,] vertexNorm;
-        float[,] faceNorm;
-        public uint[,] faces;
+        public List<Vertex> vertices;
+        public List<Face> faces;
 
         public Matrix4 Model = Matrix4.Identity;
 
-        public Mesh(float[,] vertexPos, float[,] vertexNorm, uint[,] faces, float[,] faceNorm)
+        public Mesh(List<Vertex> vertices, List<Face> faces)
         {
-            this.vertexPos = vertexPos;
-            this.vertexNorm = vertexNorm;
-
+            this.vertices = vertices;
             this.faces = faces;
-            this.faceNorm = faceNorm;
         }
 
-        //Gives all vertex information ready to be put into a buffer (TODO: cleanup)
-        public float[,] Vertices()
+        //Gives all vertex information ready to be put into a buffer
+        public float[,] BufferVertices()
         {
-            float[,] result = new float[vertexPos.GetLength(0), vertexPos.GetLength(1) + vertexNorm.GetLength(1)];
-            for(int i = 0; i < vertexPos.GetLength(0); i++)
+            float[,] result = new float[vertices.Count, 3 + 3];
+            for(int i = 0; i < vertices.Count; i++)
             {
-                for(int j = 0; j < vertexPos.GetLength(1); j++)
-                {
-                    result[i, j] = vertexPos[i, j];
-                }
+                result[i, 0] = vertices[i].position.X;
+                result[i, 1] = vertices[i].position.Y;
+                result[i, 2] = vertices[i].position.Z;
 
-                for(int j = 0; j < vertexNorm.GetLength(1); j++)
-                {
-                    result[i, j + vertexPos.GetLength(1)] = vertexNorm[i, j];
-                }    
+                result[i, 3] = vertices[i].normal.X;
+                result[i, 4] = vertices[i].normal.Y;
+                result[i, 5] = vertices[i].normal.Z;  
             }
 
+            return result;
+        }
+
+        //Gives all face information ready to be put into a buffer
+        public uint[,] BufferFaces()
+        {
+            uint[,] result = new uint[faces.Count, faces[0].indices.Count];
+            for(int i = 0; i < faces.Count; i++)
+            {
+                for(int j = 0; j < faces[i].indices.Count; j++)
+                {
+                    result[i, j] = faces[i].indices[j];
+                }
+            }
             return result;
         }
 
@@ -65,16 +95,15 @@ namespace MultimediaRetrieval
             string[] lines = File.ReadAllLines(filepath);
 
             // Read file
-            float[,] vertexPos = new float[0,0];
-            float[,] vertexNorm = new float[0,0];
-
-            uint[,] faces = new uint[0,0];
-            float[,] faceNorm = new float[0,0];
+            List<Vertex> vertices = new List<Vertex>();
+            List<Face> faces = new List<Face>();
 
             uint[] vertexAdjFaces = new uint[0];
 
             int readverts = 0;
             int readfaces = 0;
+            int totalverts = 0;
+            int totalfaces = 0;
             int line_count = -1;
             while (line_count < lines.Length - 1)
             {
@@ -91,7 +120,7 @@ namespace MultimediaRetrieval
                     continue;
 
                 // Read the header first:
-                if (vertexPos.Length == 0)
+                if (totalverts == 0)
                 {
                     // Read header 
                     if (!(line == "OFF"))
@@ -103,17 +132,14 @@ namespace MultimediaRetrieval
                             throw new Exception($"Syntax error reading header on line {line_count} in file {filepath}");
                         }
 
-                        // Allocate memory for mesh
-                        vertexPos = new float[int.Parse(counts[0]),3];
-                        vertexNorm = new float[int.Parse(counts[0]), 3];
-
-                        faces = new uint[int.Parse(counts[1]),3];
-                        faceNorm = new float[int.Parse(counts[1]), 3];
+                        // Set count of vertices/faces.
+                        totalverts = int.Parse(counts[0]);
+                        totalfaces = int.Parse(counts[1]);
 
                         vertexAdjFaces = new uint[int.Parse(counts[0])];
                     }
                 }
-                else if (readverts < vertexPos.GetLength(0))
+                else if (readverts < totalverts)
                 {
                     // Read vertex coordinates
                     float[] vertex = Array.ConvertAll(line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries), (s) => float.Parse(s, CultureInfo.InvariantCulture));
@@ -121,12 +147,12 @@ namespace MultimediaRetrieval
                     {
                         throw new Exception($"Syntax error reading vertex on line {line_count} in file {filepath}");
                     }
-                    vertexPos[readverts, 0] = vertex[0];
-                    vertexPos[readverts, 1] = vertex[1];
-                    vertexPos[readverts, 2] = vertex[2];
+
+                    vertices.Add(new Vertex(new Vector3(vertex[0], vertex[1], vertex[2]), new Vector3(0)));
+
                     readverts++;
                 }
-                else if (readfaces < faces.GetLength(0))
+                else if (readfaces < totalfaces)
                 {
                     // Read face:
                     uint[] face = Array.ConvertAll(line.Split(new char[]{ ' ' }, StringSplitOptions.RemoveEmptyEntries), uint.Parse);
@@ -139,43 +165,40 @@ namespace MultimediaRetrieval
                     if (face[0] > 3)
                         throw new NotImplementedException($"Only triangles currently supported");
 
-                    faces[readfaces, 0] = face[1];
-                    faces[readfaces, 1] = face[2];
-                    faces[readfaces, 2] = face[3];
+                    List<uint> indices = new List<uint>();
+                    for (int i = 0; i < face[0]; i++)
+                        indices.Add(face[i + 1]);
                     
+
                     // Compute normal for face
-                    faceNorm[readfaces,0] = faceNorm[readfaces,1] = faceNorm[readfaces, 2] = 0;
-                    uint v1_index = faces[readfaces, face[0] - 1]; //Remember, face[0] is the amount of indices per face.
+                    Vector3 facenorm = new Vector3(0);
+                    int v1_index = (int)indices[indices.Count - 1];
                     for (int i = 0; i < face[0]; i++)
                     {
-                        uint v2_index = faces[readfaces, i];
-                        faceNorm[readfaces, 0] += (vertexPos[v1_index, 1] - vertexPos[v2_index, 1]) * (vertexPos[v1_index, 2] + vertexPos[v2_index, 2]);
-                        faceNorm[readfaces, 1] += (vertexPos[v1_index, 2] - vertexPos[v2_index, 2]) * (vertexPos[v1_index, 0] + vertexPos[v2_index, 0]);
-                        faceNorm[readfaces, 2] += (vertexPos[v1_index, 0] - vertexPos[v2_index, 0]) * (vertexPos[v1_index, 1] + vertexPos[v2_index, 1]);
+                        int v2_index = (int)indices[i];
+                        facenorm.X += (vertices[v1_index].position.Y - vertices[v2_index].position.Y) * (vertices[v1_index].position.Z + vertices[v1_index].position.Z);
+                        facenorm.Y += (vertices[v1_index].position.Z - vertices[v2_index].position.Z) * (vertices[v1_index].position.X + vertices[v2_index].position.X);
+                        facenorm.Z += (vertices[v1_index].position.X - vertices[v2_index].position.X) * (vertices[v1_index].position.Y + vertices[v2_index].position.Y);
                         v1_index = v2_index;
                     }
 
                     // Normalize normal for face
                     double squared_normal_length = 0.0f;
-                    squared_normal_length += faceNorm[readfaces, 0] * faceNorm[readfaces, 0];
-                    squared_normal_length += faceNorm[readfaces, 1] * faceNorm[readfaces, 1];
-                    squared_normal_length += faceNorm[readfaces, 2] * faceNorm[readfaces, 2];
+                    squared_normal_length += facenorm.X * facenorm.X;
+                    squared_normal_length += facenorm.Y * facenorm.Y;
+                    squared_normal_length += facenorm.Z * facenorm.Z;
                     float normal_length = (float)Math.Sqrt(squared_normal_length);
                     if (normal_length > 1.0E-6)
                     {
-                        faceNorm[readfaces, 0] /= normal_length;
-                        faceNorm[readfaces, 1] /= normal_length;
-                        faceNorm[readfaces, 2] /= normal_length;
+                        facenorm /= normal_length;
                     }
-                    
-                    //Compute normal for vertices:
-                    for(int i = 0; i < face[0]; i++)
-                    {
-                        vertexNorm[face[i + 1], 0] += faceNorm[readfaces, 0];
-                        vertexNorm[face[i + 1], 1] += faceNorm[readfaces, 1];
-                        vertexNorm[face[i + 1], 2] += faceNorm[readfaces, 2];
 
-                        vertexAdjFaces[face[i + 1]]++;
+                    faces.Add(new Face(indices, facenorm));
+
+                    //Compute normal for vertices:
+                    for (int i = 0; i < face[0]; i++)
+                    {
+                        vertices[(int)face[i + 1]].normal += facenorm;
                     }
 
 				    readfaces++;
@@ -188,23 +211,19 @@ namespace MultimediaRetrieval
             }
 
             // Check whether read all faces
-            if (faces.GetLength(0) != readfaces)
+            if (totalfaces != readfaces)
             {
-                throw new Exception($"Expected {faces.GetLength(0)} faces, but read only {readfaces} faces in file {filepath}");
+                throw new Exception($"Expected {totalfaces} faces, but read only {readfaces} faces in file {filepath}");
             }
 
             // Finish calculating vertex normals:
-            for(int i = 0; i < vertexAdjFaces.Length; i++)
+            foreach(Vertex v in vertices)
             {
-                var norm = new Vector3(vertexNorm[i, 0], vertexNorm[i, 1], vertexNorm[i, 2]);
-                norm = (norm / vertexAdjFaces[i]).Normalized();
-                vertexNorm[i, 0] = norm[0];
-                vertexNorm[i, 1] = norm[1];
-                vertexNorm[i, 2] = norm[2];
+                v.normal = v.normal.Normalized();
             }
 
             // Return mesh 
-            return new Mesh(vertexPos, vertexNorm, faces, faceNorm);
+            return new Mesh(vertices, faces);
         }
     }
 
