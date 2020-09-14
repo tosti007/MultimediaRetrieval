@@ -12,6 +12,6 @@ out vec4 FragColor;
 void main()
 {
     vec3 lightDirection = normalize(lightPosition - outPosition);  
-    vec3 diffuse = max(dot(normalize(outNormal), lightDirection), 0.0) * lightColor;
+    vec3 diffuse = max(dot(outNormal, lightDirection), 0.0) * lightColor;
     FragColor = vec4((ambientColor + diffuse) * objectColor, 1.0);
 }

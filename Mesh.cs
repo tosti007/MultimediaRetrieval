@@ -196,9 +196,11 @@ namespace MultimediaRetrieval
             // Finish calculating vertex normals:
             for(int i = 0; i < vertexAdjFaces.Length; i++)
             {
-                vertexNorm[i, 0] /= vertexAdjFaces[i];
-                vertexNorm[i, 1] /= vertexAdjFaces[i];
-                vertexNorm[i, 2] /= vertexAdjFaces[i];
+                var norm = new Vector3(vertexNorm[i, 0], vertexNorm[i, 1], vertexNorm[i, 2]);
+                norm = (norm / vertexAdjFaces[i]).Normalized();
+                vertexNorm[i, 0] = norm[0];
+                vertexNorm[i, 1] = norm[1];
+                vertexNorm[i, 2] = norm[2];
             }
 
             // Return mesh 
