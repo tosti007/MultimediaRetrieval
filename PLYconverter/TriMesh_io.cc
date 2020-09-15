@@ -41,10 +41,15 @@ int main(int argc, char** argv, char *envp[])
 
 	for(int i = 1; i < argc; i++)
 	{
+		//trimesh::TriMesh::set_verbose(0);
 		trimesh::TriMesh *mesh = trimesh::TriMesh::read(argv[i]);
 		
 		string file = std::string(argv[1]);
 		file = file.substr(0, file.find_last_of("."));
+
+		mesh->need_bbox();
+		mesh->bbox.write(file + ".bbox");
+
 		file = file + ".off";
 		mesh->write(file.c_str());
 	}
