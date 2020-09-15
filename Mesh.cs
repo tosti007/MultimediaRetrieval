@@ -1,6 +1,4 @@
-﻿using OpenTK.Graphics.ES11;
-using OpenTK.Graphics.OpenGL;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using OpenTK;
@@ -78,9 +76,8 @@ namespace MultimediaRetrieval
         public static Mesh ReadMesh(string filepath)
         {
             //Check if the file is an .off file:
-            string[] getext = filepath.Split('.');
-            string ext = getext[getext.Length - 1];
-            if (ext == "off")
+            string ext = Path.GetExtension(filepath);
+            if (ext == ".off")
             {
                 return ReadOffMesh(filepath);
             }
