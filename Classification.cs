@@ -21,7 +21,7 @@ namespace MultimediaRetrieval
             if (!filepath.EndsWith(".mr", ENDOPTIONS))
                 filepath += ".mr";
 
-            File.WriteAllLines(filepath, classes.Select((cls) => cls.Key + " " + cls.Value));
+            File.WriteAllLines(filepath, classes.OrderBy((cls) => cls.Key).Select((cls) => cls.Key + " " + cls.Value));
         }
 
         public static Classification operator +(Classification a, Classification b)
