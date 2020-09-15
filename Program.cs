@@ -7,8 +7,8 @@ namespace MultimediaRetrieval
         public static void Main(string[] args)
         {
             DatabaseReader classes = new DatabaseReader();
-            classes += DatabaseReader.ReadClassification("../../database/step0/LPSB", "../../database/step1/");
-            classes += DatabaseReader.ReadClassification("../../database/step0/Princeton", "../../database/step1/");
+            //classes += DatabaseReader.ReadClassification("../../database/step0/LPSB", "../../database/step1/");
+            classes += DatabaseReader.ReadClassification("../../database/step0/Princeton", "../../database/step1");
 
             FeatureDatabase db = new FeatureDatabase(classes);
             db.WriteToFile("../../database/step1/output");

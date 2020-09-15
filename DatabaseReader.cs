@@ -117,14 +117,13 @@ namespace MultimediaRetrieval
             foreach (string filename in Directory.EnumerateFiles(dirpath, "*", SearchOption.AllDirectories))
             {
                 string extension = Path.GetExtension(filename);
-
                 if (extension.EndsWith("~", StringComparison.InvariantCulture))
                     continue;
 
                 if (UNSUPPORTED_EXTENSIONS.Any((s) => string.Equals(s, extension)))
                     continue;
 
-                yield return filename;                
+                yield return Path.GetFullPath(filename);                
             }
         }
 
@@ -137,7 +136,7 @@ namespace MultimediaRetrieval
         {
             string newfile = outpath + Path.DirectorySeparatorChar + id + Path.GetExtension(filename);
             if (!File.Exists(newfile))
-                File.Copy(filename, newfile, false);
+                File.Copy(filename, Path.GetFullPath(newfile), false);
         }
     }
 }
