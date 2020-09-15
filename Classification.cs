@@ -8,7 +8,6 @@ namespace MultimediaRetrieval
     {
         // There are 1815 items in the db, but LPSB starts with 1 so...
         private const int NR_PRINCETON_MESHES = 1814;
-        private const System.StringComparison ENDOPTIONS = System.StringComparison.InvariantCulture;
         private static readonly string[] UNSUPPORTED_EXTENSIONS = { 
             ".txt", ".jpg", ".cla", ".gitkeep", ".mr" 
         };
@@ -18,7 +17,7 @@ namespace MultimediaRetrieval
         public void WriteToFile(string filepath)
         {
             // check for endswith .mr
-            if (!filepath.EndsWith(".mr", ENDOPTIONS))
+            if (!filepath.EndsWith(".mr", System.StringComparison.InvariantCulture))
                 filepath += ".mr";
 
             File.WriteAllLines(filepath, classes.OrderBy((cls) => cls.Key).Select((cls) => cls.Key + " " + cls.Value));
@@ -45,7 +44,7 @@ namespace MultimediaRetrieval
             {
                 foreach (string filepath in files)
                 {
-                    ReadClassificationMultimediaRetrieval(total, filepath);
+                    ReadClassificationMultimediaRetrieval(total, dirpath, dirpath + filepath);
                 }
                 return total;
             }
@@ -55,7 +54,7 @@ namespace MultimediaRetrieval
             {
                 foreach (string filepath in files)
                 {
-                    ReadClassificationPrinceton(total, dirpath, filepath, outpath);
+                    ReadClassificationPrinceton(total, dirpath, dirpath + filepath, outpath);
                 }
                 return total;
             }
@@ -122,9 +121,11 @@ namespace MultimediaRetrieval
             }
         }
 
-        private static void ReadClassificationMultimediaRetrieval(Classification total, string filepath)
+        private static void ReadClassificationMultimediaRetrieval(Classification total, string dirpath, string filepath)
         {
-            using(StreamReader file = new StreamReader(filepath))
+            Dictionary<uint, string> tmp = new Dictionary<uint, string>();
+
+            using (StreamReader file = new StreamReader(filepath))
             {
                 string line;
                 while ((line = file.ReadLine()) != null)
@@ -133,8 +134,18 @@ namespace MultimediaRetrieval
                         continue;
 
                     string[] split = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
-                    total.classes.Add(uint.Parse(split[0]), split[1]);
+                    tmp.Add(uint.Parse(split[0]), split[1]);
                 }
+            }
+
+            foreach (string filename in ListMeshes(dirpath))
+            {
+                uint id = GetId(filename);
+
+                if (!tmp.TryGetValue(id, out string cls))
+                    continue;
+
+                total.classes.Add(id, cls);
             }
         }
 
