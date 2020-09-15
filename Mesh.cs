@@ -95,15 +95,11 @@ namespace MultimediaRetrieval
             string[] lines = File.ReadAllLines(filepath);
 
             // Read file
-            List<Vertex> vertices = new List<Vertex>();
-            List<Face> faces = new List<Face>();
+            List<Vertex> vertices = null;
+            List<Face> faces = null;
 
             uint[] vertexAdjFaces = new uint[0];
 
-            int readverts = 0;
-            int readfaces = 0;
-            int totalverts = 0;
-            int totalfaces = 0;
             int line_count = -1;
             while (line_count < lines.Length - 1)
             {
@@ -120,7 +116,7 @@ namespace MultimediaRetrieval
                     continue;
 
                 // Read the header first:
-                if (totalverts == 0)
+                if (vertices == null)
                 {
                     // Read header 
                     if (!(line == "OFF"))
@@ -133,13 +129,13 @@ namespace MultimediaRetrieval
                         }
 
                         // Set count of vertices/faces.
-                        totalverts = int.Parse(counts[0]);
-                        totalfaces = int.Parse(counts[1]);
+                        vertices = new List<Vertex>(int.Parse(counts[0]));
+                        faces = new List<Face>(int.Parse(counts[1]));
 
                         vertexAdjFaces = new uint[int.Parse(counts[0])];
                     }
                 }
-                else if (readverts < totalverts)
+                else if (vertices.Count < vertices.Capacity)
                 {
                     // Read vertex coordinates
                     float[] vertex = Array.ConvertAll(line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries), (s) => float.Parse(s, CultureInfo.InvariantCulture));
@@ -149,10 +145,8 @@ namespace MultimediaRetrieval
                     }
 
                     vertices.Add(new Vertex(new Vector3(vertex[0], vertex[1], vertex[2]), new Vector3(0)));
-
-                    readverts++;
                 }
-                else if (readfaces < totalfaces)
+                else if (faces.Count < faces.Capacity)
                 {
                     // Read face:
                     uint[] face = Array.ConvertAll(line.Split(new char[]{ ' ' }, StringSplitOptions.RemoveEmptyEntries), uint.Parse);
@@ -182,26 +176,13 @@ namespace MultimediaRetrieval
                         v1_index = v2_index;
                     }
 
-                    // Normalize normal for face
-                    double squared_normal_length = 0.0f;
-                    squared_normal_length += facenorm.X * facenorm.X;
-                    squared_normal_length += facenorm.Y * facenorm.Y;
-                    squared_normal_length += facenorm.Z * facenorm.Z;
-                    float normal_length = (float)Math.Sqrt(squared_normal_length);
-                    if (normal_length > 1.0E-6)
-                    {
-                        facenorm /= normal_length;
-                    }
-
-                    faces.Add(new Face(indices, facenorm));
+                    faces.Add(new Face(indices, facenorm.Normalized()));
 
                     //Compute normal for vertices:
                     for (int i = 0; i < face[0]; i++)
                     {
                         vertices[(int)face[i + 1]].normal += facenorm;
                     }
-
-				    readfaces++;
                 }
                 else
                 {
@@ -211,15 +192,15 @@ namespace MultimediaRetrieval
             }
 
             // Check whether read all faces
-            if (totalfaces != readfaces)
+            if (faces.Count != faces.Capacity)
             {
-                throw new Exception($"Expected {totalfaces} faces, but read only {readfaces} faces in file {filepath}");
+                throw new Exception($"Expected {faces.Capacity} faces, but read only {faces.Count} faces in file {filepath}");
             }
 
             // Finish calculating vertex normals:
             foreach(Vertex v in vertices)
             {
-                v.normal = v.normal.Normalized();
+                v.normal.Normalize();
             }
 
             // Return mesh 
