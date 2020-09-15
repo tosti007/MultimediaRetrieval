@@ -42,7 +42,8 @@
     <Compile Include="Game.cs" />
     <Compile Include="Shader.cs" />
     <Compile Include="Camera.cs" />
-    <Compile Include="Classification.cs" />
+    <Compile Include="DatabaseReader.cs" />
+    <Compile Include="FeatureDatabase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="m0.off">

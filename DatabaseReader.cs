@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace MultimediaRetrieval
 {
-    public class Classification
+    public class DatabaseReader
     {
         // There are 1815 items in the db, but LPSB starts with 1 so...
         private const int NR_PRINCETON_MESHES = 1814;
@@ -14,16 +14,7 @@ namespace MultimediaRetrieval
 
         private Dictionary<uint, string> classes = new Dictionary<uint, string>();
 
-        public void WriteToFile(string filepath)
-        {
-            // check for endswith .mr
-            if (!filepath.EndsWith(".mr", System.StringComparison.InvariantCulture))
-                filepath += ".mr";
-
-            File.WriteAllLines(filepath, classes.OrderBy((cls) => cls.Key).Select((cls) => cls.Key + " " + cls.Value));
-        }
-
-        public static Classification operator +(Classification a, Classification b)
+        public static DatabaseReader operator +(DatabaseReader a, DatabaseReader b)
         {
             if (a.classes.Count < b.classes.Count)
                 return b + a;
@@ -35,18 +26,14 @@ namespace MultimediaRetrieval
         }
 
 
-        public static Classification ReadClassification(string dirpath, string outpath)
+        public static DatabaseReader ReadClassification(string dirpath, string outpath)
         {
-            Classification total = new Classification();
+            DatabaseReader total = new DatabaseReader();
 
             string[] files = Directory.GetFiles(dirpath, "*.mr", SearchOption.TopDirectoryOnly);
             if (files.Length > 0)
             {
-                foreach (string filepath in files)
-                {
-                    ReadClassificationMultimediaRetrieval(total, dirpath, dirpath + filepath);
-                }
-                return total;
+                throw new System.ArgumentException("This folder contains already a statistic file");
             }
 
             files = Directory.GetFiles(dirpath, "*.cla", SearchOption.TopDirectoryOnly);
@@ -64,7 +51,7 @@ namespace MultimediaRetrieval
             return total; 
         }
 
-        private static void ReadClassificationLPSB(Classification total, string dirpath, string outpath)
+        private static void ReadClassificationLPSB(DatabaseReader total, string dirpath, string outpath)
         {
             foreach(string filename in ListMeshes(dirpath))
             {
@@ -79,7 +66,7 @@ namespace MultimediaRetrieval
             }
         }
 
-        private static void ReadClassificationPrinceton(Classification total, string dirpath, string filepath, string outpath)
+        private static void ReadClassificationPrinceton(DatabaseReader total, string dirpath, string filepath, string outpath)
         {
             Dictionary<uint, string> tmp = new Dictionary<uint, string>();
 
@@ -121,35 +108,7 @@ namespace MultimediaRetrieval
             }
         }
 
-        private static void ReadClassificationMultimediaRetrieval(Classification total, string dirpath, string filepath)
-        {
-            Dictionary<uint, string> tmp = new Dictionary<uint, string>();
-
-            using (StreamReader file = new StreamReader(filepath))
-            {
-                string line;
-                while ((line = file.ReadLine()) != null)
-                {
-                    if (line == string.Empty)
-                        continue;
-
-                    string[] split = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
-                    tmp.Add(uint.Parse(split[0]), split[1]);
-                }
-            }
-
-            foreach (string filename in ListMeshes(dirpath))
-            {
-                uint id = GetId(filename);
-
-                if (!tmp.TryGetValue(id, out string cls))
-                    continue;
-
-                total.classes.Add(id, cls);
-            }
-        }
-
-        private static IEnumerable<string> ListMeshes(string dirpath)
+        public static IEnumerable<string> ListMeshes(string dirpath)
         {
             foreach (string filename in Directory.EnumerateFiles(dirpath))
             {
@@ -163,7 +122,7 @@ namespace MultimediaRetrieval
             }
         }
 
-        private static uint GetId(string filename)
+        public static uint GetId(string filename)
         {
             return uint.Parse(Path.GetFileNameWithoutExtension(filename).TrimStart(new char[] { 'm' }));
         }
