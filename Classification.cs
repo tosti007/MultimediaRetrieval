@@ -93,6 +93,11 @@ namespace MultimediaRetrieval
                         continue;
 
                     string[] split = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
+
+                    // If it is any other line, such as header, ignore it.
+                    if (split.Length != 3)
+                        continue;
+
                     string cls = split[0];
                     int amount = int.Parse(split[2]);
 
