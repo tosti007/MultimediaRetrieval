@@ -10,7 +10,7 @@ namespace MultimediaRetrieval
         private const int NR_PRINCETON_MESHES = 1814;
         private const System.StringComparison ENDOPTIONS = System.StringComparison.InvariantCulture;
         private static readonly string[] UNSUPPORTED_EXTENSIONS = { 
-            ".txt", ".jpg", ".cla", ".gitignore", ".mr" 
+            ".txt", ".jpg", ".cla", ".gitkeep", ".mr" 
         };
 
         private Dictionary<uint, string> classes = new Dictionary<uint, string>();
