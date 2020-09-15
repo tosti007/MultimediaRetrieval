@@ -9,18 +9,18 @@ namespace MultimediaRetrieval
         // There are 1815 items in the db, but LPSB starts with 1 so...
         private const int NR_PRINCETON_MESHES = 1814;
         private static readonly string[] UNSUPPORTED_EXTENSIONS = { 
-            ".txt", ".jpg", ".cla", ".gitkeep", ".mr" 
+            ".txt", ".jpg", ".cla", ".gitkeep", ".mr", ".zip", ".7z"
         };
 
-        private Dictionary<uint, string> classes = new Dictionary<uint, string>();
+        public Dictionary<uint, string> Items = new Dictionary<uint, string>();
 
         public static DatabaseReader operator +(DatabaseReader a, DatabaseReader b)
         {
-            if (a.classes.Count < b.classes.Count)
+            if (a.Items.Count < b.Items.Count)
                 return b + a;
 
-            foreach(var item in b.classes)
-                a.classes.Add(item.Key, item.Value);
+            foreach(var item in b.Items)
+                a.Items.Add(item.Key, item.Value);
 
             return a;
         }
@@ -60,7 +60,7 @@ namespace MultimediaRetrieval
                     continue;
 
                 uint id = GetId(filename) + NR_PRINCETON_MESHES;
-                total.classes.Add(id, cls);
+                total.Items.Add(id, cls);
 
                 MoveFile(filename, outpath, id);
             }
@@ -102,7 +102,7 @@ namespace MultimediaRetrieval
                 if (!tmp.TryGetValue(id, out string cls))
                     continue;
 
-                total.classes.Add(id, cls);
+                total.Items.Add(id, cls);
 
                 MoveFile(filename, outpath, id);
             }
