@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -14,12 +15,10 @@ namespace MultimediaRetrieval
         }
         public FeatureDatabase(DatabaseReader classes, string dirpath)
         {
-            meshes = new List<MeshStatistics>(classes.Items.Count);
-
-            foreach (var item in classes.Items)
-            {
-                meshes.Add(new MeshStatistics(item.Key, item.Value, dirpath));
-            }
+            meshes = classes.Items.AsParallel().Select((i) => {
+                Console.WriteLine("Generating features for {0}", i.Key);
+                return new MeshStatistics(i.Key, i.Value, dirpath);
+                }).ToList();
         }
 
         public void WriteToFile(string filepath)
