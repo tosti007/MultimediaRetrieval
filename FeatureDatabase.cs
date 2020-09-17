@@ -15,6 +15,8 @@ namespace MultimediaRetrieval
             Classification = classification;
         }
 
+        public const string Headers = "ID,Class";
+
         public override string ToString()
         {
             return string.Join(",", ID, Classification);
@@ -57,7 +59,9 @@ namespace MultimediaRetrieval
             if (!filepath.EndsWith(".mr", System.StringComparison.InvariantCulture))
                 filepath += ".mr";
 
-            File.WriteAllLines(filepath, meshes.OrderBy((cls) => cls.ID).Select((cls) => cls.ToString()));
+            File.WriteAllLines(filepath, new string[] {MeshStatistics.Headers}.Concat(
+                meshes.OrderBy((cls) => cls.ID).Select((cls) => cls.ToString())
+                ));
         }
 
         public static FeatureDatabase ReadFromFile(string filepath)
@@ -66,7 +70,8 @@ namespace MultimediaRetrieval
 
             using (StreamReader file = new StreamReader(filepath))
             {
-                string line;
+                // Ignore the first line with headers
+                string line = file.ReadLine();
                 while ((line = file.ReadLine()) != null)
                 {
                     if (line == string.Empty)
