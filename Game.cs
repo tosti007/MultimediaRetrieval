@@ -41,7 +41,7 @@ namespace MultimediaRetrieval
             GL.Enable(EnableCap.DepthTest); // Enable Z-Buffer testing
 
             // Setup the shader
-            _shader = new Shader("../../shader.vert", "../../shader.frag");
+            _shader = new Shader("shader.vert", "shader.frag");
             _shader.Use();
             _shader.SetMatrix4("model", _mesh.Model);
             RefreshCameraMatrix();
