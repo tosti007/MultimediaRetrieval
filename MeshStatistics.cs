@@ -31,11 +31,12 @@ namespace MultimediaRetrieval
             boundingBox = mesh.boundingBox;
         }
 
-        public const string Headers = "ID;Class;#Vertices;#Faces;FaceType;AABB min;AABB max";
+        public const string Headers = "ID;Class;#Vertices;#Faces;FaceType;AABB min X; AABB min Y; AABB min Z; AABB max X; AABB max Y; AABB max Z;";
 
         public override string ToString()
         {
-            return string.Join(";", ID, Classification, vertexCount, faceCount, faceType, boundingBox.min, boundingBox.max);
+            return string.Join(";", ID, Classification, vertexCount, faceCount, faceType, boundingBox.min.X, boundingBox.min.Y, boundingBox.min.Z
+                , boundingBox.max.X, boundingBox.max.Y, boundingBox.max.Z);
         }
 
         public static MeshStatistics Parse(string input)
@@ -47,7 +48,8 @@ namespace MultimediaRetrieval
             stats.vertexCount = int.Parse(data[2]);
             stats.faceCount = int.Parse(data[3]);
             Enum.TryParse(data[4], out stats.faceType);
-            stats.boundingBox = new AABB(Utils.ParseVector3(data[5]), Utils.ParseVector3(data[6]));
+            stats.boundingBox = new AABB(new Vector3(float.Parse(data[5]), float.Parse(data[6]), float.Parse(data[7])),
+                new Vector3(float.Parse(data[8]), float.Parse(data[9]), float.Parse(data[10])));
 
             return stats;
         }

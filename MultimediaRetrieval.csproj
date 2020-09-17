@@ -48,7 +48,6 @@
     <Compile Include="DatabaseReader.cs" />
     <Compile Include="FeatureDatabase.cs" />
     <Compile Include="MeshStatistics.cs" />
-    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="m0.off">
