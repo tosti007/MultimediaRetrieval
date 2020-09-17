@@ -7,10 +7,18 @@ namespace MultimediaRetrieval
         public uint ID;
         public string Classification;
 
-        public MeshStatistics(uint id, string classification)
+        private MeshStatistics()
+        {
+            // Nothing
+        }
+
+        public MeshStatistics(uint id, string classification, string dirpath)
         {
             ID = id;
             Classification = classification;
+
+            // Generate more features
+            //Mesh m = Mesh.ReadMesh(id, dirpath);
         }
 
         public const string Headers = "ID,Class";
@@ -23,12 +31,11 @@ namespace MultimediaRetrieval
         public static MeshStatistics Parse(string input)
         {
             string[] data = input.Split(new char[] { ',' });
-            return new MeshStatistics(uint.Parse(data[0]), data[1]);
-        }
+            var stats = new MeshStatistics();
+            stats.ID = uint.Parse(data[0]);
+            stats.Classification = data[1];
 
-        public static MeshStatistics Parse(KeyValuePair<uint, string> item)
-        {
-            return new MeshStatistics(item.Key, item.Value);
+            return stats;
         }
     }
 }

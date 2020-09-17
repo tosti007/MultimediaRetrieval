@@ -12,13 +12,13 @@ namespace MultimediaRetrieval
         {
             meshes = new List<MeshStatistics>();
         }
-        public FeatureDatabase(DatabaseReader classes)
+        public FeatureDatabase(DatabaseReader classes, string dirpath)
         {
             meshes = new List<MeshStatistics>(classes.Items.Count);
 
             foreach (var item in classes.Items)
             {
-                meshes.Add(MeshStatistics.Parse(item));
+                meshes.Add(new MeshStatistics(item.Key, item.Value, dirpath));
             }
         }
 
@@ -27,7 +27,7 @@ namespace MultimediaRetrieval
             DatabaseReader.WriteToMRFile(filepath, MeshStatistics.Headers, meshes.OrderBy((cls) => cls.ID));
         }
 
-        public static FeatureDatabase ReadFromFile(string filepath)
+        public static FeatureDatabase ReadFrom(string filepath, string dirpath)
         {
             Dictionary<uint, MeshStatistics> tmp = new Dictionary<uint, MeshStatistics>();
 
@@ -45,7 +45,6 @@ namespace MultimediaRetrieval
                 }
             }
 
-            string dirpath = Path.GetDirectoryName(filepath);
             FeatureDatabase result = new FeatureDatabase();
 
             foreach (string filename in DatabaseReader.ListMeshes(dirpath))
