@@ -6,7 +6,7 @@ using OpenTK.Input;
 
 namespace MultimediaRetrieval
 {
-    public class Game : GameWindow
+    public class MeshViewer : GameWindow
     {
         private Mesh _mesh;
         private Camera _camera;
@@ -25,7 +25,7 @@ namespace MultimediaRetrieval
         private float[,] vertices;
         private uint[,] faces;
 
-        public Game(int width, int height, string title, Mesh mesh, Camera camera)
+        public MeshViewer(int width, int height, string title, Mesh mesh, Camera camera)
             : base(width, height, GraphicsMode.Default, title)
         {
             _mesh = mesh;

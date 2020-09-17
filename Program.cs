@@ -23,7 +23,7 @@ namespace MultimediaRetrieval
             db.WriteToFile("database/step1/output");
             //Mesh mesh = Mesh.ReadMesh("m0.off");
             //Camera camera = new Camera(1.5f, 30f, 45f);
-            //using (Game game = new Game(800, 600, "MultimediaRetrieval", mesh, camera)) game.Run(60.0);
+            //using (MeshViewer view = new MeshViewer(800, 600, "MultimediaRetrieval", mesh, camera)) view.Run(60.0);
         }
     }
 }
