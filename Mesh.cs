@@ -28,6 +28,29 @@ namespace MultimediaRetrieval
         }
     }
 
+    public struct AABB
+    {
+        public Vector3 min;
+        public Vector3 max;
+        public AABB(Vector3 min, Vector3 max)
+        {
+            this.min = min;
+            this.max = max;
+        }
+
+        public float DiagonalLength()
+        {
+            return (min - max).Length;
+        }
+    }
+
+    public enum FaceType
+    {
+        Tris,
+        Quads,
+        Mixed
+    }
+
     public class Mesh
     {
         public List<Vertex> vertices;
@@ -35,10 +58,17 @@ namespace MultimediaRetrieval
 
         public Matrix4 Model = Matrix4.Identity;
 
+        public AABB boundingBox;
+
+        public FaceType faceType;
+
         public Mesh(List<Vertex> vertices, List<Face> faces)
         {
             this.vertices = vertices;
             this.faces = faces;
+
+            boundingBox = calculateAABB();
+            faceType = calculateFaceType();
         }
 
         //Gives all vertex information ready to be put into a buffer
@@ -71,6 +101,50 @@ namespace MultimediaRetrieval
                 }
             }
             return result;
+        }
+
+        private AABB calculateAABB()
+        {
+            float xmin = float.PositiveInfinity, ymin = float.PositiveInfinity, zmin = float.PositiveInfinity;
+            float xmax = float.NegativeInfinity, ymax = float.NegativeInfinity, zmax = float.NegativeInfinity; 
+            for(int i = 0; i < vertices.Count; i++)
+            {
+                if (vertices[i].position.X < xmin)
+                    xmin = vertices[i].position.X;
+                if (vertices[i].position.Y < ymin)
+                    ymin = vertices[i].position.Y;
+                if (vertices[i].position.Z < zmin)
+                    zmin = vertices[i].position.Z;
+
+                if (vertices[i].position.X > xmax)
+                    xmax = vertices[i].position.X;
+                if (vertices[i].position.Y > ymax)
+                    ymax = vertices[i].position.Y;
+                if (vertices[i].position.Z > zmax)
+                    zmax = vertices[i].position.Z;
+            }
+            return new AABB(new Vector3(xmin, ymin, zmin), new Vector3(xmax, ymax, zmax));
+        }
+
+        private FaceType calculateFaceType()
+        {
+            bool tris = false;
+            bool quads = false;
+            for(int i = 0; i < faces.Count; i++)
+            {
+                if (!tris && faces[i].indices.Count == 3)
+                    tris = true;
+
+                if (!quads && faces[i].indices.Count == 4)
+                    if (tris)
+                        return FaceType.Mixed;
+                    else
+                        quads = true;
+            }
+            if (quads)
+                return FaceType.Quads;
+            else
+                return FaceType.Tris;
         }
 
         public static Mesh ReadMesh(uint id, string dirpath)

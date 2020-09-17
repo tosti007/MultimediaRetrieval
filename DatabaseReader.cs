@@ -28,7 +28,7 @@ namespace MultimediaRetrieval
 
         public void WriteToFile(string filepath)
         {
-            WriteToMRFile(filepath, "ID,Class", Items.OrderBy((cls) => cls.Key).Select((cls) => cls.Key+","+cls.Value));
+            WriteToMRFile(filepath, "ID;Class", Items.OrderBy((cls) => cls.Key).Select((cls) => cls.Key+";"+cls.Value));
         }
 
         public static DatabaseReader ReadFromFile(string filepath)
@@ -43,7 +43,7 @@ namespace MultimediaRetrieval
                     if (line == string.Empty)
                         continue;
 
-                    string[] split = line.Split(new char[] { ',' });
+                    string[] split = line.Split(new char[] { ';' });
 
                     total.Items.Add(uint.Parse(split[0]), split[1]);
                 }
