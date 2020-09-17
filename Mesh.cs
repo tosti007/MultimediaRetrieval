@@ -73,6 +73,11 @@ namespace MultimediaRetrieval
             return result;
         }
 
+        public static Mesh ReadMesh(uint id, string dirpath)
+        {
+            return ReadMesh(Path.Combine(dirpath, id + ".off"));
+        }
+
         public static Mesh ReadMesh(string filepath)
         {
             //Check if the file is an .off file:

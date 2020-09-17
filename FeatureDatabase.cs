@@ -8,6 +8,10 @@ namespace MultimediaRetrieval
     {
         List<MeshStatistics> meshes;
 
+        private FeatureDatabase()
+        {
+            meshes = new List<MeshStatistics>();
+        }
         public FeatureDatabase(DatabaseReader classes)
         {
             meshes = new List<MeshStatistics>(classes.Items.Count);
@@ -18,20 +22,9 @@ namespace MultimediaRetrieval
             }
         }
 
-        private FeatureDatabase()
-        {
-            meshes = new List<MeshStatistics>();
-        }
-
         public void WriteToFile(string filepath)
         {
-            // check for endswith .mr
-            if (!filepath.EndsWith(".mr", System.StringComparison.InvariantCulture))
-                filepath += ".mr";
-
-            File.WriteAllLines(filepath, new string[] {MeshStatistics.Headers}.Concat(
-                meshes.OrderBy((cls) => cls.ID).Select((cls) => cls.ToString())
-                ));
+            DatabaseReader.WriteToMRFile(filepath, MeshStatistics.Headers, meshes.OrderBy((cls) => cls.ID));
         }
 
         public static FeatureDatabase ReadFromFile(string filepath)

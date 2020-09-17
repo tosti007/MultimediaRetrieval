@@ -26,15 +26,40 @@ namespace MultimediaRetrieval
             return a;
         }
 
+        public void WriteToFile(string filepath)
+        {
+            WriteToMRFile(filepath, "ID,Class", Items.OrderBy((cls) => cls.Key).Select((cls) => cls.Key+","+cls.Value));
+        }
 
-        public static DatabaseReader ReadClassification(string dirpath, string outpath)
+        public static DatabaseReader ReadFromFile(string filepath)
+        {
+            DatabaseReader total = new DatabaseReader();
+
+            using (StreamReader file = new StreamReader(filepath))
+            {
+                string line = file.ReadLine();
+                while ((line = file.ReadLine()) != null)
+                {
+                    if (line == string.Empty)
+                        continue;
+
+                    string[] split = line.Split(new char[] { ',' });
+
+                    total.Items.Add(uint.Parse(split[0]), split[1]);
+                }
+            }
+
+            return total;
+        }
+
+        public static DatabaseReader ParseClassification(string dirpath, string outpath)
         {
             DatabaseReader total = new DatabaseReader();
 
             string[] files = Directory.GetFiles(dirpath, "*.mr");
             if (files.Length > 0)
             {
-                throw new System.ArgumentException("This folder contains already a statistic file");
+                throw new ArgumentException("This folder contains already a statistic file");
             }
 
             files = Directory.GetFiles(dirpath, "*.cla");
@@ -42,17 +67,17 @@ namespace MultimediaRetrieval
             {
                 foreach (string filepath in files)
                 {
-                    ReadClassificationPrinceton(total, dirpath, filepath, outpath);
+                    ParseClassificationPrinceton(total, dirpath, filepath, outpath);
                 }
                 return total;
             }
 
             // Assuming it's LPSB since we could not find any class file
-            ReadClassificationLPSB(total, dirpath, outpath);
+            ParseClassificationLPSB(total, dirpath, outpath);
             return total; 
         }
 
-        private static void ReadClassificationLPSB(DatabaseReader total, string dirpath, string outpath)
+        private static void ParseClassificationLPSB(DatabaseReader total, string dirpath, string outpath)
         {
             foreach(string filename in ListMeshes(dirpath))
             {
@@ -67,7 +92,7 @@ namespace MultimediaRetrieval
             }
         }
 
-        private static void ReadClassificationPrinceton(DatabaseReader total, string dirpath, string filepath, string outpath)
+        private static void ParseClassificationPrinceton(DatabaseReader total, string dirpath, string filepath, string outpath)
         {
             Dictionary<uint, string> tmp = new Dictionary<uint, string>();
 
@@ -112,6 +137,13 @@ namespace MultimediaRetrieval
             }
         }
 
+        private static void MoveFile(string filename, string outpath, uint id)
+        {
+            string newfile = outpath + Path.DirectorySeparatorChar + id + Path.GetExtension(filename);
+            if (!File.Exists(newfile))
+                File.Copy(filename, Path.GetFullPath(newfile), false);
+        }
+
         public static IEnumerable<string> ListMeshes(string dirpath)
         {
             foreach (string filename in Directory.EnumerateFiles(dirpath, "*", SearchOption.AllDirectories))
@@ -132,11 +164,15 @@ namespace MultimediaRetrieval
             return uint.Parse(Path.GetFileNameWithoutExtension(filename).TrimStart(new char[] { 'm' }));
         }
 
-        private static void MoveFile(string filename, string outpath, uint id)
+        public static void WriteToMRFile<T>(string filepath, string headers, IEnumerable<T> data)
         {
-            string newfile = outpath + Path.DirectorySeparatorChar + id + Path.GetExtension(filename);
-            if (!File.Exists(newfile))
-                File.Copy(filename, Path.GetFullPath(newfile), false);
+            // check for endswith .mr
+            if (!filepath.EndsWith(".mr", StringComparison.InvariantCulture))
+                filepath += ".mr";
+
+            File.WriteAllLines(filepath, new string[] { headers }.Concat(
+                data.Select((cls) => cls.ToString())
+                ));
         }
     }
 }
