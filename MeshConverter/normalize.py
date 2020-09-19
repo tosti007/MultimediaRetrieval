@@ -22,7 +22,7 @@ def handle_file(filename):
     tm.exchange.export.export_mesh(m, opts.outputdir + getId(filename) + ".off")
 
 if __name__ == "__main__":
-    opts = Options()
+    opts = Options('database/step1/', 'database/step2/')
     files = [f for f in os.listdir(opts.inputdir) if not f.endswith('.mr')]
 
     # call freeze_support() if in Windows

@@ -8,7 +8,9 @@ class Options:
     classes = ''
     arguments = []
 
-    def __init__(self):
+    def __init__(self, defaultinputdir, defaultoutputdir):
+        self.inputdir = defaultinputdir
+        self.outputdir = defaultoutputdir
         helpline = 'main.py -i <inputdir> -o <outputdir> -f <classfile, default [inputdir]/output.mr>' 
         try:
             opts, args = getopt.getopt(sys.argv[1:], "hi:o:f:",["--help", "input=","output=", "file="])
