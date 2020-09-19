@@ -6,8 +6,8 @@ import os
 from multiprocessing import Pool, freeze_support, cpu_count
 
 def handle_mesh(m):
-    # TODO: do something
-    return m
+    v, f = tm.remesh.subdivide(m.vertices, m.faces)
+    return tm.base.Trimesh(v, f)
 
 def handle_file(filename):
     print("Handling: ", getId(filename))
