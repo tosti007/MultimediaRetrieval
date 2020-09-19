@@ -16,7 +16,7 @@ def handle_file(filename):
     tm.exchange.export.export_mesh(m, opts.outputdir + filename)
 
 if __name__ == "__main__":
-    opts = Options('database/step3/', 'database/step4/')
+    opts = Options('../database/step3/', '../database/step4/')
     files = [os.path.splitext(f)[0] + ".off" for f in opts.arguments]
 
     # call freeze_support() if in Windows

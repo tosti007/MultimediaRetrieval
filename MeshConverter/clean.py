@@ -7,7 +7,7 @@ from multiprocessing import Pool, freeze_support, cpu_count
 
 def handle_mesh(m):
     m.remove_unreferenced_vertices()
-    m.fill_holes()
+    m.euler_number # This should be called after remove_unreferenced_vertices
     m.process(validate=True, digits_vertex=7)
     
 def handle_file(filename):
@@ -17,9 +17,13 @@ def handle_file(filename):
     tm.exchange.export.export_mesh(m, opts.outputdir + filename)
 
 if __name__ == "__main__":
-    opts = Options('database/step2/', 'database/step3/')
+    opts = Options('../database/step2/', '../database/step3/')
     files = [f for f in os.listdir(opts.inputdir) if not f.endswith('.mr')]
 
+    for file in files:
+        handle_file(file)
+
+    exit()
     # call freeze_support() if in Windows
     if os.name == "nt":
         freeze_support()
