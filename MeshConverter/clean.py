@@ -6,20 +6,18 @@ import os
 from multiprocessing import Pool, freeze_support, cpu_count
 
 def handle_mesh(m):
-    translate = (m.bounds[0] + m.bounds[1]) / 2
-    translate = tm.transformations.translation_matrix(-translate)
-    scale = tm.transformations.scale_matrix(1 / m.scale)
-    transform = tm.transformations.concatenate_matrices(scale, translate)
-    m.apply_transform(transform)
-
+    m.remove_unreferenced_vertices()
+    m.fill_holes()
+    m.process(validate=True, digits_vertex=7)
+    
 def handle_file(filename):
     print("Handling: ", getId(filename))
     m = tm.load_mesh(opts.inputdir + filename)
     handle_mesh(m)
-    tm.exchange.export.export_mesh(m, opts.outputdir + getId(filename) + ".off")
+    tm.exchange.export.export_mesh(m, opts.outputdir + filename)
 
 if __name__ == "__main__":
-    opts = Options('database/step1/', 'database/step2/')
+    opts = Options('database/step2/', 'database/step3/')
     files = [f for f in os.listdir(opts.inputdir) if not f.endswith('.mr')]
 
     # call freeze_support() if in Windows

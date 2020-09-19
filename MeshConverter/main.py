@@ -2,6 +2,9 @@
 
 import os, sys, getopt
 
+def getId(filename):
+    return os.path.splitext(filename)[0]
+
 class Options:
     inputdir = 'database/step1/'
     outputdir = 'database/step2/'
