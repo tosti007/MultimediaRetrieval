@@ -1,14 +1,10 @@
 #!/usr/bin/python
 
 import os, sys, getopt
-import subprocess
-
-def install_package(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 class Options:
-    inputdir = '/database/step1'
-    outputdir = '/database/step2'
+    inputdir = 'database/step1/'
+    outputdir = 'database/step2/'
     classes = ''
     arguments = []
 
@@ -16,7 +12,7 @@ class Options:
         helpline = 'main.py -i <inputdir> -o <outputdir> -f <classfile, default [inputdir]/output.mr>' 
         try:
             opts, args = getopt.getopt(sys.argv[1:], "hi:o:f:",["--help", "input=","output=", "file="])
-            self.arguments = ["/"+x for x in args]
+            self.arguments = args
         except getopt.GetoptError:
             print(helpline)
             sys.exit(2)
@@ -25,9 +21,9 @@ class Options:
                 print(helpline)
                 sys.exit()
             elif opt in ("-i", "--input"):
-                self.inputdir = "/"+arg
+                self.inputdir = os.path.join(arg, '')
             elif opt in ("-o", "--output"):
-                self.outputdir = "/"+arg
+                self.outputdir = os.path.join(arg, '')
             elif opt in ("-f", "--file"):
                 self.classes = arg
 
