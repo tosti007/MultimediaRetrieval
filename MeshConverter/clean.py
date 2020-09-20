@@ -5,15 +5,18 @@ import trimesh as tm
 import os
 from multiprocessing import Pool, freeze_support, cpu_count
 
-def handle_mesh(m):
+def handle_mesh(m, filename):
     m.remove_unreferenced_vertices()
     m.euler_number # This should be called after remove_unreferenced_vertices
-    m.process(validate=True, digits_vertex=7)
+    try:
+        m.process(validate=True, digits_vertex=7)
+    except:
+        print("Cleaning failed on " + filename)
     
 def handle_file(filename):
     print("Handling: ", getId(filename))
     m = tm.load_mesh(opts.inputdir + filename)
-    handle_mesh(m)
+    handle_mesh(m, filename)
     tm.exchange.export.export_mesh(m, opts.outputdir + filename)
 
 if __name__ == "__main__":

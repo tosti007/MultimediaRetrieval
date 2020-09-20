@@ -5,6 +5,8 @@ import trimesh as tm
 import os
 from multiprocessing import Pool, freeze_support, cpu_count
 
+opts = Options('../database/step1/', '../database/step2/')
+
 def handle_mesh(m):
     translate = (m.bounds[0] + m.bounds[1]) / 2
     translate = tm.transformations.translation_matrix(-translate)
