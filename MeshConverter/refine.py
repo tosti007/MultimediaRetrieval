@@ -14,8 +14,12 @@ def handle_mesh(m):
 def handle_file(filename):
     print("Handling: ", getId(filename))
     m = tm.load_mesh(opts.inputdir + filename)
-    while len(m.vertices) < 100 or len(m.faces) < 100:
-        m = handle_mesh(m)
+    if opts.runs is None:
+        while len(m.vertices) < 100 or len(m.faces) < 100:
+            m = handle_mesh(m)
+    else:
+        for n in range(opts.runs):
+            m = handle_mesh(m)
     
     tm.exchange.export.export_mesh(m, opts.outputdir + filename)
 
