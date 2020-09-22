@@ -16,6 +16,5 @@ mkdir -p ../database/step3
 python clean.py
 
 # From step3 to step4
-# Refine requires the ids or filenames of the meshes to refine
 mkdir -p ../database/step4
-python refine.py 390 434 438 455 459
+python refine.py
