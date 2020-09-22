@@ -5,6 +5,8 @@ import trimesh as tm
 import os
 from multiprocessing import Pool, freeze_support, cpu_count
 
+opts = Options('../database/step2/', '../database/step3/')
+
 def handle_mesh(m, filename):
     m.remove_unreferenced_vertices()
     m.euler_number # This should be called after remove_unreferenced_vertices
@@ -20,7 +22,6 @@ def handle_file(filename):
     tm.exchange.export.export_mesh(m, opts.outputdir + filename)
 
 if __name__ == "__main__":
-    opts = Options('../database/step2/', '../database/step3/')
     files = [f for f in os.listdir(opts.inputdir) if not f.endswith('.mr')]
 
     for file in files:
