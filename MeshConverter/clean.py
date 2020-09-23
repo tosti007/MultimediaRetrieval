@@ -4,16 +4,19 @@ from main import Options, getId
 import trimesh as tm
 import os
 from multiprocessing import Pool, freeze_support, cpu_count
+from meshparty import trimesh_vtk as tmvtk
+from meshparty.trimesh_io import Mesh
 
 opts = Options('../database/step2/', '../database/step3/')
 
+def remove_unused_vertices(m):
+    v, f = tmvtk.remove_unused_verts(m.vertices, m.faces)
+    return Mesh(v, f)
+
 def handle_mesh(m, filename):
-    m.remove_unreferenced_vertices()
-    m.euler_number # This should be called after remove_unreferenced_vertices
-    try:
-        m.process(validate=True, digits_vertex=7)
-    except:
-        print("Cleaning failed on " + filename)
+    m = remove_unused_vertices(m)
+    m.process(validate=True, digits_vertex=7)
+    m.fix_mesh()
     
 def handle_file(filename):
     print("Handling: ", getId(filename))
