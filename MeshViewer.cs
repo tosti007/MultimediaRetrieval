@@ -16,7 +16,7 @@ namespace MultimediaRetrieval
         private int _vertexBufferObject; // VBO = Data
         private int _elementBufferObject; // EBO = Indices
 
-        private bool _stepTime = true;
+        private bool _stepTime = false;
         private bool _stepTimeDown = false;
 
         private int _drawMode = 3;
