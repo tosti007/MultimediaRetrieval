@@ -1,6 +1,7 @@
+annotationframeworkclient==0.3.0
 decorator==4.4.2
+meshparty==1.8.0
 networkx==2.5
 numpy==1.19.2
 scipy==1.5.2
 trimesh==3.8.8
-meshparty
