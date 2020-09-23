@@ -23,8 +23,8 @@ def principal_inertia_transform(m):
     m.apply_transform(transform)
 
 def translating(m):
-    translate = (m.bounds[0] + m.bounds[1]) / 2
-    translate = tm.transformations.translation_matrix(-translate)
+    # Put the barycenter of the mesh onto (0, 0, 0)
+    translate = tm.transformations.translation_matrix(-m.centroid)
     m.apply_transform(translate)
     return m
 
