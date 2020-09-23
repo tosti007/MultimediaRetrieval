@@ -2,6 +2,7 @@
 
 from main import Options
 import trimesh as tm
+import numpy as np
 
 def translating(m):
     # Put the barycenter of the mesh onto (0, 0, 0)
@@ -10,9 +11,16 @@ def translating(m):
     return m
 
 def orienting(m):
-    # TODO
-    transform = m.principal_inertia_transform
-    m.apply_transform(transform)
+    covariance = np.cov(m.vertices, rowvar=False)
+    eigval, eigvec = np.linalg.eig(covariance)
+    # Sort the eigenvectors by length and remove the smallest
+    order = eigval.argsort()[::-1]
+    eigval = eigval[order]
+    eigvec = eigvec[order]
+
+    # TODO: Make from these eigenvalues and eigenvectors a rotation matrix that moves
+    # eigvec[0] to the x axis and eigvec[1] to the y axis.
+
     return m
 
 def flipping(m):
