@@ -15,11 +15,12 @@ def handle_mesh(m, filename):
     m = remove_unused_vertices(m)
     m.process(validate=True, digits_vertex=7)
     m.fix_mesh()
+    return m
     
 def handle_file(filename):
     print("Handling: ", getId(filename))
     m = tm.load_mesh(opts.inputdir + filename)
-    handle_mesh(m, filename)
+    m = handle_mesh(m, filename)
     tm.exchange.export.export_mesh(m, opts.outputdir + filename)
 
 if __name__ == "__main__":

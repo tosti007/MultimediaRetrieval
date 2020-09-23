@@ -22,21 +22,38 @@ def principal_inertia_transform(m):
 
     m.apply_transform(transform)
 
-def handle_mesh(m):
-    principal_inertia_transform(m)
+def translating(m):
     translate = (m.bounds[0] + m.bounds[1]) / 2
     translate = tm.transformations.translation_matrix(-translate)
     m.apply_transform(translate)
+    return m
+
+def orienting(m):
+    # TODO
+    principal_inertia_transform(m)
+    return m
+
+def flipping(m):
+    # TODO
+    return m
+
+def scaling(m):
     scale = tm.transformations.scale_matrix(1 / m.scale)
     m.apply_transform(scale)
-    #transform = tm.transformations.concatenate_matrices(scale, translate)
-    #m.apply_transform(transform)
-    #m.apply_transform(m.principal_inertia_transform)
+    return m
+
+def handle_mesh(m):
+    # Following the lectures the order is:
+    m = translating(m)
+    m = orienting(m)
+    m = flipping(m)
+    m = scaling(m)
+    return m
 
 def handle_file(filename):
     print("Handling: ", getId(filename))
     m = tm.load_mesh(opts.inputdir + filename)
-    handle_mesh(m)
+    m = handle_mesh(m)
     tm.exchange.export.export_mesh(m, opts.outputdir + getId(filename) + ".off")
 
 if __name__ == "__main__":
