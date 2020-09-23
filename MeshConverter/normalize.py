@@ -40,13 +40,4 @@ def handle_file(filename):
     tm.exchange.export.export_mesh(m, opts.outputdir + getId(filename) + ".off")
 
 if __name__ == "__main__":
-    opts = Options('../database/step1/', '../database/step2/')
-    files = [f for f in os.listdir(opts.inputdir) if not f.endswith('.mr')]
-
-    # call freeze_support() if in Windows
-    if os.name == "nt":
-        freeze_support()
-
-    pool = Pool(cpu_count()) 
-    results = pool.map(handle_file, files)
-    print("Errors:", [x for x in results if x is not None])
+    opts.execute(handle_file)
