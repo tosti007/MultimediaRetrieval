@@ -41,5 +41,5 @@ def handle_mesh(opts, mid, m):
     return m
 
 if __name__ == "__main__":
-    opts = Options('../database/step1/', '../database/step2/')
+    opts = Options('../database/step3/', '../database/step4/')
     opts.execute(handle_mesh)

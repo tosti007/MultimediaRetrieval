@@ -9,7 +9,7 @@ pip install -r requirements.pip
 
 # From step1 to step2
 mkdir -p ../database/step2
-python normalize.py
+python refine.py
 
 # From step2 to step3
 mkdir -p ../database/step3
@@ -17,4 +17,4 @@ python clean.py
 
 # From step3 to step4
 mkdir -p ../database/step4
-python refine.py
+python normalize.py
