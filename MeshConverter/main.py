@@ -7,7 +7,7 @@ from trimesh.exchange.export import export_mesh
 from meshparty.trimesh_io import Mesh
 
 def getId(filename):
-    return os.path.splitext(filename)[0]
+    return os.path.splitext(os.path.basename(filename))[0]
 
 def run_in_batch(files, func):
     print("Handling", len(files), "files")

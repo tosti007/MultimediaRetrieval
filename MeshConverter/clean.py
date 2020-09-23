@@ -12,7 +12,6 @@ def remove_unused_vertices(m):
 def handle_mesh(opts, mid, m):
     m = remove_unused_vertices(m)
     m.process(validate=True, digits_vertex=7)
-    m.fix_mesh()
     return m
     
 if __name__ == "__main__":
