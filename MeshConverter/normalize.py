@@ -1,12 +1,8 @@
 #!/usr/bin/python
 
-from main import Options, getId
+from main import Options
 import trimesh as tm
 import numpy as np
-import os
-from multiprocessing import Pool, freeze_support, cpu_count
-
-opts = Options('../database/step1/', '../database/step2/')
 
 # Taken from https://github.com/mikedh/trimesh/blob/fef8efb5ac7e56aae795da9333a58b26061001c6/trimesh/base.py#L730
 def principal_inertia_transform(m):
@@ -42,7 +38,7 @@ def scaling(m):
     m.apply_transform(scale)
     return m
 
-def handle_mesh(m):
+def handle_mesh(opts, mid, m):
     # Following the lectures the order is:
     m = translating(m)
     m = orienting(m)
@@ -50,11 +46,6 @@ def handle_mesh(m):
     m = scaling(m)
     return m
 
-def handle_file(filename):
-    print("Handling: ", getId(filename))
-    m = tm.load_mesh(opts.inputdir + filename)
-    m = handle_mesh(m)
-    tm.exchange.export.export_mesh(m, opts.outputdir + getId(filename) + ".off")
-
 if __name__ == "__main__":
-    opts.execute(handle_file)
+    opts = Options('../database/step1/', '../database/step2/')
+    opts.execute(handle_mesh)

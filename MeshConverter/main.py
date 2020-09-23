@@ -2,6 +2,9 @@
 
 import os, sys, getopt
 from multiprocessing import Pool, freeze_support, cpu_count
+from trimesh import load_mesh
+from trimesh.exchange.export import export_mesh
+from meshparty.trimesh_io import Mesh
 
 def getId(filename):
     return os.path.splitext(filename)[0]
@@ -23,7 +26,16 @@ def list_unmodified_files(opts):
     isdone = lambda f: f.endswith('.mr') or (os.path.isfile(f) and os.path.getmtime(f) > recentedit)
     return [f for f in os.listdir(opts.inputdir) if not isdone(f)]
 
+def load_and_handle(args):
+    opts, filename = args
+    mid = getId(filename)
+    print("Handling: ", mid)
+    m = load_mesh(opts.inputdir + filename)
+    m = opts.handlefunction(opts, mid, Mesh(m.vertices, m.faces, process=False))
+    export_mesh(m, opts.outputdir + mid + ".off")
+
 class Options:
+    handlefunction = None
     inputdir = 'database/step1/'
     outputdir = 'database/step2/'
     classes = ''
@@ -66,17 +78,18 @@ class Options:
             self.classes = self.inputdir + "/output.mr"
 
     def execute(self, func):
+        self.handlefunction = func
         files = list_unmodified_files(self)
         if self.parallel:
-            results = run_in_batch(files, func)
+            results = run_in_batch([(self, f) for f in files], load_and_handle)
             if len(results) > 0:
                 print("Errors:", results)
         else:
             for f in files:
-                func(f)
+                load_and_handle((self, f))
 
 if __name__ == "__main__":
-    opts = Options('input', 'output')
+    opts = Options(lambda o, i, m: print(i), 'input', 'output')
     print("inputdir", opts.inputdir)
     print("outputdir", opts.outputdir)
     print("classes", opts.classes)
