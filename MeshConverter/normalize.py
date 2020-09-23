@@ -11,7 +11,7 @@ def translating(m):
 
 def orienting(m):
     # TODO
-    transform = m.principal_inertia_transform()
+    transform = m.principal_inertia_transform
     m.apply_transform(transform)
     return m
 
