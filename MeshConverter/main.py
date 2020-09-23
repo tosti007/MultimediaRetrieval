@@ -77,9 +77,10 @@ class Options:
         if self.classes == '':
             self.classes = self.inputdir + "/output.mr"
 
-    def execute(self, func):
+    def execute(self, func, files=None):
         self.handlefunction = func
-        files = list_unmodified_files(self)
+        if files is None:
+            files = list_unmodified_files(self)
         if self.parallel:
             results = run_in_batch([(self, f) for f in files], load_and_handle)
             if len(results) > 0:
