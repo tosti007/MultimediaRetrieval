@@ -38,7 +38,7 @@ def load_and_handle(args):
     export_mesh(m, opts.outputdir + mid + ".off")
 
 def mkdir(path):
-    if not os.path.exists(path):
+    if path and not os.path.exists(path):
         os.mkdir(path)
 
 class Options:
