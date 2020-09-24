@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from main import Options
+from main import Options, Mesh
 import trimesh as tm
 import numpy as np
 
@@ -14,17 +14,22 @@ def orienting(m):
     covariance = np.cov(m.vertices, rowvar=False)
     eigval, eigvec = np.linalg.eig(covariance)
     # Sort the eigenvectors by length and remove the smallest
-    order = eigval.argsort()[::-1]
-    eigval = eigval[order]
-    eigvec = eigvec[order]
+    eigvec = eigvec[eigval.argsort()[::-1]]
 
-    # TODO: Make from these eigenvalues and eigenvectors a rotation matrix that moves
-    # eigvec[0] to the x axis and eigvec[1] to the y axis.
-
+    for i in range(len(m.vertices)):
+        # We do not need to use the centroid, as we just centered it.
+        p = np.zeros(3)
+        p[0] = np.dot(m.vertices[i], eigvec[0])
+        p[1] = np.dot(m.vertices[i], eigvec[1])
+        p[2] = np.dot(m.vertices[i], eigvec[2])
+        m.vertices[i] = p
     return m
 
 def flipping(m):
-    # TODO
+    c = m.triangles_center
+    t = np.eye(4)
+    t[:3,:3] = np.diag(np.sign(np.sum(np.sign(c) * c ** 2, axis=0)))
+    m.apply_transform(t)
     return m
 
 def scaling(m):

@@ -17,7 +17,7 @@ def handle_mesh(opts, mid, m):
 
 if __name__ == "__main__":
     # Write all messages output to devnull
-    sys.stdout = open(os.devnull, 'w')
+    sys.stdout = sys.__stderr__
     opts = Options('', '')
     opts.inputdir = ''
     opts.execute(handle_mesh, opts.arguments)
