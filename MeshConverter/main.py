@@ -47,7 +47,7 @@ class Options:
     runs = None
     arguments = []
 
-    def __init__(self, defaultinputdir, defaultoutputdir):
+    def __init__(self, defaultinputdir, defaultoutputdir, useinputdir=True):
         self.inputdir = defaultinputdir
         self.outputdir = defaultoutputdir
         helpline = os.path.basename(getId(sys.argv[0])) + '''
@@ -79,7 +79,11 @@ class Options:
                 self.runs = arg
 
         if self.classes == '':
-            self.classes = self.inputdir + "/output.mr"
+            if useinputdir:
+                self.classes = self.inputdir
+            else:
+                self.classes = self.outputdir
+            self.classes += "output.mr"
 
     def execute(self, func, files=None):
         mkdir(self.inputdir)
