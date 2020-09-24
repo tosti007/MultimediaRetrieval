@@ -8,10 +8,10 @@ source env/bin/activate
 pip install -r requirements.pip
 
 # From step1 to step2
-python refine.py
+python clean.py
 
 # From step2 to step3
-python clean.py
+python refine.py
 
 # From step3 to step4
 python normalize.py
