@@ -4,7 +4,9 @@ import os, sys, getopt
 from multiprocessing import Pool, freeze_support, cpu_count
 from trimesh import load_mesh
 from trimesh.exchange.export import export_mesh
+sys.stderr = open(os.devnull, 'w')
 from meshparty.trimesh_io import Mesh
+sys.stderr = sys.__stderr__
 
 def getId(filename):
     return os.path.splitext(os.path.basename(filename))[0]
