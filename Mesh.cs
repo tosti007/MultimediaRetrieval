@@ -267,12 +267,6 @@ namespace MultimediaRetrieval
                 }
             }
 
-            // Check whether read all faces
-            if (faces.Count != faces.Capacity)
-            {
-                throw new Exception($"Expected {faces.Capacity} faces, but read only {faces.Count} faces in file {filepath}");
-            }
-
             // Finish calculating vertex normals:
             foreach(Vertex v in vertices)
             {
