@@ -4,6 +4,7 @@ import os, sys, getopt
 from multiprocessing import Pool, freeze_support, cpu_count
 from trimesh import load_mesh
 from trimesh.exchange.export import export_mesh
+from trimesh.exchange.off import export_off
 sys.stderr = open(os.devnull, 'w')
 from meshparty.trimesh_io import Mesh
 sys.stderr = sys.__stderr__
@@ -37,7 +38,10 @@ def load_and_handle(args):
     print("Handling: ", mid)
     m = load_mesh(opts.inputdir + filename)
     m = opts.handlefunction(opts, mid, Mesh(m.vertices, m.faces, process=False))
-    export_mesh(m, opts.outputdir + mid + ".off")
+    if opts.outputdir:
+        export_mesh(m, opts.outputdir + mid + ".off")
+    else:
+        sys.__stdout__.write(export_off(m) + "\n")
 
 def mkdir(path):
     if path and not os.path.exists(path):

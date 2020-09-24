@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import sys, os
 from main import Options
 from normalize import handle_mesh as step_normalize
 from clean import handle_mesh as step_clean
@@ -15,6 +16,8 @@ def handle_mesh(opts, mid, m):
     return m
 
 if __name__ == "__main__":
-    opts = Options('', '../database/pipeline/')
+    # Write all messages output to devnull
+    sys.stdout = open(os.devnull, 'w')
+    opts = Options('', '')
     opts.inputdir = ''
     opts.execute(handle_mesh, opts.arguments)
