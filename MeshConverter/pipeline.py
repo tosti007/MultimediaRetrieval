@@ -6,10 +6,10 @@ from clean import handle_mesh as step_clean
 from refine import handle_mesh as step_refine
 
 def handle_mesh(opts, mid, m):
-    print("Refine step", mid)
-    m = step_refine(opts, mid, m)
     print("Clean step", mid)
     m = step_clean(opts, mid, m)
+    print("Refine step", mid)
+    m = step_refine(opts, mid, m)
     print("Normalize step", mid)
     m = step_normalize(opts, mid, m)
     return m
