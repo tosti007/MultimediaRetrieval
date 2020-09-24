@@ -4,6 +4,17 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Input;
+using GLOLD = OpenTK.Graphics.OpenGL.GL;
+using GL = OpenTK.Graphics.OpenGL4.GL;
+using PolygonMode = OpenTK.Graphics.OpenGL4.PolygonMode;
+using MaterialFace = OpenTK.Graphics.OpenGL4.MaterialFace;
+using DrawElementsType = OpenTK.Graphics.OpenGL4.DrawElementsType;
+using PrimitiveType = OpenTK.Graphics.OpenGL4.PrimitiveType;
+using BufferUsageHint = OpenTK.Graphics.OpenGL4.BufferUsageHint;
+using BufferTarget = OpenTK.Graphics.OpenGL4.BufferTarget;
+using VertexAttribPointerType = OpenTK.Graphics.OpenGL4.VertexAttribPointerType;
+using ClearBufferMask = OpenTK.Graphics.OpenGL4.ClearBufferMask;
+using EnableCap = OpenTK.Graphics.OpenGL4.EnableCap;
 
 namespace MultimediaRetrieval
 {
@@ -43,7 +54,7 @@ namespace MultimediaRetrieval
 
             // Setup the shader
             string basepath = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location)));
-            _shader = new Shader(basepath+ "/shader.vert", basepath+"/shader.frag");
+            _shader = new Shader(basepath + "/shader.vert", basepath + "/shader.frag");
             _shader.Use();
             _shader.SetMatrix4("model", _mesh.Model);
             RefreshCameraMatrix();
@@ -81,6 +92,7 @@ namespace MultimediaRetrieval
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             _shader.Use();
+            DrawAxis();
 
             // Bind the mesh to the current draw
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
@@ -102,11 +114,54 @@ namespace MultimediaRetrieval
                 _shader.SetVector3("objectColor", Vector3.Zero);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
                 GL.DrawElements(PrimitiveType.Triangles, faces.Length, DrawElementsType.UnsignedInt, 0);
-                
             }
 
             Context.SwapBuffers();
             base.OnRenderFrame(e);
+        }
+
+        protected void DrawAxis()
+        {
+            _shader.SetVector3("objectColor", new Vector3(1.0f, 0.0f, 0f));
+            GLOLD.Begin(OpenTK.Graphics.OpenGL.BeginMode.Lines);
+
+            // x aix
+            GLOLD.Vertex3(-4.0, 0.0f, 0.0f);
+            GLOLD.Vertex3(4.0, 0.0f, 0.0f);
+
+            GLOLD.Vertex3(4.0, 0.0f, 0.0f);
+            GLOLD.Vertex3(3.0, 1.0f, 0.0f);
+
+            GLOLD.Vertex3(4.0, 0.0f, 0.0f);
+            GLOLD.Vertex3(3.0, -1.0f, 0.0f);
+            GLOLD.End();
+
+            // y 
+            _shader.SetVector3("objectColor", new Vector3(0.0f, 1.0f, 0f));
+            GLOLD.Begin(OpenTK.Graphics.OpenGL.BeginMode.Lines);
+            GLOLD.Vertex3(0.0, -4.0f, 0.0f);
+            GLOLD.Vertex3(0.0, 4.0f, 0.0f);
+
+            GLOLD.Vertex3(0.0, 4.0f, 0.0f);
+            GLOLD.Vertex3(1.0, 3.0f, 0.0f);
+
+            GLOLD.Vertex3(0.0, 4.0f, 0.0f);
+            GLOLD.Vertex3(-1.0, 3.0f, 0.0f);
+            GLOLD.End();
+
+            // z 
+            _shader.SetVector3("objectColor", new Vector3(0f, 0f, 1.0f));
+            GLOLD.Begin(OpenTK.Graphics.OpenGL.BeginMode.Lines);
+            GLOLD.Vertex3(0.0, 0.0f, -4.0f);
+            GLOLD.Vertex3(0.0, 0.0f, 4.0f);
+
+
+            GLOLD.Vertex3(0.0, 0.0f, 4.0f);
+            GLOLD.Vertex3(0.0, 1.0f, 3.0f);
+
+            GLOLD.Vertex3(0.0, 0.0f, 4.0f);
+            GLOLD.Vertex3(0.0, -1.0f, 3.0f);
+            GLOLD.End();
         }
 
         protected void RefreshCameraMatrix()
