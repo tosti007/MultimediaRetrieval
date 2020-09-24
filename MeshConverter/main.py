@@ -95,7 +95,6 @@ class Options:
             self.classes += "output.mr"
 
     def execute(self, func, files=None):
-        mkdir(self.inputdir)
         mkdir(self.outputdir)
         self.handlefunction = func
         if files is None:

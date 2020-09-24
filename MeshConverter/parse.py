@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from main import Options, getExt, getId
+from main import Options, getExt, getId, mkdir
 import os
 import glob
 import shutil
@@ -82,5 +82,6 @@ def writeToFile(total, filepath):
 
 if __name__ == "__main__":
     opts = Options('../database/step0/', '../database/step1/', False)
+    mkdir(opts.outputdir)
     total = parse(opts.inputdir, opts.outputdir)
     writeToFile(total, opts.classes)
