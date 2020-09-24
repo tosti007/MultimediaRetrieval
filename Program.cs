@@ -33,7 +33,7 @@ namespace MultimediaRetrieval
     [Verb("view", HelpText = "View a Mesh file.")]
     class ViewOptions
     {
-        [Value(0, MetaName = "path", Required = true, HelpText = "Mesh file path to view.")]
+        [Value(0, MetaName = "path", Required = false, HelpText = "Mesh file path to view.")]
         public string MeshFile { get; set; }
 
         public int Execute()
