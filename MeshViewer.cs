@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -41,7 +42,8 @@ namespace MultimediaRetrieval
             GL.Enable(EnableCap.DepthTest); // Enable Z-Buffer testing
 
             // Setup the shader
-            _shader = new Shader("shader.vert", "shader.frag");
+            string basepath = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location)));
+            _shader = new Shader(basepath+ "/shader.vert", basepath+"/shader.frag");
             _shader.Use();
             _shader.SetMatrix4("model", _mesh.Model);
             RefreshCameraMatrix();
