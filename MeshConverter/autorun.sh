@@ -7,6 +7,9 @@ python -m venv env
 source env/bin/activate
 pip install -r requirements.pip
 
+# From step0 to step1
+python parse.py
+
 # From step1 to step2
 python clean.py
 

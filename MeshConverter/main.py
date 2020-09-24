@@ -9,6 +9,9 @@ from meshparty.trimesh_io import Mesh
 def getId(filename):
     return os.path.splitext(os.path.basename(filename))[0]
 
+def getExt(filename):
+    return os.path.splitext(filename)[1]
+
 def run_in_batch(files, func):
     print("Handling", len(files), "files")
 
