@@ -34,6 +34,10 @@ def load_and_handle(args):
     m = opts.handlefunction(opts, mid, Mesh(m.vertices, m.faces, process=False))
     export_mesh(m, opts.outputdir + mid + ".off")
 
+def mkdir(path):
+    if not os.path.exists(path):
+        os.mkdir(path)
+
 class Options:
     handlefunction = None
     inputdir = 'database/step1/'
@@ -78,6 +82,8 @@ class Options:
             self.classes = self.inputdir + "/output.mr"
 
     def execute(self, func, files=None):
+        mkdir(self.inputdir)
+        mkdir(self.outputdir)
         self.handlefunction = func
         if files is None:
             files = list_unmodified_files(self)
