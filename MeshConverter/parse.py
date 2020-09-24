@@ -19,8 +19,9 @@ def listMeshes(dirpath):
         yield f
 
 def moveFile(filename, outputdir, fid):
-    if not os.path.isfile(filename):
-        shutil.copyfile(filename, outputdir + fid + getExt(filename))
+    destination = outputdir + fid + getExt(filename)
+    if not os.path.isfile(destination):
+        shutil.copyfile(filename, destination)
 
 def parseLPSB(total, inputdir, outputdir):
     print("Parsing LPSB dataset", inputdir)
