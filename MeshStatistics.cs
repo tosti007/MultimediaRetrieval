@@ -28,8 +28,8 @@ namespace MultimediaRetrieval
             vertexCount = mesh.vertices.Count;
             faceCount = mesh.faces.Count;
 
-            faceType = mesh.faceType;
-            boundingBox = mesh.boundingBox;
+            faceType = Face.CalculateType(mesh.faces);
+            boundingBox = new AABB(mesh);
 
             foreach (Face f in mesh.faces)
             {
