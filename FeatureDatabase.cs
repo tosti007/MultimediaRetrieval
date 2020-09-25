@@ -23,7 +23,13 @@ namespace MultimediaRetrieval
 
         public void WriteToFile(string filepath)
         {
-            DatabaseReader.WriteToMRFile(filepath, MeshStatistics.Headers, meshes.OrderBy((cls) => cls.ID));
+            // check for endswith .mr
+            if (!filepath.EndsWith(".mr", StringComparison.InvariantCulture))
+                filepath += ".mr";
+
+            File.WriteAllLines(filepath, new string[] { MeshStatistics.Headers }.Concat(
+                meshes.OrderBy((cls) => cls.ID).Select((cls) => cls.ToString())
+                ));
         }
 
         public static FeatureDatabase ReadFrom(string filepath, string dirpath)

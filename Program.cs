@@ -21,9 +21,8 @@ namespace MultimediaRetrieval
                 return options.Execute();
             }
 
-            return Parser.Default.ParseArguments<ParseOptions, ViewOptions, FeatureOptions>(args)
+            return Parser.Default.ParseArguments<ViewOptions, FeatureOptions>(args)
                 .MapResult(
-                    (ParseOptions opts) => opts.Execute(),
                     (ViewOptions opts) => opts.Execute(),
                     (FeatureOptions opts) => opts.Execute(),
                 errs => 1);
@@ -42,38 +41,6 @@ namespace MultimediaRetrieval
             Camera camera = new Camera(1.5f, 30f, 45f);
             using (MeshViewer view = new MeshViewer(800, 600, "MultimediaRetrieval", mesh, camera))
                 view.Run(60.0);
-
-            return 0;
-        }
-    }
-
-    [Verb("parse", HelpText = "Parse database folders into output folder.")]
-    class ParseOptions
-    {
-        [Option('i', "input", 
-            Default = "database/step0", 
-            HelpText = "Folder name to read the raw databases from.")]
-        public string InputDir { get; set; }
-
-        [Option('o', "output",
-            Default = "database/step1",
-            HelpText = "Folder name to write the raw databases into.")]
-        public string OutputDir { get; set; }
-
-        [Option('f', "file",
-            HelpText = "(Default: [OUTPUT]/output.mr) File path to write the feature list to.")]
-        public string OutputFile { get; set; }
-
-        public int Execute()
-        {
-            if (string.IsNullOrWhiteSpace(OutputFile))
-                OutputFile = Path.Combine(OutputDir, "output.mr");
-
-            DatabaseReader classes = new DatabaseReader();
-            foreach (var dir in Directory.EnumerateDirectories(InputDir))
-                classes += DatabaseReader.ParseClassification(dir, OutputDir);
-
-            classes.WriteToFile(OutputFile);
 
             return 0;
         }

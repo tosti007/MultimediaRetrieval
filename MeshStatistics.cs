@@ -29,7 +29,7 @@ namespace MultimediaRetrieval
         public MeshStatistics(DatabaseReader reader, string filepath)
         {
             ID = DatabaseReader.GetId(filepath);
-            Classification = reader.Items[ID];
+            Classification = reader[ID];
 
             // Generate more features
             Mesh mesh = Mesh.ReadMesh(filepath);
