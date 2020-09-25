@@ -18,13 +18,13 @@ namespace MultimediaRetrieval
             // Nothing
         }
 
-        public MeshStatistics(uint id, string classification, string dirpath)
+        public MeshStatistics(DatabaseReader reader, string filepath)
         {
-            ID = id;
-            Classification = classification;
+            ID = DatabaseReader.GetId(filepath);
+            Classification = reader.Items[ID];
 
             // Generate more features
-            Mesh mesh = Mesh.ReadMesh(id, dirpath);
+            Mesh mesh = Mesh.ReadMesh(filepath);
             vertexCount = mesh.vertices.Count;
             faceCount = mesh.faces.Count;
 

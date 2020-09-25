@@ -15,10 +15,10 @@ namespace MultimediaRetrieval
         }
         public FeatureDatabase(DatabaseReader classes, string dirpath)
         {
-            meshes = classes.Items.AsParallel().Select((i) => {
-                Console.WriteLine("Generating features for {0}", i.Key);
-                return new MeshStatistics(i.Key, i.Value, dirpath);
-                }).ToList();
+            meshes = DatabaseReader.ListMeshes(dirpath).AsParallel().Select((file) => {
+                Console.WriteLine("Generating features for {0}", file);
+                return new MeshStatistics(classes, file);
+            }).ToList();
         }
 
         public void WriteToFile(string filepath)
