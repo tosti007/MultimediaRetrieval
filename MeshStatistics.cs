@@ -11,6 +11,7 @@ namespace MultimediaRetrieval
         public int vertexCount, faceCount;
         public FaceType faceType;
         public AABB boundingBox;
+        public float surface_area;
 
         private MeshStatistics()
         {
@@ -29,14 +30,19 @@ namespace MultimediaRetrieval
 
             faceType = mesh.faceType;
             boundingBox = mesh.boundingBox;
+
+            foreach (Face f in mesh.faces)
+            {
+                surface_area += f.CalculateArea(ref mesh.vertices);
+            }
         }
 
-        public const string Headers = "ID;Class;#Vertices;#Faces;FaceType;AABB min X; AABB min Y; AABB min Z; AABB max X; AABB max Y; AABB max Z;";
+        public const string Headers = "ID;Class;#Vertices;#Faces;FaceType;AABB_min_X;AABB_min_Y;AABB_min_Z;AABB_max_X;AABB_max_Y;AABB_max_Z;Surface_Area";
 
         public override string ToString()
         {
             return string.Join(";", ID, Classification, vertexCount, faceCount, faceType, boundingBox.min.X, boundingBox.min.Y, boundingBox.min.Z
-                , boundingBox.max.X, boundingBox.max.Y, boundingBox.max.Z);
+                , boundingBox.max.X, boundingBox.max.Y, boundingBox.max.Z, surface_area);
         }
 
         public static MeshStatistics Parse(string input)
@@ -50,6 +56,7 @@ namespace MultimediaRetrieval
             Enum.TryParse(data[4], out stats.faceType);
             stats.boundingBox = new AABB(new Vector3(float.Parse(data[5]), float.Parse(data[6]), float.Parse(data[7])),
                 new Vector3(float.Parse(data[8]), float.Parse(data[9]), float.Parse(data[10])));
+            stats.surface_area = float.Parse(data[11]);
 
             return stats;
         }
