@@ -40,6 +40,12 @@ namespace MultimediaRetrieval
         {
             return (min - max).Length;
         }
+
+        public float Volume()
+        {
+            Vector3 v = max - min;
+            return v.X * v.Y * v.Z;
+        }
     }
 
 }
