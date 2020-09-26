@@ -6,6 +6,8 @@ using OpenTK;
 // https://github.com/accord-net/framework/wiki
 using Accord.Math.Decompositions;
 using Accord.Statistics;
+using System.Diagnostics.SymbolStore;
+using System.Security.Cryptography;
 
 namespace MultimediaRetrieval
 {
@@ -15,11 +17,16 @@ namespace MultimediaRetrieval
         public string Classification;
         public int vertexCount, faceCount;
         public FaceType faceType;
+
+        //The global discriptors:
         public AABB boundingBox;
         public float surface_area;
         float diameter;
         float eccentricity;
-        // TODO: compactness(with respect to a sphere)
+        float compactness;
+
+        //The shape property discriptors:
+        Histogram a3, d1, d2, d3, d4;
 
         private MeshStatistics()
         {
@@ -64,24 +71,94 @@ namespace MultimediaRetrieval
             float eig_max = (float)Math.Max(Math.Max(eig[0, 0], eig[1, 1]), eig[2, 2]);
             float eig_min = (float)Math.Min(Math.Min(eig[0, 0], eig[1, 1]), eig[2, 2]);
             this.eccentricity = eig_max / eig_min;
+
+            //TODO: Compactness
+            compactness = 0;
+
+            //The shape property discriptors:
+            Random rand = new Random();
+
+            //For A3, sample the angle between 3 random vertices a hundred times.
+            a3 = new Histogram("A3", 0, (float)(2 * Math.PI), 10);
+            for (int i = 0; i < 100; i++)
+            {
+                Vertex v1 = mesh.vertices[rand.Next(vertexCount)];
+                Vertex v2 = mesh.vertices[rand.Next(vertexCount)];
+                Vertex v3 = mesh.vertices[rand.Next(vertexCount)];
+                Vector3 ab = v2.position - v1.position;
+                Vector3 bc = v3.position - v2.position;
+                float angle = (float)Math.Acos((Vector3.Dot(ab, bc)/(ab.Length * bc.Length)));
+                a3.AddData(angle);
+            }
+
+            //For D1, sample the distance between the barycentre and a random vertex a hundred times.
+            //The barycenter is normalized! It is always at (0,0,0)!
+            d1 = new Histogram("D1", 0, 1, 10);
+            for (int i = 0; i < 100; i++)
+            {
+                Vertex v = mesh.vertices[rand.Next(vertexCount)];
+                d1.AddData(v.position.Length);
+            }
+
+            //For D2, sample the distance between two vertices a hundred times.
+            d2 = new Histogram("D2", 0, 1, 10);
+            for (int i = 0; i < 100; i++)
+            {
+                Vertex v1 = mesh.vertices[rand.Next(vertexCount)];
+                Vertex v2 = mesh.vertices[rand.Next(vertexCount)];
+                Vector3 ab = v2.position - v1.position;
+                d2.AddData(ab.Length);
+            }
+
+            //For D3, sample the  square root of area of triangle given by 3 vertices a hundred times.
+            d3 = new Histogram("D3", 0, 1, 10);
+            for(int i = 0; i < 100; i++)
+            {
+                Vertex v1 = mesh.vertices[rand.Next(vertexCount)];
+                Vertex v2 = mesh.vertices[rand.Next(vertexCount)];
+                Vertex v3 = mesh.vertices[rand.Next(vertexCount)];
+                d3.AddData((float)Math.Sqrt(Vector3.Cross(v2.position - v1.position, v3.position - v1.position).Length / 2.0));
+            }
+
+            //For D4, sample cube root of volume of tetrahedron formed by 4 random vertices  a hundred times
+            d4 = new Histogram("D4", 0, 1, 10);
+            for(int i = 0; i < 100; i++)
+            {
+                // https://math.stackexchange.com/questions/3616760/how-to-calculate-the-volume-of-tetrahedron-given-by-4-points
+                Vertex v1 = mesh.vertices[rand.Next(vertexCount)];
+                Vertex v2 = mesh.vertices[rand.Next(vertexCount)];
+                Vertex v3 = mesh.vertices[rand.Next(vertexCount)];
+                Vertex v4 = mesh.vertices[rand.Next(vertexCount)];
+                Matrix4 m = new Matrix4(new Vector4(v1.position, 1), new Vector4(v2.position, 1), new Vector4(v3.position, 1), new Vector4(v4.position, 1));
+                d4.AddData((float)Math.Pow(m.Determinant / 6.0, 1.0 / 3.0));
+            }
         }
 
-        public const string Headers = 
-            "ID;" +
-            "Class;" + 
-            "#Vertices;" + 
-            "#Faces;" + 
-            "FaceType;" + 
-            "AABB_min_X;" + 
-            "AABB_min_Y;" + 
-            "AABB_min_Z;" + 
-            "AABB_max_X;" + 
-            "AABB_max_Y;" + 
-            "AABB_max_Z;" + 
-            "AABB_Volume;" + 
-            "Surface_Area" + 
+        public string Headers()
+        {
+            return "ID;" +
+            "Class;" +
+            "#Vertices;" +
+            "#Faces;" +
+            "FaceType;" +
+            "AABB_min_X;" +
+            "AABB_min_Y;" +
+            "AABB_min_Z;" +
+            "AABB_max_X;" +
+            "AABB_max_Y;" +
+            "AABB_max_Z;" +
+            "AABB_Volume;" +
+            "Surface_Area" +
             "Diameter" +
-            "Eccentricity";
+            "Eccentricity" +
+            "Compactness" +
+            a3.ToCSVHeader() +
+            d1.ToCSVHeader() +
+            d2.ToCSVHeader() +
+            d3.ToCSVHeader() +
+            d4.ToCSVHeader();
+        }
+            
 
         public override string ToString()
         {
@@ -100,7 +177,13 @@ namespace MultimediaRetrieval
                 boundingBox.Volume(), 
                 surface_area,
                 diameter,
-                eccentricity
+                eccentricity,
+                compactness,
+                a3.ToCSV(),
+                d1.ToCSV(),
+                d2.ToCSV(),
+                d3.ToCSV(),
+                d4.ToCSV()
                 );
         }
 
