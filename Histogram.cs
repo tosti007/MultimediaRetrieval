@@ -49,7 +49,7 @@ namespace MultimediaRetrieval
         {
             for(int i = 0; i < bins; i++)
             {
-                if(f >= (i * ((max - min) / bins) + min) && f < ((i + 1) * ((max - min) / bins) + min))
+                if(f >= (i * ((max - min) / bins) + min) && f <= ((i + 1) * ((max - min) / bins) + min))
                 {
                     data[i]++;
                     return;

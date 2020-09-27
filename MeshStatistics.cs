@@ -79,15 +79,39 @@ namespace MultimediaRetrieval
             Random rand = new Random();
 
             //For A3, sample the angle between 3 random vertices a hundred times.
-            a3 = new Histogram("A3", 0, (float)(2 * Math.PI), 10);
+            a3 = new Histogram("A3", 0, (float)(Math.PI), 10);
             for (int i = 0; i < 100; i++)
             {
+                //https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
                 Vertex v1 = mesh.vertices[rand.Next(vertexCount)];
                 Vertex v2 = mesh.vertices[rand.Next(vertexCount)];
                 Vertex v3 = mesh.vertices[rand.Next(vertexCount)];
                 Vector3 ab = v2.position - v1.position;
                 Vector3 bc = v3.position - v2.position;
-                float angle = (float)Math.Acos((Vector3.Dot(ab, bc)/(ab.Length * bc.Length)));
+                if (ab.Length * bc.Length == 0)
+                {
+                    a3.AddData(0);
+                    continue;
+                }
+
+                //For some reason Math.Acos cannot handle -1 and 1.
+                double dot = Vector3.Dot(ab, bc) / (ab.Length * bc.Length);
+                if(dot < -1)
+                {
+                    a3.AddData((float)Math.PI);
+                    continue;
+                }
+                if(dot > 1)
+                {
+                    a3.AddData(0);
+                    continue;
+                }
+
+                float angle = (float)Math.Acos(Vector3.Dot(ab, bc)/(ab.Length * bc.Length));
+                if (float.IsNaN(angle))
+                {
+                    Console.WriteLine(dot);
+                }
                 a3.AddData(angle);
             }
 
@@ -120,7 +144,7 @@ namespace MultimediaRetrieval
                 d3.AddData((float)Math.Sqrt(Vector3.Cross(v2.position - v1.position, v3.position - v1.position).Length / 2.0));
             }
 
-            //For D4, sample cube root of volume of tetrahedron formed by 4 random vertices  a hundred times
+            //For D4, sample cube root of volume of tetrahedron formed by 4 random vertices a hundred times
             d4 = new Histogram("D4", 0, 1, 10);
             for(int i = 0; i < 100; i++)
             {
@@ -130,7 +154,8 @@ namespace MultimediaRetrieval
                 Vertex v3 = mesh.vertices[rand.Next(vertexCount)];
                 Vertex v4 = mesh.vertices[rand.Next(vertexCount)];
                 Matrix4 m = new Matrix4(new Vector4(v1.position, 1), new Vector4(v2.position, 1), new Vector4(v3.position, 1), new Vector4(v4.position, 1));
-                d4.AddData((float)Math.Pow(m.Determinant / 6.0, 1.0 / 3.0));
+                double area = Math.Abs(m.Determinant / 6.0);
+                d4.AddData((float)Math.Pow(Math.Abs(area), 1.0 / 3.0));
             }
         }
 
