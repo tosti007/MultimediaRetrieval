@@ -55,6 +55,7 @@ namespace MultimediaRetrieval
                     return;
                 }
             }
+            throw new Exception($"Data {f} was out of range of min: {min} and max: {max} of Histogram {title}.");
         }
     }
 }

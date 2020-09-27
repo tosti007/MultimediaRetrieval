@@ -148,14 +148,14 @@ namespace MultimediaRetrieval
             "AABB_max_Y;" +
             "AABB_max_Z;" +
             "AABB_Volume;" +
-            "Surface_Area" +
-            "Diameter" +
-            "Eccentricity" +
-            "Compactness" +
-            a3.ToCSVHeader() +
-            d1.ToCSVHeader() +
-            d2.ToCSVHeader() +
-            d3.ToCSVHeader() +
+            "Surface_Area;" +
+            "Diameter;" +
+            "Eccentricity;" +
+            "Compactness;" +
+            a3.ToCSVHeader() + ";" +
+            d1.ToCSVHeader() + ";" +
+            d2.ToCSVHeader() + ";" +
+            d3.ToCSVHeader() + ";" +
             d4.ToCSVHeader();
         }
             
