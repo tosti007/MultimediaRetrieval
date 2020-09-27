@@ -56,13 +56,14 @@ namespace MultimediaRetrieval
             this.diameter = float.NegativeInfinity;
             for (int i = 0; i < mesh.vertices.Count; i++)
             {
-                cov[i, 0] = mesh.vertices[i].position.X;
-                cov[i, 1] = mesh.vertices[i].position.Y;
-                cov[i, 2] = mesh.vertices[i].position.Z;
+                Vector3 pos = mesh.vertices[i].position;
+                cov[i, 0] = pos.X;
+                cov[i, 1] = pos.Y;
+                cov[i, 2] = pos.Z;
 
                 foreach (Vertex v in mesh.vertices)
                 {
-                    this.diameter = Math.Max(this.diameter, Vector3.DistanceSquared(mesh.vertices[i].position, v.position));
+                    this.diameter = Math.Max(this.diameter, Vector3.DistanceSquared(pos, v.position));
                 }
             }
             this.diameter = (float)Math.Sqrt(this.diameter);
@@ -74,14 +75,14 @@ namespace MultimediaRetrieval
             this.eccentricity = eig_max / eig_min;
 
             //For compactness, we need the volume:
-            volume = 0;
+            this.volume = 0;
             for(int i = 0; i < faceCount; i++)
             {
                 volume += mesh.faces[i].CalculateSignedVolume(ref mesh.vertices);
             }
-            volume = Math.Abs(volume);
+            this.volume = Math.Abs(this.volume);
 
-            compactness = (float)(Math.Pow(surface_area,3)/(36*Math.PI*Math.Pow(volume, 2)));
+            this.compactness = (float)(Math.Pow(surface_area,3)/(36*Math.PI*Math.Pow(volume, 2)));
 
             //The shape property discriptors:
             Random rand = new Random();
@@ -91,36 +92,18 @@ namespace MultimediaRetrieval
             for (int i = 0; i < 100; i++)
             {
                 //https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
-                Vertex v1 = mesh.vertices[rand.Next(vertexCount)];
-                Vertex v2 = mesh.vertices[rand.Next(vertexCount)];
-                Vertex v3 = mesh.vertices[rand.Next(vertexCount)];
-                Vector3 ab = v2.position - v1.position;
-                Vector3 bc = v3.position - v2.position;
+                Vector3 v1 = Sample(mesh, rand);
+                Vector3 v2 = Sample(mesh, rand);
+                Vector3 v3 = Sample(mesh, rand);
+                Vector3 ab = v2 - v1;
+                Vector3 bc = v3 - v2;
                 if (ab.Length * bc.Length == 0)
                 {
                     a3.AddData(0);
                     continue;
                 }
 
-                //For some reason Math.Acos cannot handle -1 and 1.
-                double dot = Vector3.Dot(ab, bc) / (ab.Length * bc.Length);
-                if(dot < -1)
-                {
-                    a3.AddData((float)Math.PI);
-                    continue;
-                }
-                if(dot > 1)
-                {
-                    a3.AddData(0);
-                    continue;
-                }
-
-                float angle = (float)Math.Acos(Vector3.Dot(ab, bc)/(ab.Length * bc.Length));
-                if (float.IsNaN(angle))
-                {
-                    Console.WriteLine(dot);
-                }
-                a3.AddData(angle);
+                a3.AddData(Vector3.CalculateAngle(ab, bc));
             }
 
             //For D1, sample the distance between the barycentre and a random vertex a hundred times.
@@ -128,8 +111,8 @@ namespace MultimediaRetrieval
             d1 = new Histogram("D1", 0, 1, 10);
             for (int i = 0; i < 100; i++)
             {
-                Vertex v = mesh.vertices[rand.Next(vertexCount)];
-                d1.AddData(v.position.Length);
+                Vector3 v = Sample(mesh, rand);
+                d1.AddData(v.Length);
             }
 
             //For D2, sample the distance between two vertices a hundred times.
@@ -146,10 +129,10 @@ namespace MultimediaRetrieval
             d3 = new Histogram("D3", 0, 1, 10);
             for(int i = 0; i < 100; i++)
             {
-                Vertex v1 = mesh.vertices[rand.Next(vertexCount)];
-                Vertex v2 = mesh.vertices[rand.Next(vertexCount)];
-                Vertex v3 = mesh.vertices[rand.Next(vertexCount)];
-                d3.AddData((float)Math.Sqrt(Vector3.Cross(v2.position - v1.position, v3.position - v1.position).Length / 2.0));
+                Vector3 v1 = Sample(mesh, rand);
+                Vector3 v2 = Sample(mesh, rand);
+                Vector3 v3 = Sample(mesh, rand);
+                d3.AddData((float)Math.Sqrt(Face.CalculateArea(v1, v2, v3)));
             }
 
             //For D4, sample cube root of volume of tetrahedron formed by 4 random vertices a hundred times
@@ -157,11 +140,11 @@ namespace MultimediaRetrieval
             for(int i = 0; i < 100; i++)
             {
                 // https://math.stackexchange.com/questions/3616760/how-to-calculate-the-volume-of-tetrahedron-given-by-4-points
-                Vertex v1 = mesh.vertices[rand.Next(vertexCount)];
-                Vertex v2 = mesh.vertices[rand.Next(vertexCount)];
-                Vertex v3 = mesh.vertices[rand.Next(vertexCount)];
-                Vertex v4 = mesh.vertices[rand.Next(vertexCount)];
-                Matrix4 m = new Matrix4(new Vector4(v1.position, 1), new Vector4(v2.position, 1), new Vector4(v3.position, 1), new Vector4(v4.position, 1));
+                Vector4 v1 = new Vector4(Sample(mesh, rand), 1);
+                Vector4 v2 = new Vector4(Sample(mesh, rand), 1);
+                Vector4 v3 = new Vector4(Sample(mesh, rand), 1);
+                Vector4 v4 = new Vector4(Sample(mesh, rand), 1);
+                Matrix4 m = new Matrix4(v1, v2, v3, v4);
                 double area = Math.Abs(m.Determinant / 6.0);
                 d4.AddData((float)Math.Pow(Math.Abs(area), 1.0 / 3.0));
             }
@@ -242,6 +225,11 @@ namespace MultimediaRetrieval
             stats.eccentricity = float.Parse(data[14]);
 
             return stats;
+        }
+
+        private static Vector3 Sample(Mesh m, Random r)
+        {
+            return m.vertices[r.Next(m.vertices.Count)].position;
         }
     }
 }

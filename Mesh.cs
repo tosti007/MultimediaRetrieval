@@ -154,18 +154,8 @@ namespace MultimediaRetrieval
                     indices.Add(face[i + 1]);
 
                 // Compute normal for face
-                Vector3 facenorm = new Vector3(0);
-                int v1_index = (int)indices[indices.Count - 1];
-                for (int i = 0; i < face[0]; i++)
-                {
-                    int v2_index = (int)indices[i];
-                    facenorm.X += (vertices[v1_index].position.Y - vertices[v2_index].position.Y) * (vertices[v1_index].position.Z + vertices[v1_index].position.Z);
-                    facenorm.Y += (vertices[v1_index].position.Z - vertices[v2_index].position.Z) * (vertices[v1_index].position.X + vertices[v2_index].position.X);
-                    facenorm.Z += (vertices[v1_index].position.X - vertices[v2_index].position.X) * (vertices[v1_index].position.Y + vertices[v2_index].position.Y);
-                    v1_index = v2_index;
-                }
-
-                faces.Add(new Face(indices, facenorm.Normalized()));
+                Vector3 facenorm = Face.CalculateNormal(indices, ref vertices);
+                faces.Add(new Face(indices, facenorm));
 
                 //Compute normal for vertices:
                 for (int i = 0; i < face[0]; i++)

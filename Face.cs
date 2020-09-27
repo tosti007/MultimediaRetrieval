@@ -32,11 +32,16 @@ namespace MultimediaRetrieval
                         Vector3 p1 = vertices[(int)indices[0]].position;
                         Vector3 p2 = vertices[(int)indices[1]].position;
                         Vector3 p3 = vertices[(int)indices[2]].position;
-                        return Vector3.Cross(p2 - p1, p3 - p1).Length / 2;
+                        return CalculateArea(p1, p2, p3);
                     }
                 default:
                     throw new NotImplementedException($"The area for a face with {indices.Count} indices has not been implemented");
             }
+        }
+
+        public static float CalculateArea(Vector3 p1, Vector3 p2, Vector3 p3)
+        {
+            return Vector3.Cross(p2 - p1, p3 - p1).Length / 2;
         }
 
         public float CalculateSignedVolume(ref List<Vertex> vertices)
@@ -91,6 +96,21 @@ namespace MultimediaRetrieval
             if (quads)
                 return FaceType.Quads;
             return FaceType.Mixed;
+        }
+
+        public static Vector3 CalculateNormal(List<uint> indices, ref List<Vertex> vertices)
+        {
+            Vector3 facenorm = new Vector3(0);
+            int v1_index = (int)indices[indices.Count - 1];
+            for (int i = 0; i < indices.Count; i++)
+            {
+                int v2_index = (int)indices[i];
+                facenorm.X += (vertices[v1_index].position.Y - vertices[v2_index].position.Y) * (vertices[v1_index].position.Z + vertices[v1_index].position.Z);
+                facenorm.Y += (vertices[v1_index].position.Z - vertices[v2_index].position.Z) * (vertices[v1_index].position.X + vertices[v2_index].position.X);
+                facenorm.Z += (vertices[v1_index].position.X - vertices[v2_index].position.X) * (vertices[v1_index].position.Y + vertices[v2_index].position.Y);
+                v1_index = v2_index;
+            }
+            return facenorm.Normalized();
         }
     }
 
