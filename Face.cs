@@ -39,6 +39,29 @@ namespace MultimediaRetrieval
             }
         }
 
+        public float CalculateSignedVolume(ref List<Vertex> vertices)
+        {
+            //https://stackoverflow.com/questions/1406029/how-to-calculate-the-volume-of-a-3d-mesh-object-the-surface-of-which-is-made-up
+            switch (indices.Count)
+            {
+                case 3:
+                    {
+                        Vector3 p1 = vertices[(int)indices[0]].position;
+                        Vector3 p2 = vertices[(int)indices[1]].position;
+                        Vector3 p3 = vertices[(int)indices[2]].position;
+                        var v321 = p3.X * p2.Y * p1.Z;
+                        var v231 = p2.X * p3.Y * p1.Z;
+                        var v312 = p3.X * p1.Y * p2.Z;
+                        var v132 = p1.X * p3.Y * p2.Z;
+                        var v213 = p2.X * p1.Y * p3.Z;
+                        var v123 = p1.X * p2.Y * p3.Z;
+                        return (1.0f / 6.0f) * (-v321 + v231 + v312 - v132 - v213 + v123);
+                    }
+                default:
+                    throw new NotImplementedException($"The signed volume for a face with {indices.Count} indices has not been implemented");
+            }
+        }
+
         public static FaceType CalculateType(List<Face> faces)
         {
             bool tris = false;

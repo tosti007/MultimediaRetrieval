@@ -24,6 +24,7 @@ namespace MultimediaRetrieval
         float diameter;
         float eccentricity;
         float compactness;
+        float volume;
 
         //The shape property discriptors:
         Histogram a3, d1, d2, d3, d4;
@@ -72,8 +73,15 @@ namespace MultimediaRetrieval
             float eig_min = (float)Math.Min(Math.Min(eig[0, 0], eig[1, 1]), eig[2, 2]);
             this.eccentricity = eig_max / eig_min;
 
-            //TODO: Compactness
-            compactness = 0;
+            //For compactness, we need the volume:
+            volume = 0;
+            for(int i = 0; i < faceCount; i++)
+            {
+                volume += mesh.faces[i].CalculateSignedVolume(ref mesh.vertices);
+            }
+            volume = Math.Abs(volume);
+
+            compactness = (float)(Math.Pow(surface_area,3)/(36*Math.PI*Math.Pow(volume, 2)));
 
             //The shape property discriptors:
             Random rand = new Random();
@@ -177,6 +185,7 @@ namespace MultimediaRetrieval
             "Diameter;" +
             "Eccentricity;" +
             "Compactness;" +
+            "Volume;" +
             a3.ToCSVHeader() + ";" +
             d1.ToCSVHeader() + ";" +
             d2.ToCSVHeader() + ";" +
@@ -204,6 +213,7 @@ namespace MultimediaRetrieval
                 diameter,
                 eccentricity,
                 compactness,
+                volume,
                 a3.ToCSV(),
                 d1.ToCSV(),
                 d2.ToCSV(),
