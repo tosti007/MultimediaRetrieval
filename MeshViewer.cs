@@ -133,8 +133,7 @@ namespace MultimediaRetrieval
         protected void DrawAxis()
         {
             _shader.SetVector3("objectColor", Vector3.Zero);
-            GLOLD.Begin(OpenTK.Graphics.OpenGL.BeginMode.Lines);
-
+            GLOLD.Begin(OpenTK.Graphics.OpenGL.PrimitiveType.Lines);
             // x aix
             GLOLD.Vertex3(-4.0, 0.0f, 0.0f);
             GLOLD.Vertex3(4.0, 0.0f, 0.0f);
