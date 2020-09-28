@@ -40,6 +40,9 @@ namespace MultimediaRetrieval
         private int _drawMode = 3;
         private bool _drawModeDown = false;
 
+        private bool _drawAxis = true;
+        private bool _drawAxisDown = false;
+
         private float[,] vertices;
         private uint[,] faces;
 
@@ -98,7 +101,8 @@ namespace MultimediaRetrieval
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             _shader.Use();
-            DrawAxis();
+            if (_drawAxis)
+                DrawAxis();
 
             // Bind the mesh to the current draw
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
@@ -128,7 +132,7 @@ namespace MultimediaRetrieval
 
         protected void DrawAxis()
         {
-            _shader.SetVector3("objectColor", new Vector3(1.0f, 0.0f, 0f));
+            _shader.SetVector3("objectColor", Vector3.Zero);
             GLOLD.Begin(OpenTK.Graphics.OpenGL.BeginMode.Lines);
 
             // x aix
@@ -140,11 +144,8 @@ namespace MultimediaRetrieval
 
             GLOLD.Vertex3(4.0, 0.0f, 0.0f);
             GLOLD.Vertex3(3.0, -1.0f, 0.0f);
-            GLOLD.End();
 
             // y 
-            _shader.SetVector3("objectColor", new Vector3(0.0f, 1.0f, 0f));
-            GLOLD.Begin(OpenTK.Graphics.OpenGL.BeginMode.Lines);
             GLOLD.Vertex3(0.0, -4.0f, 0.0f);
             GLOLD.Vertex3(0.0, 4.0f, 0.0f);
 
@@ -153,14 +154,10 @@ namespace MultimediaRetrieval
 
             GLOLD.Vertex3(0.0, 4.0f, 0.0f);
             GLOLD.Vertex3(-1.0, 3.0f, 0.0f);
-            GLOLD.End();
 
             // z 
-            _shader.SetVector3("objectColor", new Vector3(0f, 0f, 1.0f));
-            GLOLD.Begin(OpenTK.Graphics.OpenGL.BeginMode.Lines);
             GLOLD.Vertex3(0.0, 0.0f, -4.0f);
             GLOLD.Vertex3(0.0, 0.0f, 4.0f);
-
 
             GLOLD.Vertex3(0.0, 0.0f, 4.0f);
             GLOLD.Vertex3(0.0, 1.0f, 3.0f);
@@ -206,6 +203,10 @@ namespace MultimediaRetrieval
             if (input.IsKeyUp(Key.Tab) && _drawModeDown)
                 _drawMode = Math.Max((_drawMode + 1) & 3, 1);
             _drawModeDown = input.IsKeyDown(Key.Tab);
+
+            if (input.IsKeyUp(Key.Z) && _drawAxisDown)
+                _drawAxis = !_drawAxis;
+            _drawAxisDown = input.IsKeyDown(Key.Z);
 
             if (_camera.HandleInput(e, input))
                 RefreshCameraMatrix();
