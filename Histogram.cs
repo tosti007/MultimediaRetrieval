@@ -47,15 +47,17 @@ namespace MultimediaRetrieval
 
         public void AddData(float f)
         {
-            for(int i = 0; i < bins; i++)
-            {
-                if(f >= (i * ((max - min) / bins) + min) && f <= ((i + 1) * ((max - min) / bins) + min))
-                {
-                    data[i]++;
-                    return;
-                }
-            }
-            throw new Exception($"Data {f} was out of range of min: {min} and max: {max} of Histogram {title}.");
+            if (f < min || f > max)
+                throw new Exception($"Data {f} was out of range of min: {min} and max: {max} of Histogram {title}.");
+
+            float diff = max - min;
+            float step = diff / bins;
+            int index = (int)Math.Floor((f - min) / step);
+
+            if (index == data.Length)
+                index--;
+
+            data[index]++;
         }
     }
 }

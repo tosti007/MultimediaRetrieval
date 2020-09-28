@@ -16,7 +16,7 @@ namespace MultimediaRetrieval
                 Directory.SetCurrentDirectory(workdir);
 
                 FeatureOptions options = new FeatureOptions {
-                    InputDir = "database/step1/"
+                    InputDir = "database/step4/"
                 };
                 return options.Execute();
             }
@@ -58,7 +58,7 @@ namespace MultimediaRetrieval
         public string OutputFile { get; set; }
 
         [Option('d', "directory",
-            Default = "database/step1/",
+            Default = "database/step4/",
             HelpText = "Folder name to read the meshes from.")]
         public string InputDir { get; set; }
 
