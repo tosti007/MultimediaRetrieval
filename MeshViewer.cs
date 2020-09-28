@@ -20,6 +20,12 @@ namespace MultimediaRetrieval
 {
     public class MeshViewer : GameWindow
     {
+        private static Vector3 CLEAR_COLOR = new Vector3(1f);
+        private static Vector3 OBJECT_COLOR = new Vector3(0.5f);
+        private static Vector3 AMBIENT_COLOR = new Vector3(0.1f);
+        private static Vector3 LIGHT_COLOR = new Vector3(1f);
+        private const float LINE_WIDTH = 3f;
+
         private Mesh _mesh;
         private Camera _camera;
         private Shader _shader;
@@ -48,8 +54,8 @@ namespace MultimediaRetrieval
         {
             // Setup global openGL settings
             CursorVisible = false;
-            GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            GL.LineWidth(3f);
+            GL.ClearColor(CLEAR_COLOR.X, CLEAR_COLOR.Y, CLEAR_COLOR.Z, 1.0f);
+            GL.LineWidth(LINE_WIDTH);
             GL.Enable(EnableCap.DepthTest); // Enable Z-Buffer testing
 
             // Setup the shader
@@ -58,8 +64,8 @@ namespace MultimediaRetrieval
             _shader.Use();
             _shader.SetMatrix4("model", _mesh.Model);
             RefreshCameraMatrix();
-            _shader.SetVector3("ambientColor", new Vector3(0.1f));
-            _shader.SetVector3("lightColor", new Vector3(1f));
+            _shader.SetVector3("ambientColor", AMBIENT_COLOR);
+            _shader.SetVector3("lightColor", LIGHT_COLOR);
 
             // Setup vertices
             vertices = _mesh.BufferVertices();
@@ -104,7 +110,7 @@ namespace MultimediaRetrieval
             if ((_drawMode & 1) > 0)
             {
                 // Draw the triangles
-                _shader.SetVector3("objectColor", new Vector3(1.0f, 0f, 0f));
+                _shader.SetVector3("objectColor", OBJECT_COLOR);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
                 GL.DrawElements(PrimitiveType.Triangles, faces.Length, DrawElementsType.UnsignedInt, 0);
             }
