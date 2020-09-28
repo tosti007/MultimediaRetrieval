@@ -119,9 +119,9 @@ namespace MultimediaRetrieval
             d2 = new Histogram("D2", 0, 1, 10);
             for (int i = 0; i < 100; i++)
             {
-                Vertex v1 = mesh.vertices[rand.Next(vertexCount)];
-                Vertex v2 = mesh.vertices[rand.Next(vertexCount)];
-                Vector3 ab = v2.position - v1.position;
+                Vector3 v1 = Sample(mesh, rand);
+                Vector3 v2 = Sample(mesh, rand);
+                Vector3 ab = v2 - v1;
                 d2.AddData(ab.Length);
             }
 
