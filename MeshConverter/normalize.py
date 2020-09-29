@@ -15,14 +15,10 @@ def orienting(m):
     eigval, eigvec = np.linalg.eig(covariance)
     # Sort the eigenvectors by length and remove the smallest
     eigvec = eigvec[eigval.argsort()[::-1]]
+    eigvec[2] = np.cross(eigvec[0], eigvec[1])
 
-    for i in range(len(m.vertices)):
-        # We do not need to use the centroid, as we just centered it.
-        p = np.zeros(3)
-        p[0] = np.dot(m.vertices[i], eigvec[0])
-        p[1] = np.dot(m.vertices[i], eigvec[1])
-        p[2] = np.dot(m.vertices[i], eigvec[2])
-        m.vertices[i] = p
+    m.vertices = [np.dot(v, eigvec) for v in m.vertices]
+
     return m
 
 def flipping(m):
