@@ -13,6 +13,8 @@ namespace MultimediaRetrieval
 {
     public class MeshStatistics
     {
+        public const int NUMBER_OF_SAMPLES = 1000;
+
         public uint ID;
         public string Classification;
         public int vertexCount, faceCount;
@@ -88,8 +90,8 @@ namespace MultimediaRetrieval
             Random rand = new Random();
 
             //For A3, sample the angle between 3 random vertices a hundred times.
-            a3 = new Histogram("A3", 0, (float)(Math.PI), 10);
-            for (int i = 0; i < 100; i++)
+            a3 = new Histogram("A3", 0, (float)Math.PI, 10);
+            for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 //https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
                 Vector3 v1 = Sample(mesh, rand);
@@ -109,7 +111,7 @@ namespace MultimediaRetrieval
             //For D1, sample the distance between the barycentre and a random vertex a hundred times.
             //The barycenter is normalized! It is always at (0,0,0)!
             d1 = new Histogram("D1", 0, 1, 10);
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 Vector3 v = Sample(mesh, rand);
                 d1.AddData(v.Length);
@@ -117,7 +119,7 @@ namespace MultimediaRetrieval
 
             //For D2, sample the distance between two vertices a hundred times.
             d2 = new Histogram("D2", 0, 1, 10);
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 Vector3 v1 = Sample(mesh, rand);
                 Vector3 v2 = Sample(mesh, rand);
@@ -127,7 +129,7 @@ namespace MultimediaRetrieval
 
             //For D3, sample the  square root of area of triangle given by 3 vertices a hundred times.
             d3 = new Histogram("D3", 0, 1, 10);
-            for(int i = 0; i < 100; i++)
+            for(int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 Vector3 v1 = Sample(mesh, rand);
                 Vector3 v2 = Sample(mesh, rand);
@@ -137,7 +139,7 @@ namespace MultimediaRetrieval
 
             //For D4, sample cube root of volume of tetrahedron formed by 4 random vertices a hundred times
             d4 = new Histogram("D4", 0, 1, 10);
-            for(int i = 0; i < 100; i++)
+            for(int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 // https://math.stackexchange.com/questions/3616760/how-to-calculate-the-volume-of-tetrahedron-given-by-4-points
                 Vector4 v1 = new Vector4(Sample(mesh, rand), 1);
