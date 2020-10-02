@@ -16,15 +16,15 @@ def handle_mesh_coarse(m):
     return Mesh(v, f, process=False)
 
 def handle_mesh(opts, mid, m):
+    refined = False
     while len(m.vertices) < 1000 or len(m.faces) < 1000:
+        refined = True
         print("Refine: ", mid)
         m = handle_mesh_refine(m)
-        return m
 
-    if len(m.vertices) > 2000 or len(m.faces) > 2000:
+    if not refined and (len(m.vertices) > 2000 or len(m.faces) > 2000):
         print("Coarse: ", mid)
         m = handle_mesh_coarse(m)
-        return m
     return m
 
 if __name__ == "__main__":
