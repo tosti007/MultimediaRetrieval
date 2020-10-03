@@ -21,17 +21,17 @@ def mesh_refine(m, mid, min_vertices=None, min_faces=None):
     return (Mesh(v, f, process=False), changed)
 
 def mesh_coarse(m, mid, min_vertices=None, min_faces=None):
-    v, f = (m.vertices, m.faces)
     changed = False
     
-    while (min_vertices is not None and len(v) > max_vertices) or (min_faces is not None and len(f) > max_faces):
+    while (min_vertices is not None and len(m.vertices) > max_vertices) or (min_faces is not None and len(m.faces) > max_faces):
         print("Coarse: ", mid)
         red = 1 - ((max_vertices * 0.75)/len(m.faces))
         print("Reduction: ", red)
         changed = True
         v, f = tmvtk.decimate_trimesh(m, reduction=red)
+        m = Mesh(v, f, process=False)
     
-    return (Mesh(v, f, process=False), changed)
+    return (m, changed)
 
 def mesh_resize(opts, mid, m):
     m, changed = mesh_refine(m, mid, 1000, 1000)
