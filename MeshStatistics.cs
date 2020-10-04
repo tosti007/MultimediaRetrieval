@@ -52,13 +52,27 @@ namespace MultimediaRetrieval
             // Nothing
         }
 
+        public MeshStatistics(Mesh mesh)
+        {
+            //The constructor for Query meshes:
+            ID = 0;
+            Classification = "?";
+
+            // Generate more features
+            GenerateFeatures(mesh);
+        }
+
         public MeshStatistics(DatabaseReader reader, string filepath)
         {
             ID = DatabaseReader.GetId(filepath);
             Classification = reader[ID];
 
             // Generate more features
-            Mesh mesh = Mesh.ReadMesh(filepath);
+            GenerateFeatures(Mesh.ReadMesh(filepath));
+        }
+
+        void GenerateFeatures(Mesh mesh)
+        {
             vertexCount = mesh.vertices.Count;
             faceCount = mesh.faces.Count;
 
@@ -70,7 +84,7 @@ namespace MultimediaRetrieval
                 surface_area += f.CalculateArea(ref mesh.vertices);
             }
 
-            double[,] cov = new double[vertexCount,3];
+            double[,] cov = new double[vertexCount, 3];
             this.diameter = float.NegativeInfinity;
             for (int i = 0; i < mesh.vertices.Count; i++)
             {
@@ -94,13 +108,13 @@ namespace MultimediaRetrieval
 
             //For compactness, we need the volume:
             this.volume = 0;
-            for(int i = 0; i < faceCount; i++)
+            for (int i = 0; i < faceCount; i++)
             {
                 volume += mesh.faces[i].CalculateSignedVolume(ref mesh.vertices);
             }
             this.volume = Math.Abs(this.volume);
 
-            this.compactness = (float)(Math.Pow(surface_area,3)/(36*Math.PI*Math.Pow(volume, 2)));
+            this.compactness = (float)(Math.Pow(surface_area, 3) / (36 * Math.PI * Math.Pow(volume, 2)));
 
             //The shape property discriptors:
             Random rand = new Random();
@@ -145,7 +159,7 @@ namespace MultimediaRetrieval
 
             //For D3, sample the  square root of area of triangle given by 3 vertices a hundred times.
             d3 = new Histogram("D3", D3_MIN, D3_MAX, D3_BIN_SIZE);
-            for(int i = 0; i < NUMBER_OF_SAMPLES; i++)
+            for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 Vector3 v1 = Sample(mesh, rand);
                 Vector3 v2 = Sample(mesh, rand);
@@ -155,7 +169,7 @@ namespace MultimediaRetrieval
 
             //For D4, sample cube root of volume of tetrahedron formed by 4 random vertices a hundred times
             d4 = new Histogram("D4", D4_MIN, D4_MAX, D4_BIN_SIZE);
-            for(int i = 0; i < NUMBER_OF_SAMPLES; i++)
+            for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 // https://math.stackexchange.com/questions/3616760/how-to-calculate-the-volume-of-tetrahedron-given-by-4-points
                 Vector4 v1 = new Vector4(Sample(mesh, rand), 1);
@@ -241,9 +255,18 @@ namespace MultimediaRetrieval
             stats.surface_area = float.Parse(data[12]);
             stats.diameter = float.Parse(data[13]);
             stats.eccentricity = float.Parse(data[14]);
+            stats.compactness = float.Parse(data[15]);
+            stats.volume = float.Parse(data[16]);
+
+            //TODO: Might want to handle this differently.
+            //There are meshes with infinite eccentricity/compactness, fix this:
+            if (float.IsInfinity(stats.compactness))
+                stats.compactness = 0;
+            if (float.IsInfinity(stats.eccentricity))
+                stats.eccentricity = 0;
 
             //The histograms:
-            int histoIndex = 15;
+            int histoIndex = 17;
             stats.a3 = new Histogram("A3", A3_MIN, A3_MAX, A3_BIN_SIZE);
             stats.a3.LoadData(data, histoIndex);
             histoIndex += A3_BIN_SIZE;
@@ -295,35 +318,35 @@ namespace MultimediaRetrieval
             int[] a3data = m.a3.GetData();
             for (int i = 0; i < m.a3.bins; i++)
             {
-                data[i] = a3data[i];
+                data[histoIndex + i] = a3data[i];
             }
             histoIndex += m.a3.bins;
 
             int[] d1data = m.d1.GetData();
             for (int i = 0; i < m.d1.bins; i++)
             {
-                data[i] = d1data[i];
+                data[histoIndex + i] = d1data[i];
             }
             histoIndex += m.d1.bins;
 
             int[] d2data = m.d2.GetData();
             for (int i = 0; i < m.d2.bins; i++)
             {
-                data[i] = d2data[i];
+                data[histoIndex + i] = d2data[i];
             }
             histoIndex += m.d2.bins;
 
             int[] d3data = m.d3.GetData();
             for (int i = 0; i < m.d3.bins; i++)
             {
-                data[i] = d3data[i];
+                data[histoIndex + i] = d3data[i];
             }
             histoIndex += m.d3.bins;
 
             int[] d4data = m.d4.GetData();
             for (int i = 0; i < m.d4.bins; i++)
             {
-                data[i] = d4data[i];
+                data[histoIndex + i] = d4data[i];
             }
         }
 
@@ -362,6 +385,42 @@ namespace MultimediaRetrieval
             for(int i = 0; i < data.Length; i++)
             {
                 data[i] = f(data[i]);
+            }
+        }
+
+        //Normalize the feature vector using an average and a standard deviation:
+        public void Normalize(FeatureVector avg, FeatureVector sdev)
+        {
+            if (data.Length != avg.data.Length || data.Length != sdev.data.Length)
+                throw new Exception("Attempted to normalize with FeatureVectors of different length.");
+            else
+            {
+                for(int i = 0; i < data.Length; i++)
+                {
+                    if(sdev.data[i] != 0)
+                        data[i] = (data[i] - avg.data[i]) / sdev.data[i];
+                    else
+                    {
+                        data[i] = (data[i] - avg.data[i]);
+                        //Console.WriteLine($"Sdev was 0 at index {i}! Did not use it for normalization."); 
+                        //TODO: Make sure this doesn't happen by changing histo-bins for example.
+                    }
+                }
+            }
+        }
+
+        public static float EuclidianDistance(FeatureVector a, FeatureVector b)
+        {
+            if (a.data.Length != b.data.Length)
+                throw new Exception("Attempted to calculate distance between two FeatureVectors of different length.");
+            else
+            {
+                float result = 0;
+                for (int i = 0; i < a.data.Length; i++)
+                {
+                    result += (float)Math.Pow(a.data[i] - b.data[i], 2);
+                }
+                return (float)Math.Sqrt(result);
             }
         }
     }

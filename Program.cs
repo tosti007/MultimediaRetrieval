@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using CommandLine;
+using OpenTK.Graphics.OpenGL;
 
 namespace MultimediaRetrieval
 {
@@ -21,10 +24,11 @@ namespace MultimediaRetrieval
                 return options.Execute();
             }
 
-            return Parser.Default.ParseArguments<ViewOptions, FeatureOptions>(args)
+            return Parser.Default.ParseArguments<ViewOptions, FeatureOptions, QueryOptions>(args)
                 .MapResult(
                     (ViewOptions opts) => opts.Execute(),
                     (FeatureOptions opts) => opts.Execute(),
+                    (QueryOptions opts) => opts.Execute(),
                 errs => 1);
         }
     }
@@ -73,6 +77,58 @@ namespace MultimediaRetrieval
             DatabaseReader classes = DatabaseReader.ReadFromFile(InputFile);
             FeatureDatabase db = new FeatureDatabase(classes, InputDir);
             db.WriteToFile(OutputFile);
+
+            return 0;
+        }
+    }
+
+    [Verb("query", HelpText = "Query a mesh, given a feature file.")]
+    class QueryOptions
+    {
+        [Option('i', "input",
+            HelpText = "(Default: mesh.off) File path to read the mesh from.")]
+        public string InputFile { get; set; }
+
+        [Option('d', "database",
+            Default = "database/step4/",
+            HelpText = "(Default: database/step4/) Directory to read the features from.")]
+        public string InputDir { get; set; }
+
+        [Option('k', "k_parameter",
+            Default = "5",
+            HelpText = "(Default: 5) The number of top matching meshes to return.")]
+        public string InputK { get; set; }
+
+        public int Execute()
+        {
+            int k = int.Parse(InputK);
+            FeatureDatabase db = FeatureDatabase.ReadFrom(Path.Combine(InputDir, "output.mr"), InputDir);
+
+            Mesh inputmesh = Mesh.ReadMesh(InputFile);
+            MeshStatistics inputms = new MeshStatistics(inputmesh);
+            FeatureVector inputfv = new FeatureVector(inputms);
+
+            //Get the average and the sdev to normalize:
+            FeatureVector average = db.Average();
+            FeatureVector sdev = db.StandardDev();
+
+            inputfv.Normalize(average, sdev);
+
+            //Fill a list of ID's to distances between the input feature vector and the database feature vectors:
+            List<(uint, float)> distance = new List<(uint, float)>();
+            foreach(MeshStatistics m in db.meshes)
+            {
+                FeatureVector fv = new FeatureVector(m);
+                fv.Normalize(average, sdev);
+                distance.Add((m.ID, FeatureVector.EuclidianDistance(fv, inputfv)));
+            }
+
+            //Sort the meshes in the database by distance and return the top:
+            distance.Sort((a, b) => a.Item2.CompareTo(b.Item2));
+            for (int i = 0; i < k; i++)
+            {
+                Console.WriteLine($"Close match: {distance[i].Item1}, with distance {distance[i].Item2}.");
+            }
 
             return 0;
         }

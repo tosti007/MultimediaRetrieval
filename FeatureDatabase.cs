@@ -8,7 +8,7 @@ namespace MultimediaRetrieval
 {
     public class FeatureDatabase
     {
-        List<MeshStatistics> meshes;
+        public List<MeshStatistics> meshes;
 
         private FeatureDatabase()
         {
