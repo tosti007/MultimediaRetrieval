@@ -49,7 +49,7 @@ def mesh_resample(opts, mid, m):
     mesh = pyvista.PolyData(mesh)
     clus = pyacvd.Clustering(mesh)
     clus.cluster(NUMBER_OF_SAMPLES)
-    mesh = clus.create_mesh()
+    mesh = clus.create_mesh(flipnorm=False)
     points, tris, edges = tmvtk.poly_to_mesh_components(mesh)
     return Mesh(points, tris, process=True, validate=True)
 
