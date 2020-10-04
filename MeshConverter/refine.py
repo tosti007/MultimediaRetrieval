@@ -51,7 +51,7 @@ def mesh_resample(opts, mid, m):
     clus.cluster(NUMBER_OF_SAMPLES)
     mesh = clus.create_mesh(flipnorm=False)
     points, tris, edges = tmvtk.poly_to_mesh_components(mesh)
-    return Mesh(points, tris, process=True, validate=True)
+    return Mesh(points, tris)
 
 def handle_mesh(opts, mid, m):
     # Since resampling our mesh is enough refining, we do not need to subdivide or coarse
