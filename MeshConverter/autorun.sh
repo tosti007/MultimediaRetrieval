@@ -1,5 +1,8 @@
 #!/usr/bin/bash
 
+# Stop the script if any command fails
+set -e
+
 cd "$(dirname $0)"
 
 # Make pip use local environment instead of global install
@@ -18,3 +21,4 @@ python refine.py
 
 # From step3 to step4
 python normalize.py
+
