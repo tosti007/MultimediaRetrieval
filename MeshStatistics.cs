@@ -14,6 +14,21 @@ namespace MultimediaRetrieval
     public class MeshStatistics
     {
         public const int NUMBER_OF_SAMPLES = 1000;
+        public const int A3_BIN_SIZE = 10;
+        public const float A3_MIN = 0;
+        public const float A3_MAX = (float)Math.PI;
+        public const int D1_BIN_SIZE = 10;
+        public const float D1_MIN = 0;
+        public const float D1_MAX = 1;
+        public const int D2_BIN_SIZE = 10;
+        public const float D2_MIN = 0;
+        public const float D2_MAX = 1;
+        public const int D3_BIN_SIZE = 10;
+        public const float D3_MIN = 0;
+        public const float D3_MAX = 1;
+        public const int D4_BIN_SIZE = 10;
+        public const float D4_MIN = 0;
+        public const float D4_MAX = 1;
 
         public uint ID;
         public string Classification;
@@ -90,7 +105,7 @@ namespace MultimediaRetrieval
             Random rand = new Random();
 
             //For A3, sample the angle between 3 random vertices a hundred times.
-            a3 = new Histogram("A3", 0, (float)Math.PI, 10);
+            a3 = new Histogram("A3", A3_MIN, A3_MAX, A3_BIN_SIZE);
             for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 //https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
@@ -110,7 +125,7 @@ namespace MultimediaRetrieval
 
             //For D1, sample the distance between the barycentre and a random vertex a hundred times.
             //The barycenter is normalized! It is always at (0,0,0)!
-            d1 = new Histogram("D1", 0, 1, 10);
+            d1 = new Histogram("D1", D1_MIN, D1_MAX, D1_BIN_SIZE);
             for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 Vector3 v = Sample(mesh, rand);
@@ -118,7 +133,7 @@ namespace MultimediaRetrieval
             }
 
             //For D2, sample the distance between two vertices a hundred times.
-            d2 = new Histogram("D2", 0, 1, 10);
+            d2 = new Histogram("D2", D2_MIN, D2_MAX, D2_BIN_SIZE);
             for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 Vector3 v1 = Sample(mesh, rand);
@@ -128,7 +143,7 @@ namespace MultimediaRetrieval
             }
 
             //For D3, sample the  square root of area of triangle given by 3 vertices a hundred times.
-            d3 = new Histogram("D3", 0, 1, 10);
+            d3 = new Histogram("D3", D3_MIN, D3_MAX, D3_BIN_SIZE);
             for(int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 Vector3 v1 = Sample(mesh, rand);
@@ -138,7 +153,7 @@ namespace MultimediaRetrieval
             }
 
             //For D4, sample cube root of volume of tetrahedron formed by 4 random vertices a hundred times
-            d4 = new Histogram("D4", 0, 1, 10);
+            d4 = new Histogram("D4", D4_MIN, D4_MAX, D4_BIN_SIZE);
             for(int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 // https://math.stackexchange.com/questions/3616760/how-to-calculate-the-volume-of-tetrahedron-given-by-4-points
@@ -226,12 +241,39 @@ namespace MultimediaRetrieval
             stats.diameter = float.Parse(data[13]);
             stats.eccentricity = float.Parse(data[14]);
 
+            //The histograms:
+            int histoIndex = 15;
+            stats.a3 = new Histogram("A3", A3_MIN, A3_MAX, A3_BIN_SIZE);
+            stats.a3.LoadData(data, histoIndex);
+            histoIndex += A3_BIN_SIZE;
+
+            stats.d1 = new Histogram("D1", D1_MIN, D1_MAX, D1_BIN_SIZE);
+            stats.d1.LoadData(data, histoIndex);
+            histoIndex += D1_BIN_SIZE;
+
+            stats.d2 = new Histogram("D2", D2_MIN, D2_MAX, D2_BIN_SIZE);
+            stats.d2.LoadData(data, histoIndex);
+            histoIndex += D2_BIN_SIZE;
+
+            stats.d3 = new Histogram("D3", D3_MIN, D3_MAX, D3_BIN_SIZE);
+            stats.d3.LoadData(data, histoIndex);
+            histoIndex += D3_BIN_SIZE;
+
+            stats.d4 = new Histogram("D4", D4_MIN, D4_MAX, D4_BIN_SIZE);
+            stats.d4.LoadData(data, histoIndex);
+            histoIndex += D4_BIN_SIZE;
+
             return stats;
         }
 
         private static Vector3 Sample(Mesh m, Random r)
         {
             return m.vertices[r.Next(m.vertices.Count)].position;
+        }
+
+        public static MeshStatistics Empty()
+        {
+            return new MeshStatistics();
         }
     }
 }

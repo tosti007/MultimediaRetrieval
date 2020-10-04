@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenTK.Graphics.OpenGL;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -23,6 +24,15 @@ namespace MultimediaRetrieval
             this.bins = bins;
 
             data = new int[bins];
+        }
+
+        //Loads in a Histogram from string data, starting at the given start index.
+        public void LoadData(string[] sdata, int start)
+        {
+            for(int i = 0; i < bins; i++)
+            {
+                data[i] = int.Parse(sdata[start + i]);
+            }
         }
 
         public string ToCSV()
