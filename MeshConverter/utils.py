@@ -23,20 +23,19 @@ def find_vertex_index(arr, item):
         raise ValueError('The numer of vertex indices was '+str(len(result))+" instead of 1.")
     return result[0][0]
 
-def fill_holes(m):
-    mesh = tmvtk.trimesh_to_vtk(m.vertices, m.faces)
+def fill_holes(v, f):
+    mesh = tmvtk.trimesh_to_vtk(v, f)
     mesh = pyvista.PolyData(mesh)
-    edges = mesh.extract_feature_edges(boundary_edges=True,
+    mesh = mesh.extract_feature_edges(boundary_edges=True,
                             non_manifold_edges=False,
                             feature_edges=False,
                             manifold_edges=False)
 
-    points, tris, edges = tmvtk.poly_to_mesh_components(edges)
+    points, _, edges = tmvtk.poly_to_mesh_components(mesh)
     edges = [p for p in edges if p[0] != p[1]]
     g = nx.Graph()
     g.add_edges_from(edges)
 
-    v, f = m.vertices, m.faces
     for l in nx.cycle_basis(g):
         #print("Handling loop:", [find_vertex_index(v, points[i]) for i in l])
         back = 0
@@ -57,4 +56,9 @@ def fill_holes(m):
                 back = right
                 right -= 1
             flip = not flip
-    return Mesh(v, f)
+    
+    result = Mesh(v, f)
+    # I dont really think this is needed as the windings should be correct,
+    # but it doesnt hurt to do anyway
+    result.fix_normals()
+    return result

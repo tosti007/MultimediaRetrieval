@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from main import Options
+from utils import fill_holes
 import trimesh as tm
 from meshparty import trimesh_vtk as tmvtk
 from meshparty.trimesh_io import Mesh
@@ -51,8 +52,9 @@ def mesh_resample(opts, mid, m):
     clus.cluster(NUMBER_OF_SAMPLES)
     mesh = clus.create_mesh(flipnorm=False)
     mesh.compute_normals(point_normals=False, auto_orient_normals=True, inplace=True)
-    points, tris, edges = tmvtk.poly_to_mesh_components(mesh)
-    return Mesh(points, tris)
+    points, tris, _ = tmvtk.poly_to_mesh_components(mesh)
+    m = fill_holes(points, tris)
+    return m
 
 def handle_mesh(opts, mid, m):
     # Since resampling our mesh is enough refining, we do not need to subdivide or coarse
