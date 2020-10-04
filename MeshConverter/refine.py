@@ -50,6 +50,7 @@ def mesh_resample(opts, mid, m):
     clus = pyacvd.Clustering(mesh)
     clus.cluster(NUMBER_OF_SAMPLES)
     mesh = clus.create_mesh(flipnorm=False)
+    mesh.compute_normals(point_normals=False, auto_orient_normals=True, inplace=True)
     points, tris, edges = tmvtk.poly_to_mesh_components(mesh)
     return Mesh(points, tris)
 
