@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 namespace MultimediaRetrieval
 {
     //A histogram class for the distribution features in the MeshStatistics
-    class Histogram
+    public class Histogram
     {
         string title;
-        int bins;
+        public int bins;
         float min, max;
 
         int[] data;
@@ -68,6 +68,11 @@ namespace MultimediaRetrieval
                 index--;
 
             data[index]++;
+        }
+
+        public int[] GetData()
+        {
+            return data;
         }
     }
 }

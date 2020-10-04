@@ -8,6 +8,7 @@ using Accord.Math.Decompositions;
 using Accord.Statistics;
 using System.Diagnostics.SymbolStore;
 using System.Security.Cryptography;
+using OpenTK.Graphics.ES11;
 
 namespace MultimediaRetrieval
 {
@@ -38,13 +39,13 @@ namespace MultimediaRetrieval
         //The global discriptors:
         public AABB boundingBox;
         public float surface_area;
-        float diameter;
-        float eccentricity;
-        float compactness;
-        float volume;
+        public float diameter;
+        public float eccentricity;
+        public float compactness;
+        public float volume;
 
         //The shape property discriptors:
-        Histogram a3, d1, d2, d3, d4;
+        public Histogram a3, d1, d2, d3, d4;
 
         private MeshStatistics()
         {
@@ -269,11 +270,99 @@ namespace MultimediaRetrieval
         private static Vector3 Sample(Mesh m, Random r)
         {
             return m.vertices[r.Next(m.vertices.Count)].position;
+        }       
+    }
+
+    public struct FeatureVector
+    {
+        public float[] data;
+
+        FeatureVector(float[] data)
+        {
+            this.data = data;
         }
 
-        public static MeshStatistics Empty()
+        public FeatureVector(MeshStatistics m)
         {
-            return new MeshStatistics();
+            data = new float[5 + m.a3.bins + m.d1.bins + m.d2.bins + m.d3.bins + m.d4.bins];
+            data[0] = m.surface_area;
+            data[1] = m.diameter;
+            data[2] = m.eccentricity;
+            data[3] = m.compactness;
+            data[4] = m.volume;
+
+            int histoIndex = 5;
+            int[] a3data = m.a3.GetData();
+            for (int i = 0; i < m.a3.bins; i++)
+            {
+                data[i] = a3data[i];
+            }
+            histoIndex += m.a3.bins;
+
+            int[] d1data = m.d1.GetData();
+            for (int i = 0; i < m.d1.bins; i++)
+            {
+                data[i] = d1data[i];
+            }
+            histoIndex += m.d1.bins;
+
+            int[] d2data = m.d2.GetData();
+            for (int i = 0; i < m.d2.bins; i++)
+            {
+                data[i] = d2data[i];
+            }
+            histoIndex += m.d2.bins;
+
+            int[] d3data = m.d3.GetData();
+            for (int i = 0; i < m.d3.bins; i++)
+            {
+                data[i] = d3data[i];
+            }
+            histoIndex += m.d3.bins;
+
+            int[] d4data = m.d4.GetData();
+            for (int i = 0; i < m.d4.bins; i++)
+            {
+                data[i] = d4data[i];
+            }
+        }
+
+        public static FeatureVector operator +(FeatureVector a, FeatureVector b)
+        {
+            if (a.data.Length != b.data.Length)
+                throw new Exception("Attempted to add two FeatureVectors of different length.");
+            else
+            {
+                float[] resultData = new float[a.data.Length];
+                for(int i = 0; i < a.data.Length; i++)
+                {
+                    resultData[i] = a.data[i] + b.data[i];
+                }
+                return new FeatureVector(resultData);
+            }
+        }
+
+        public static FeatureVector operator -(FeatureVector a, FeatureVector b)
+        {
+            if (a.data.Length != b.data.Length)
+                throw new Exception("Attempted to subtract two FeatureVectors of different length.");
+            else
+            {
+                float[] resultData = new float[a.data.Length];
+                for (int i = 0; i < a.data.Length; i++)
+                {
+                    resultData[i] = a.data[i] - b.data[i];
+                }
+                return new FeatureVector(resultData);
+            }
+        }
+
+        public void Map(Func<float, float> f)
+        {
+            for(int i = 0; i < data.Length; i++)
+            {
+                data[i] = f(data[i]);
+            }
         }
     }
 }
