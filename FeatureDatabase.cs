@@ -30,7 +30,7 @@ namespace MultimediaRetrieval
             if (!filepath.EndsWith(".mr", StringComparison.InvariantCulture))
                 filepath += ".mr";
 
-            File.WriteAllLines(filepath, new string[] { meshes[0].Headers() }.Concat(
+            File.WriteAllLines(filepath, new string[] { MeshStatistics.Headers() }.Concat(
                 meshes.OrderBy((cls) => cls.ID).Select((cls) => cls.ToString())
                 ));
         }

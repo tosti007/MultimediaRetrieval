@@ -1,35 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using OpenTK;
 // For documentation check:
 // http://accord-framework.net/docs/html/R_Project_Accord_NET.htm
 // https://github.com/accord-net/framework/wiki
 using Accord.Math.Decompositions;
 using Accord.Statistics;
-using System.Diagnostics.SymbolStore;
-using System.Security.Cryptography;
-using OpenTK.Graphics.ES11;
+using System.Linq;
 
 namespace MultimediaRetrieval
 {
     public class MeshStatistics
     {
         public const int NUMBER_OF_SAMPLES = 1000;
-        public const int A3_BIN_SIZE = 10;
-        public const float A3_MIN = 0;
-        public const float A3_MAX = (float)Math.PI;
-        public const int D1_BIN_SIZE = 10;
-        public const float D1_MIN = 0;
-        public const float D1_MAX = 1;
-        public const int D2_BIN_SIZE = 10;
-        public const float D2_MIN = 0;
-        public const float D2_MAX = 1;
-        public const int D3_BIN_SIZE = 10;
-        public const float D3_MIN = 0;
-        public const float D3_MAX = 1;
-        public const int D4_BIN_SIZE = 10;
-        public const float D4_MIN = 0;
-        public const float D4_MAX = 1;
 
         public uint ID;
         public string Classification;
@@ -45,7 +27,11 @@ namespace MultimediaRetrieval
         public float volume;
 
         //The shape property discriptors:
-        public Histogram a3, d1, d2, d3, d4;
+        public Histogram_A3 a3;
+        public Histogram_D1 d1;
+        public Histogram_D2 d2;
+        public Histogram_D3 d3;
+        public Histogram_D4 d4;
 
         private MeshStatistics()
         {
@@ -119,70 +105,23 @@ namespace MultimediaRetrieval
             //The shape property discriptors:
             Random rand = new Random();
 
-            //For A3, sample the angle between 3 random vertices a hundred times.
-            a3 = new Histogram("A3", A3_MIN, A3_MAX, A3_BIN_SIZE);
-            for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
-            {
-                //https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
-                Vector3 v1 = mesh.Sample(rand);
-                Vector3 v2 = mesh.Sample(rand);
-                Vector3 v3 = mesh.Sample(rand);
-                Vector3 ab = v2 - v1;
-                Vector3 bc = v3 - v2;
-                if (ab.Length * bc.Length == 0)
-                {
-                    a3.AddData(0);
-                    continue;
-                }
+            a3 = new Histogram_A3();
+            a3.Sample(mesh, rand, NUMBER_OF_SAMPLES);
 
-                a3.AddData(Vector3.CalculateAngle(ab, bc));
-            }
+            d1 = new Histogram_D1();
+            d1.Sample(mesh, rand, NUMBER_OF_SAMPLES);
 
-            //For D1, sample the distance between the barycentre and a random vertex a hundred times.
-            //The barycenter is normalized! It is always at (0,0,0)!
-            d1 = new Histogram("D1", D1_MIN, D1_MAX, D1_BIN_SIZE);
-            for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
-            {
-                Vector3 v = mesh.Sample(rand);
-                d1.AddData(v.Length);
-            }
+            d2 = new Histogram_D2();
+            d2.Sample(mesh, rand, NUMBER_OF_SAMPLES);
 
-            //For D2, sample the distance between two vertices a hundred times.
-            d2 = new Histogram("D2", D2_MIN, D2_MAX, D2_BIN_SIZE);
-            for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
-            {
-                Vector3 v1 = mesh.Sample(rand);
-                Vector3 v2 = mesh.Sample(rand);
-                Vector3 ab = v2 - v1;
-                d2.AddData(ab.Length);
-            }
+            d3 = new Histogram_D3();
+            d3.Sample(mesh, rand, NUMBER_OF_SAMPLES);
 
-            //For D3, sample the  square root of area of triangle given by 3 vertices a hundred times.
-            d3 = new Histogram("D3", D3_MIN, D3_MAX, D3_BIN_SIZE);
-            for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
-            {
-                Vector3 v1 = mesh.Sample(rand);
-                Vector3 v2 = mesh.Sample(rand);
-                Vector3 v3 = mesh.Sample(rand);
-                d3.AddData((float)Math.Sqrt(Face.CalculateArea(v1, v2, v3)));
-            }
-
-            //For D4, sample cube root of volume of tetrahedron formed by 4 random vertices a hundred times
-            d4 = new Histogram("D4", D4_MIN, D4_MAX, D4_BIN_SIZE);
-            for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
-            {
-                // https://math.stackexchange.com/questions/3616760/how-to-calculate-the-volume-of-tetrahedron-given-by-4-points
-                Vector4 v1 = new Vector4(mesh.Sample(rand), 1);
-                Vector4 v2 = new Vector4(mesh.Sample(rand), 1);
-                Vector4 v3 = new Vector4(mesh.Sample(rand), 1);
-                Vector4 v4 = new Vector4(mesh.Sample(rand), 1);
-                Matrix4 m = new Matrix4(v1, v2, v3, v4);
-                double area = Math.Abs(m.Determinant / 6.0);
-                d4.AddData((float)Math.Pow(Math.Abs(area), 1.0 / 3.0));
-            }
+            d4 = new Histogram_D4();
+            d4.Sample(mesh, rand, NUMBER_OF_SAMPLES);
         }
 
-        public string Headers()
+        public static string Headers()
         {
             return "ID;" +
             "Class;" +
@@ -201,11 +140,11 @@ namespace MultimediaRetrieval
             "Eccentricity;" +
             "Compactness;" +
             "Volume;" +
-            a3.ToCSVHeader() + ";" +
-            d1.ToCSVHeader() + ";" +
-            d2.ToCSVHeader() + ";" +
-            d3.ToCSVHeader() + ";" +
-            d4.ToCSVHeader();
+            Histogram_A3.ToCSVHeader() + ";" +
+            Histogram_D1.ToCSVHeader() + ";" +
+            Histogram_D2.ToCSVHeader() + ";" +
+            Histogram_D3.ToCSVHeader() + ";" +
+            Histogram_D4.ToCSVHeader();
         }
             
         public override string ToString()
@@ -266,25 +205,25 @@ namespace MultimediaRetrieval
 
             //The histograms:
             int histoIndex = 17;
-            stats.a3 = new Histogram("A3", A3_MIN, A3_MAX, A3_BIN_SIZE);
+            stats.a3 = new Histogram_A3();
             stats.a3.LoadData(data, histoIndex);
-            histoIndex += A3_BIN_SIZE;
+            histoIndex += Histogram_A3.BIN_SIZE;
 
-            stats.d1 = new Histogram("D1", D1_MIN, D1_MAX, D1_BIN_SIZE);
+            stats.d1 = new Histogram_D1();
             stats.d1.LoadData(data, histoIndex);
-            histoIndex += D1_BIN_SIZE;
+            histoIndex += Histogram_D1.BIN_SIZE;
 
-            stats.d2 = new Histogram("D2", D2_MIN, D2_MAX, D2_BIN_SIZE);
+            stats.d2 = new Histogram_D2();
             stats.d2.LoadData(data, histoIndex);
-            histoIndex += D2_BIN_SIZE;
+            histoIndex += Histogram_D2.BIN_SIZE;
 
-            stats.d3 = new Histogram("D3", D3_MIN, D3_MAX, D3_BIN_SIZE);
+            stats.d3 = new Histogram_D3();
             stats.d3.LoadData(data, histoIndex);
-            histoIndex += D3_BIN_SIZE;
+            histoIndex += Histogram_D3.BIN_SIZE;
 
-            stats.d4 = new Histogram("D4", D4_MIN, D4_MAX, D4_BIN_SIZE);
+            stats.d4 = new Histogram_D4();
             stats.d4.LoadData(data, histoIndex);
-            histoIndex += D4_BIN_SIZE;
+            histoIndex += Histogram_D4.BIN_SIZE;
 
             return stats;
         }
