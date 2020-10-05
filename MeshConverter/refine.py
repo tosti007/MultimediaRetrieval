@@ -62,6 +62,8 @@ def mesh_resample(opts, mid, m):
 def handle_mesh(opts, mid, m):
     # Since resampling our mesh is enough refining, we do not need to subdivide or coarse
     m = mesh_resample(opts, mid, m)
+    if m is not None:
+        print("Refined with:", (len(m.vertices), len(m.faces)))
     return m
 
 if __name__ == "__main__":
