@@ -14,8 +14,8 @@ namespace MultimediaRetrieval
         string title;
         public int bins;
         float min, max;
+        public int[] Data { get; }
 
-        int[] data;
         public Histogram(string title, float min, float max, int bins)
         {
             this.title = title;
@@ -23,7 +23,7 @@ namespace MultimediaRetrieval
             this.max = max;
             this.bins = bins;
 
-            data = new int[bins];
+            Data = new int[bins];
         }
 
         //Loads in a Histogram from string data, starting at the given start index.
@@ -31,7 +31,7 @@ namespace MultimediaRetrieval
         {
             for(int i = 0; i < bins; i++)
             {
-                data[i] = int.Parse(sdata[start + i]);
+                Data[i] = int.Parse(sdata[start + i]);
             }
         }
 
@@ -40,7 +40,7 @@ namespace MultimediaRetrieval
             string[] result = new string[bins];
             for (int i = 0; i < bins; i++)
             {
-                result[i] = data[i].ToString();
+                result[i] = Data[i].ToString();
             }
             return result.Aggregate((pstring, csv) => $"{pstring};{csv}");
         }
@@ -64,15 +64,10 @@ namespace MultimediaRetrieval
             float step = diff / bins;
             int index = (int)Math.Floor((f - min) / step);
 
-            if (index == data.Length)
+            if (index == Data.Length)
                 index--;
 
-            data[index]++;
-        }
-
-        public int[] GetData()
-        {
-            return data;
+            Data[index]++;
         }
     }
 }

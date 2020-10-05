@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using Accord.Statistics.Testing;
+using System.Linq;
 
 namespace MultimediaRetrieval
 {
@@ -81,10 +82,14 @@ namespace MultimediaRetrieval
 
         public FeatureVector StandardDev()
         {
-            FeatureVector average = Average();
+            return StandardDev(Average());
+        }
+
+        public FeatureVector StandardDev(FeatureVector average)
+        {
             FeatureVector sdev = new FeatureVector(meshes[0]) - average;
             sdev.Map(f => (float)Math.Pow(f, 2));
-            for(int i = 1; i < meshes.Count; i++)
+            for (int i = 1; i < meshes.Count; i++)
             {
                 FeatureVector x = new FeatureVector(meshes[0]) - average;
                 x.Map(f => (float)Math.Pow(f, 2));
@@ -93,6 +98,7 @@ namespace MultimediaRetrieval
             sdev.Map(f => f / (meshes.Count - 1));
             sdev.Map(f => (float)Math.Sqrt(f));
             return sdev;
+
         }
     }
 }

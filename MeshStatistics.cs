@@ -300,7 +300,7 @@ namespace MultimediaRetrieval
     {
         public float[] data;
 
-        FeatureVector(float[] data)
+        private FeatureVector(float[] data)
         {
             this.data = data;
         }
@@ -315,69 +315,42 @@ namespace MultimediaRetrieval
             data[4] = m.volume;
 
             int histoIndex = 5;
-            int[] a3data = m.a3.GetData();
-            for (int i = 0; i < m.a3.bins; i++)
-            {
-                data[histoIndex + i] = a3data[i];
-            }
+
+            m.a3.Data.CopyTo(data, histoIndex);
             histoIndex += m.a3.bins;
 
-            int[] d1data = m.d1.GetData();
-            for (int i = 0; i < m.d1.bins; i++)
-            {
-                data[histoIndex + i] = d1data[i];
-            }
+            m.d1.Data.CopyTo(data, histoIndex);
             histoIndex += m.d1.bins;
 
-            int[] d2data = m.d2.GetData();
-            for (int i = 0; i < m.d2.bins; i++)
-            {
-                data[histoIndex + i] = d2data[i];
-            }
+            m.d2.Data.CopyTo(data, histoIndex);
             histoIndex += m.d2.bins;
 
-            int[] d3data = m.d3.GetData();
-            for (int i = 0; i < m.d3.bins; i++)
-            {
-                data[histoIndex + i] = d3data[i];
-            }
+            m.d3.Data.CopyTo(data, histoIndex);
             histoIndex += m.d3.bins;
 
-            int[] d4data = m.d4.GetData();
-            for (int i = 0; i < m.d4.bins; i++)
-            {
-                data[histoIndex + i] = d4data[i];
-            }
+            m.d4.Data.CopyTo(data, histoIndex);
         }
 
         public static FeatureVector operator +(FeatureVector a, FeatureVector b)
         {
             if (a.data.Length != b.data.Length)
                 throw new Exception("Attempted to add two FeatureVectors of different length.");
-            else
-            {
-                float[] resultData = new float[a.data.Length];
-                for(int i = 0; i < a.data.Length; i++)
-                {
-                    resultData[i] = a.data[i] + b.data[i];
-                }
-                return new FeatureVector(resultData);
-            }
+
+            for(int i = 0; i < a.data.Length; i++)
+                a.data[i] += b.data[i];
+
+            return a;
         }
 
         public static FeatureVector operator -(FeatureVector a, FeatureVector b)
         {
             if (a.data.Length != b.data.Length)
                 throw new Exception("Attempted to subtract two FeatureVectors of different length.");
-            else
-            {
-                float[] resultData = new float[a.data.Length];
-                for (int i = 0; i < a.data.Length; i++)
-                {
-                    resultData[i] = a.data[i] - b.data[i];
-                }
-                return new FeatureVector(resultData);
-            }
+
+            for (int i = 0; i < a.data.Length; i++)
+                a.data[i] -= b.data[i];
+
+            return a;
         }
 
         public void Map(Func<float, float> f)
@@ -393,18 +366,16 @@ namespace MultimediaRetrieval
         {
             if (data.Length != avg.data.Length || data.Length != sdev.data.Length)
                 throw new Exception("Attempted to normalize with FeatureVectors of different length.");
-            else
+
+            for(int i = 0; i < data.Length; i++)
             {
-                for(int i = 0; i < data.Length; i++)
+                if(sdev.data[i] != 0)
+                    data[i] = (data[i] - avg.data[i]) / sdev.data[i];
+                else
                 {
-                    if(sdev.data[i] != 0)
-                        data[i] = (data[i] - avg.data[i]) / sdev.data[i];
-                    else
-                    {
-                        data[i] = (data[i] - avg.data[i]);
-                        //Console.WriteLine($"Sdev was 0 at index {i}! Did not use it for normalization."); 
-                        //TODO: Make sure this doesn't happen by changing histo-bins for example.
-                    }
+                    data[i] = (data[i] - avg.data[i]);
+                    //Console.WriteLine($"Sdev was 0 at index {i}! Did not use it for normalization."); 
+                    //TODO: Make sure this doesn't happen by changing histo-bins for example.
                 }
             }
         }
@@ -413,15 +384,15 @@ namespace MultimediaRetrieval
         {
             if (a.data.Length != b.data.Length)
                 throw new Exception("Attempted to calculate distance between two FeatureVectors of different length.");
-            else
+
+            float result = 0;
+            for (int i = 0; i < a.data.Length; i++)
             {
-                float result = 0;
-                for (int i = 0; i < a.data.Length; i++)
-                {
-                    result += (float)Math.Pow(a.data[i] - b.data[i], 2);
-                }
-                return (float)Math.Sqrt(result);
+                float value = a.data[i] - b.data[i];
+                result += value * value;
             }
+
+            return (float)Math.Sqrt(result);
         }
     }
 }

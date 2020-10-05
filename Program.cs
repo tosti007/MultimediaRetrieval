@@ -110,7 +110,7 @@ namespace MultimediaRetrieval
 
             //Get the average and the sdev to normalize:
             FeatureVector average = db.Average();
-            FeatureVector sdev = db.StandardDev();
+            FeatureVector sdev = db.StandardDev(average);
 
             inputfv.Normalize(average, sdev);
 
