@@ -19,6 +19,11 @@ namespace MultimediaRetrieval
             this.faces = faces;
         }
 
+        public Vector3 Sample(Random r)
+        {
+            return vertices[r.Next(vertices.Count)].position;
+        }
+
         //Gives all vertex information ready to be put into a buffer
         public float[,] BufferVertices()
         {

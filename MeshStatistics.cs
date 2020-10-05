@@ -124,9 +124,9 @@ namespace MultimediaRetrieval
             for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 //https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
-                Vector3 v1 = Sample(mesh, rand);
-                Vector3 v2 = Sample(mesh, rand);
-                Vector3 v3 = Sample(mesh, rand);
+                Vector3 v1 = mesh.Sample(rand);
+                Vector3 v2 = mesh.Sample(rand);
+                Vector3 v3 = mesh.Sample(rand);
                 Vector3 ab = v2 - v1;
                 Vector3 bc = v3 - v2;
                 if (ab.Length * bc.Length == 0)
@@ -143,7 +143,7 @@ namespace MultimediaRetrieval
             d1 = new Histogram("D1", D1_MIN, D1_MAX, D1_BIN_SIZE);
             for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
-                Vector3 v = Sample(mesh, rand);
+                Vector3 v = mesh.Sample(rand);
                 d1.AddData(v.Length);
             }
 
@@ -151,8 +151,8 @@ namespace MultimediaRetrieval
             d2 = new Histogram("D2", D2_MIN, D2_MAX, D2_BIN_SIZE);
             for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
-                Vector3 v1 = Sample(mesh, rand);
-                Vector3 v2 = Sample(mesh, rand);
+                Vector3 v1 = mesh.Sample(rand);
+                Vector3 v2 = mesh.Sample(rand);
                 Vector3 ab = v2 - v1;
                 d2.AddData(ab.Length);
             }
@@ -161,9 +161,9 @@ namespace MultimediaRetrieval
             d3 = new Histogram("D3", D3_MIN, D3_MAX, D3_BIN_SIZE);
             for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
-                Vector3 v1 = Sample(mesh, rand);
-                Vector3 v2 = Sample(mesh, rand);
-                Vector3 v3 = Sample(mesh, rand);
+                Vector3 v1 = mesh.Sample(rand);
+                Vector3 v2 = mesh.Sample(rand);
+                Vector3 v3 = mesh.Sample(rand);
                 d3.AddData((float)Math.Sqrt(Face.CalculateArea(v1, v2, v3)));
             }
 
@@ -172,10 +172,10 @@ namespace MultimediaRetrieval
             for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 // https://math.stackexchange.com/questions/3616760/how-to-calculate-the-volume-of-tetrahedron-given-by-4-points
-                Vector4 v1 = new Vector4(Sample(mesh, rand), 1);
-                Vector4 v2 = new Vector4(Sample(mesh, rand), 1);
-                Vector4 v3 = new Vector4(Sample(mesh, rand), 1);
-                Vector4 v4 = new Vector4(Sample(mesh, rand), 1);
+                Vector4 v1 = new Vector4(mesh.Sample(rand), 1);
+                Vector4 v2 = new Vector4(mesh.Sample(rand), 1);
+                Vector4 v3 = new Vector4(mesh.Sample(rand), 1);
+                Vector4 v4 = new Vector4(mesh.Sample(rand), 1);
                 Matrix4 m = new Matrix4(v1, v2, v3, v4);
                 double area = Math.Abs(m.Determinant / 6.0);
                 d4.AddData((float)Math.Pow(Math.Abs(area), 1.0 / 3.0));
@@ -208,7 +208,6 @@ namespace MultimediaRetrieval
             d4.ToCSVHeader();
         }
             
-
         public override string ToString()
         {
             return string.Join(";", 
@@ -289,11 +288,6 @@ namespace MultimediaRetrieval
 
             return stats;
         }
-
-        private static Vector3 Sample(Mesh m, Random r)
-        {
-            return m.vertices[r.Next(m.vertices.Count)].position;
-        }       
     }
 
     public class FeatureVector
