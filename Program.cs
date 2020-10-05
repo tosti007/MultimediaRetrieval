@@ -85,8 +85,7 @@ namespace MultimediaRetrieval
     [Verb("query", HelpText = "Query a mesh, given a feature file.")]
     class QueryOptions
     {
-        [Option('i', "input",
-            HelpText = "File path to read the mesh from.")]
+        [Value(0, MetaName = "path", Required = false, HelpText = "Mesh file path to view.")]
         public string InputMesh { get; set; }
 
         [Option('d', "database",
@@ -94,12 +93,12 @@ namespace MultimediaRetrieval
             HelpText = "Directory to read the features from.")]
         public string InputDir { get; set; }
 
-        [Option('f', "file",
+        [Option('i', "input",
             HelpText = "(Default: [DIRECTORY]/output.mr) Directory to read the features from.")]
         public string InputFile { get; set; }
 
         [Option('k', "k_parameter",
-            Default = "5",
+            Default = 5,
             HelpText = "The number of top matching meshes to return.")]
         public int InputK { get; set; }
 
