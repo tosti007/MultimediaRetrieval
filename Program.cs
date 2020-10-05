@@ -54,7 +54,8 @@ namespace MultimediaRetrieval
     class FeatureOptions
     {
         [Option('i', "input",
-            HelpText = "(Default: [DIRECTORY]/output.mr) File path to read the class features from.")]
+            Default = "database/step1/output.mr",
+            HelpText = "File path to read the class features from.")]
         public string InputFile { get; set; }
 
         [Option('o', "output",
