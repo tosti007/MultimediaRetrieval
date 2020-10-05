@@ -9,8 +9,8 @@ namespace MultimediaRetrieval
     public class FeatureDatabase
     {
         public List<MeshStatistics> meshes;
-        public FeatureVector _avg;
-        public FeatureVector _std;
+        private FeatureVector _avg;
+        private FeatureVector _std;
 
         private FeatureDatabase()
         {
@@ -98,7 +98,7 @@ namespace MultimediaRetrieval
                 _std.Map(f => f * f);
                 for (int i = 1; i < meshes.Count; i++)
                 {
-                    FeatureVector x = new FeatureVector(meshes[0]) - Average;
+                    FeatureVector x = new FeatureVector(meshes[0]) - _avg;
                     x.Map(f => f * f);
                     _std += x;
                 }

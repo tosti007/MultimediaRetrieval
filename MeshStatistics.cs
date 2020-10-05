@@ -355,19 +355,19 @@ namespace MultimediaRetrieval
             }
         }
 
-        //Normalize the feature vector using an average and a standard deviation:
-        public void Normalize(FeatureVector avg, FeatureVector sdev)
+        //Normalize the feature vector using the average and a standard deviation from a featuredatabase:
+        public void Normalize(FeatureDatabase db)
         {
-            if (data.Length != avg.data.Length || data.Length != sdev.data.Length)
+            if (data.Length != db.Average.data.Length || data.Length != db.StandardDev.data.Length)
                 throw new Exception("Attempted to normalize with FeatureVectors of different length.");
 
             for(int i = 0; i < data.Length; i++)
             {
-                if(sdev.data[i] != 0)
-                    data[i] = (data[i] - avg.data[i]) / sdev.data[i];
+                if(db.StandardDev.data[i] != 0)
+                    data[i] = (data[i] - db.Average.data[i]) / db.StandardDev.data[i];
                 else
                 {
-                    data[i] = (data[i] - avg.data[i]);
+                    data[i] = (data[i] - db.Average.data[i]);
                     //Console.WriteLine($"Sdev was 0 at index {i}! Did not use it for normalization."); 
                     //TODO: Make sure this doesn't happen by changing histo-bins for example.
                 }
