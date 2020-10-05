@@ -68,5 +68,4 @@ def handle_mesh(opts, mid, m):
 
 if __name__ == "__main__":
     opts = Options('../database/step2/', '../database/step3/')
-    opts.parallel = False
     opts.execute(handle_mesh)

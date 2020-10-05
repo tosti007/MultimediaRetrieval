@@ -20,4 +20,5 @@ if __name__ == "__main__":
     sys.stdout = sys.__stderr__
     opts = Options('', '')
     opts.inputdir = ''
+    opts.parallel = False
     opts.execute(handle_mesh, opts.arguments)
