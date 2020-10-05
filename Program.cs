@@ -108,18 +108,14 @@ namespace MultimediaRetrieval
             MeshStatistics inputms = new MeshStatistics(inputmesh);
             FeatureVector inputfv = new FeatureVector(inputms);
 
-            //Get the average and the sdev to normalize:
-            FeatureVector average = db.Average();
-            FeatureVector sdev = db.StandardDev(average);
-
-            inputfv.Normalize(average, sdev);
+            inputfv.Normalize(db.Average, db.StandardDev);
 
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors:
             List<(uint, float)> distance = new List<(uint, float)>();
             foreach(MeshStatistics m in db.meshes)
             {
                 FeatureVector fv = new FeatureVector(m);
-                fv.Normalize(average, sdev);
+                fv.Normalize(db.Average, db.StandardDev);
                 distance.Add((m.ID, FeatureVector.EuclidianDistance(fv, inputfv)));
             }
 

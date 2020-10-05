@@ -3,13 +3,14 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using Accord.Statistics.Testing;
-using System.Linq;
 
 namespace MultimediaRetrieval
 {
     public class FeatureDatabase
     {
         public List<MeshStatistics> meshes;
+        public FeatureVector _avg;
+        public FeatureVector _std;
 
         private FeatureDatabase()
         {
@@ -67,38 +68,44 @@ namespace MultimediaRetrieval
             return result;
         }
 
-        public FeatureVector Average()
+        public FeatureVector Average
         {
-            //Create the average FeatureVector.
-            FeatureVector average = new FeatureVector(meshes[0]);
-            for(int i = 1; i < meshes.Count; i++)
+            get
             {
-                average += new FeatureVector(meshes[i]);
-            }
+                if (_avg != null)
+                    return _avg;
 
-            average.Map(f => f / meshes.Count);
-            return average;
+                //Create the average FeatureVector.
+                _avg = new FeatureVector(meshes[0]);
+                for (int i = 1; i < meshes.Count; i++)
+                {
+                    _avg += new FeatureVector(meshes[i]);
+                }
+
+                _avg.Map(f => f / meshes.Count);
+                return _avg;
+            }
         }
 
-        public FeatureVector StandardDev()
+        public FeatureVector StandardDev
         {
-            return StandardDev(Average());
-        }
-
-        public FeatureVector StandardDev(FeatureVector average)
-        {
-            FeatureVector sdev = new FeatureVector(meshes[0]) - average;
-            sdev.Map(f => (float)Math.Pow(f, 2));
-            for (int i = 1; i < meshes.Count; i++)
+            get
             {
-                FeatureVector x = new FeatureVector(meshes[0]) - average;
-                x.Map(f => (float)Math.Pow(f, 2));
-                sdev += x;
-            }
-            sdev.Map(f => f / (meshes.Count - 1));
-            sdev.Map(f => (float)Math.Sqrt(f));
-            return sdev;
+                if (_std != null)
+                    return _std;
 
+                _std = new FeatureVector(meshes[0]) - Average;
+                _std.Map(f => f * f);
+                for (int i = 1; i < meshes.Count; i++)
+                {
+                    FeatureVector x = new FeatureVector(meshes[0]) - Average;
+                    x.Map(f => f * f);
+                    _std += x;
+                }
+                _std.Map(f => f / (meshes.Count - 1));
+                _std.Map(f => (float)Math.Sqrt(f));
+                return _std;
+            }
         }
     }
 }

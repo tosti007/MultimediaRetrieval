@@ -296,7 +296,7 @@ namespace MultimediaRetrieval
         }       
     }
 
-    public struct FeatureVector
+    public class FeatureVector
     {
         public float[] data;
 
