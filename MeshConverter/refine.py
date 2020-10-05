@@ -53,6 +53,9 @@ def mesh_resample(opts, mid, m):
     mesh = clus.create_mesh(flipnorm=False)
     mesh.compute_normals(point_normals=False, auto_orient_normals=True, inplace=True)
     points, tris, _ = tmvtk.poly_to_mesh_components(mesh)
+    # TODO: tris might be none, we should do something about this.
+    if tris is None:
+        return None
     m = fill_holes(points, tris, mid)
     return m
 

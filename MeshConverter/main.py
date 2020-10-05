@@ -38,6 +38,10 @@ def load_and_handle(args):
     print("Handling: ", mid)
     m = load_mesh(opts.inputdir + filename)
     m = opts.handlefunction(opts, mid, Mesh(m.vertices, m.faces, process=False))
+    if m is None:
+        print("NONE MESH FOUND WITH ID:", mid)
+        return
+
     if opts.outputdir:
         export_mesh(m, opts.outputdir + mid + ".off")
     else:

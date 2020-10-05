@@ -14,7 +14,11 @@ def show_open_edges(m):
     p = pyvista.Plotter()
     p.add_mesh(mesh, color=True)
     p.add_mesh(edges, color="red", line_width=5)
-    p.camera_position = [(-0.2, -0.13, 0.12), (-0.015, 0.10, -0.0), (0.28, 0.26, 0.9)]
+    p.show()
+
+def plot_mesh(m):
+    p = pyvista.Plotter()
+    p.add_mesh(m, color=True)
     p.show()
 
 def find_vertex_index(arr, item):
