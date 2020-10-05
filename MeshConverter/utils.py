@@ -48,6 +48,8 @@ def fill_holes(v, f, id):
     g.add_edges_from(edges)
 
     for l in nx.cycle_basis(g):
+        if len(l) > 10:
+            continue #prevent closing of intentional holes.
         #print("Handling loop:", [find_vertex_index(v, points[i]) for i in l])
         back = 0
         left = 1
