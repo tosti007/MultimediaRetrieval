@@ -86,25 +86,31 @@ namespace MultimediaRetrieval
     class QueryOptions
     {
         [Option('i', "input",
-            HelpText = "(Default: mesh.off) File path to read the mesh from.")]
-        public string InputFile { get; set; }
+            HelpText = "File path to read the mesh from.")]
+        public string InputMesh { get; set; }
 
         [Option('d', "database",
             Default = "database/step4/",
-            HelpText = "(Default: database/step4/) Directory to read the features from.")]
+            HelpText = "Directory to read the features from.")]
         public string InputDir { get; set; }
+
+        [Option('f', "file",
+            HelpText = "(Default: [DIRECTORY]/output.mr) Directory to read the features from.")]
+        public string InputFile { get; set; }
 
         [Option('k', "k_parameter",
             Default = "5",
-            HelpText = "(Default: 5) The number of top matching meshes to return.")]
-        public string InputK { get; set; }
+            HelpText = "The number of top matching meshes to return.")]
+        public int InputK { get; set; }
 
         public int Execute()
         {
-            int k = int.Parse(InputK);
-            FeatureDatabase db = FeatureDatabase.ReadFrom(Path.Combine(InputDir, "output.mr"), InputDir);
+            if (string.IsNullOrWhiteSpace(InputFile))
+                InputFile = Path.Combine(InputDir, "output.mr");
 
-            Mesh inputmesh = Mesh.ReadMesh(InputFile);
+            FeatureDatabase db = FeatureDatabase.ReadFrom(InputFile, InputDir);
+
+            Mesh inputmesh = Mesh.ReadMesh(InputMesh);
             MeshStatistics inputms = new MeshStatistics(inputmesh);
             FeatureVector inputfv = new FeatureVector(inputms);
 
@@ -121,7 +127,7 @@ namespace MultimediaRetrieval
 
             //Sort the meshes in the database by distance and return the top:
             distance.Sort((a, b) => a.Item2.CompareTo(b.Item2));
-            for (int i = 0; i < k; i++)
+            for (int i = 0; i < InputK; i++)
             {
                 Console.WriteLine($"Close match: {distance[i].Item1}, with distance {distance[i].Item2}.");
             }
