@@ -53,7 +53,7 @@ def mesh_resample(opts, mid, m):
     mesh = clus.create_mesh(flipnorm=False)
     mesh.compute_normals(point_normals=False, auto_orient_normals=True, inplace=True)
     points, tris, _ = tmvtk.poly_to_mesh_components(mesh)
-    m = fill_holes(points, tris)
+    m = fill_holes(points, tris, mid)
     return m
 
 def handle_mesh(opts, mid, m):

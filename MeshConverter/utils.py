@@ -23,7 +23,10 @@ def find_vertex_index(arr, item):
         raise ValueError('The numer of vertex indices was '+str(len(result))+" instead of 1.")
     return result[0][0]
 
-def fill_holes(v, f):
+def fill_holes(v, f, id):
+    if v is None or f is None:
+        print("Empty mesh:", id)
+        return Mesh(v, f)
     mesh = tmvtk.trimesh_to_vtk(v, f)
     mesh = pyvista.PolyData(mesh)
     mesh = mesh.extract_feature_edges(boundary_edges=True,
@@ -32,6 +35,10 @@ def fill_holes(v, f):
                             manifold_edges=False)
 
     points, _, edges = tmvtk.poly_to_mesh_components(mesh)
+    if edges is None:
+        print("No edges for mesh:", id)
+        return Mesh(v, f)
+
     edges = [p for p in edges if p[0] != p[1]]
     g = nx.Graph()
     g.add_edges_from(edges)
