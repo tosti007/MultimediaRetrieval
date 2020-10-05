@@ -7,7 +7,7 @@ cd "$(dirname $0)"
 
 # Make pip use local environment instead of global install
 python -m venv env
-source env/bin/activate
+source env/bin/activate || source env/scripts/activate
 pip install -r requirements.pip
 
 # From step0 to step1
