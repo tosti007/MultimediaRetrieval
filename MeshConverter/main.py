@@ -36,7 +36,7 @@ def load_and_handle(args):
     opts, filename = args
     mid = getId(filename)
     print("Handling: ", mid)
-    m = load_mesh(opts.inputdir + filename)
+    m = load_mesh(opts.inputdir + filename, process=False)
     m = opts.handlefunction(opts, mid, Mesh(m.vertices, m.faces, process=False))
     if m is None:
         print("NONE MESH FOUND WITH ID:", mid)
