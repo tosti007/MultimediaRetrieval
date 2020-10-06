@@ -28,9 +28,14 @@ def run_in_batch(files, func):
 
 def list_unmodified_files(opts):
     # Get the most recent edittime of the called file
+    files = [f for f in os.listdir(opts.inputdir) if not f.endswith('.mr')]
+    if not opts.outputdir:
+        return files
+
     recentedit = os.path.getmtime(sys.argv[0])
-    isdone = lambda f: f.endswith('.mr') or (os.path.isfile(f) and os.path.getmtime(f) > recentedit)
-    return [f for f in os.listdir(opts.inputdir) if not isdone(f)]
+    isdone = lambda f: os.path.isfile(f) and os.path.getmtime(f) > recentedit
+
+    return [f for f in os.listdir(opts.inputdir) if not isdone(opts.outputdir + f)]
 
 def load_and_handle(args):
     opts, filename = args
