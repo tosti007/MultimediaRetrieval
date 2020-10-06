@@ -50,7 +50,7 @@ def list_unmodified_files(opts):
 
     scripttime = os.path.getmtime(sys.argv[0])
 
-    return [f for f in os.listdir(opts.inputdir) if file_needs_update(opts, scripttime, f)]
+    return [f for f in files if file_needs_update(opts, scripttime, f)]
 
 def load_and_handle(args):
     opts, filename = args
