@@ -15,7 +15,8 @@ cd "$(dirname $0)"
 # Make pip use local environment instead of global install
 show "Creating local environment"
 python -m venv env
-source env/bin/activate || source env/scripts/activate
+[[ -f env/bin/activate ]] && source env/bin/activate
+[[ -f env/scripts/activate ]] && source env/scripts/activate
 
 show "Installing packages"
 pip install -q --upgrade pip
