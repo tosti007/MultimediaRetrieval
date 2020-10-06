@@ -23,8 +23,7 @@ def orienting(m):
 
 def flipping(m):
     c = m.triangles_center
-    t = np.eye(4)
-    t[:3,:3] = np.diag(np.sign(np.sum(np.sign(c) * c ** 2, axis=0)))
+    t = np.diag(np.append(np.sign(np.sum(np.sign(c) * c ** 2, axis=0)), 1))
     m.apply_transform(t)
     return m
 
