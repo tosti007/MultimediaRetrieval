@@ -13,14 +13,16 @@ show () {
 cd "$(dirname $0)"
 
 # Make pip use local environment instead of global install
-show "Creating local environment"
-python -m venv env
+show "Using local environment"
+[[ -d env ]] || python -m venv env 
 [[ -f env/bin/activate ]] && source env/bin/activate
 [[ -f env/scripts/activate ]] && source env/scripts/activate
 
-show "Installing packages"
-pip install -q --upgrade pip
-pip install -q -r requirements.pip
+if ping -q -c 1 -W 1 8.8.8.8 >/dev/null 2>&1; then
+    show "Installing packages"
+    pip install -q --upgrade pip
+    pip install -q -r requirements.pip
+fi
 
 # From step0 to step1
 show "Parse step"
