@@ -19,6 +19,7 @@ namespace MultimediaRetrieval
                 Directory.SetCurrentDirectory(workdir);
 
                 FeatureOptions options = new FeatureOptions {
+                    InputFile = "database/step1/output.mr",
                     InputDir = "database/step4/"
                 };
                 return options.Execute();
