@@ -4,7 +4,9 @@ from main import Options, getExt, getId, mkdir
 import os
 import glob
 import shutil
+import numpy as np
 
+IGNORE_LIST = np.loadtxt("ignore.list", dtype=np.int)
 UNSUPPORTED_EXTENSIONS = (".txt", ".jpg", ".cla", ".gitkeep", ".mr", ".zip", ".7z")
 NR_PRINCETON_MESHES = 1814
 
@@ -19,6 +21,8 @@ def listMeshes(dirpath):
         yield f
 
 def moveFile(filename, outputdir, fid):
+    if fid in IGNORE_LIST:
+        return
     destination = outputdir + fid + getExt(filename)
     if not os.path.isfile(destination):
         shutil.copyfile(filename, destination)
