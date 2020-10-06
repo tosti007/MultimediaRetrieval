@@ -50,16 +50,14 @@ def fill_holes(v, f, id):
     for l in nx.cycle_basis(g):
         if len(l) > 10:
             continue #prevent closing of intentional holes.
-        #print("Handling loop:", [find_vertex_index(v, points[i]) for i in l])
+        l = [find_vertex_index(v, points[i]) for i in l]
+        #print("Handling loop:", l)
         back = 0
         left = 1
         right = -1
         flip = True
         while len(l) + right > left:
-            back_id = find_vertex_index(v, points[l[back]])
-            left_id = find_vertex_index(v, points[l[left]])
-            right_id = find_vertex_index(v, points[l[right]])
-            face = np.array([back_id, left_id, right_id])
+            face = np.array([l[back], l[left], l[right]])
             #print("Adding face:", face)
             f = np.append(f, [face], axis=0)
             if flip:
