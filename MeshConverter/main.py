@@ -26,16 +26,31 @@ def run_in_batch(files, func):
     results = pool.map(func, files)
     return [x for x in results if x is not None]
 
+def file_needs_update(opts, scripttime, f):
+    if not os.path.isfile(opts.outputdir + f):
+        return True
+    
+    intime = os.path.getmtime(opts.inputdir + f)
+    outtime = os.path.getmtime(opts.outputdir + f)
+
+    if intime > outtime:
+        return True
+
+    if outtime < scripttime:
+        return True
+
+    return False
+
+
 def list_unmodified_files(opts):
     # Get the most recent edittime of the called file
     files = [f for f in os.listdir(opts.inputdir) if not f.endswith('.mr')]
     if not opts.outputdir:
         return files
 
-    recentedit = os.path.getmtime(sys.argv[0])
-    isdone = lambda f: os.path.isfile(f) and os.path.getmtime(f) > recentedit
+    scripttime = os.path.getmtime(sys.argv[0])
 
-    return [f for f in os.listdir(opts.inputdir) if not isdone(opts.outputdir + f)]
+    return [f for f in os.listdir(opts.inputdir) if file_needs_update(opts, scripttime, f)]
 
 def load_and_handle(args):
     opts, filename = args
