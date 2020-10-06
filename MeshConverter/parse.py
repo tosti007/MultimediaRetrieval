@@ -5,9 +5,10 @@ import os
 import glob
 import shutil
 import numpy as np
+from trimesh.exchange.load import mesh_formats
 
 IGNORE_LIST = np.loadtxt("ignore.list", dtype=np.int)
-UNSUPPORTED_EXTENSIONS = (".txt", ".jpg", ".cla", ".gitkeep", ".mr", ".zip", ".7z")
+SUPPORTED_EXTENSIONS = ["." + f for f in mesh_formats()]
 NR_PRINCETON_MESHES = 1814
 
 def listMeshes(dirpath):
@@ -16,7 +17,7 @@ def listMeshes(dirpath):
             continue
         if f.endswith("~"):
             continue
-        if getExt(f) in UNSUPPORTED_EXTENSIONS:
+        if getExt(f) not in SUPPORTED_EXTENSIONS:
             continue
         yield f
 
