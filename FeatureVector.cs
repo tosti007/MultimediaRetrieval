@@ -140,14 +140,14 @@ namespace MultimediaRetrieval
 
             for (int i = 0; i < _data.Length; i++)
             {
+                _data[i] = _data[i] - db.Average._data[i];
+
                 if (db.StandardDev._data[i] != 0)
-                    _data[i] = (_data[i] - db.Average._data[i]) / db.StandardDev._data[i];
-                else
-                {
-                    _data[i] = (_data[i] - db.Average._data[i]);
-                    //Console.WriteLine($"Sdev was 0 at index {i}! Did not use it for normalization."); 
-                    //TODO: Make sure this doesn't happen by changing histo-bins for example.
-                }
+                    _data[i] /= db.StandardDev._data[i];
+
+                // Else
+                //Console.WriteLine($"Sdev was 0 at index {i}! Did not use it for normalization."); 
+                //TODO: Make sure this doesn't happen by changing histo-bins for example.
             }
         }
 
