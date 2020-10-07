@@ -118,8 +118,6 @@ namespace MultimediaRetrieval
 
             d4 = new Histogram_D4();
             d4.Sample(mesh, rand, NUMBER_OF_SAMPLES);
-
-            Features = new FeatureVector(mesh, this);
         }
 
         public static string Headers()
