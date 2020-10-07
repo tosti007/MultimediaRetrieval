@@ -13,7 +13,7 @@ namespace MultimediaRetrieval
 
         public FeatureVector(MeshStatistics m)
         {
-            _data = new float[5 + m.a3.bins + m.d1.bins + m.d2.bins + m.d3.bins + m.d4.bins];
+            _data = new float[5 + m.a3.Bins + m.d1.Bins + m.d2.Bins + m.d3.Bins + m.d4.Bins];
             _data[0] = m.SurfaceArea;
             _data[1] = m.Diameter;
             _data[2] = m.Eccentricity;
@@ -23,16 +23,16 @@ namespace MultimediaRetrieval
             int histoIndex = 5;
 
             m.a3.Data.CopyTo(_data, histoIndex);
-            histoIndex += m.a3.bins;
+            histoIndex += m.a3.Bins;
 
             m.d1.Data.CopyTo(_data, histoIndex);
-            histoIndex += m.d1.bins;
+            histoIndex += m.d1.Bins;
 
             m.d2.Data.CopyTo(_data, histoIndex);
-            histoIndex += m.d2.bins;
+            histoIndex += m.d2.Bins;
 
             m.d3.Data.CopyTo(_data, histoIndex);
-            histoIndex += m.d3.bins;
+            histoIndex += m.d3.Bins;
 
             m.d4.Data.CopyTo(_data, histoIndex);
         }

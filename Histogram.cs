@@ -12,15 +12,15 @@ namespace MultimediaRetrieval
     //A histogram class for the distribution features in the MeshStatistics
     public abstract class AbstractHistogram
     {
-        public int bins;
         float min, max;
         public int[] Data { get; }
+
+        public int Bins => Data.Length;
 
         public AbstractHistogram(float min, float max, int bins)
         {
             this.min = min;
             this.max = max;
-            this.bins = bins;
 
             Data = new int[bins];
         }
@@ -28,7 +28,7 @@ namespace MultimediaRetrieval
         //Loads in a Histogram from string data, starting at the given start index.
         public void LoadData(string[] sdata, int start)
         {
-            for(int i = 0; i < bins; i++)
+            for(int i = 0; i < Bins; i++)
             {
                 Data[i] = int.Parse(sdata[start + i]);
             }
@@ -36,8 +36,8 @@ namespace MultimediaRetrieval
 
         public string ToCSV()
         {
-            string[] result = new string[bins];
-            for (int i = 0; i < bins; i++)
+            string[] result = new string[Bins];
+            for (int i = 0; i < Bins; i++)
             {
                 result[i] = Data[i].ToString();
             }
@@ -60,7 +60,7 @@ namespace MultimediaRetrieval
                 throw new Exception($"Data {f} was out of range of min: {min} and max: {max}.");
 
             float diff = max - min;
-            float step = diff / bins;
+            float step = diff / Bins;
             int index = (int)Math.Floor((f - min) / step);
 
             if (index == Data.Length)
