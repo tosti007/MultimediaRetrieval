@@ -7,7 +7,7 @@ import shutil
 import numpy as np
 from trimesh.exchange.load import mesh_formats
 
-IGNORE_LIST = np.loadtxt("ignore.list", dtype=np.int)
+IGNORE_LIST = np.loadtxt("ignore.list")
 SUPPORTED_EXTENSIONS = ["." + f for f in mesh_formats()]
 NR_PRINCETON_MESHES = 1814
 
@@ -19,11 +19,11 @@ def listMeshes(dirpath):
             continue
         if getExt(f) not in SUPPORTED_EXTENSIONS:
             continue
+        if getId(f) in IGNORE_LIST:
+            continue
         yield f
 
 def moveFile(filename, outputdir, fid):
-    if fid in IGNORE_LIST:
-        return
     destination = outputdir + fid + getExt(filename)
     if not os.path.isfile(destination):
         shutil.copyfile(filename, destination)
@@ -54,7 +54,7 @@ def parsePrinceton(total, inputdir, filepath, outputdir):
                 tmp[line] = cla
 
     for f in listMeshes(inputdir):
-        fid = getId(f)[1:]
+        fid = getId(f)
         if not fid in tmp:
             continue
         total[fid] = tmp[fid]

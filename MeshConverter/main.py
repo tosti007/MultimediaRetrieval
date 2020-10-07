@@ -10,7 +10,7 @@ from meshparty.trimesh_io import Mesh
 sys.stderr = sys.__stderr__
 
 def getId(filename):
-    return os.path.splitext(os.path.basename(filename))[0]
+    return os.path.splitext(os.path.basename(filename))[0].strip(' m')
 
 def getExt(filename):
     return os.path.splitext(filename)[1]
