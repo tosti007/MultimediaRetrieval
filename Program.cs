@@ -113,17 +113,15 @@ namespace MultimediaRetrieval
 
             Mesh inputmesh = Mesh.ReadMesh(InputMesh);
             MeshStatistics inputms = new MeshStatistics(inputmesh);
-            FeatureVector inputfv = new FeatureVector(inputms);
 
-            inputfv.Normalize(db);
+            inputms.Features.Normalize(db);
 
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors:
             List<(uint, float)> distance = new List<(uint, float)>();
             foreach(MeshStatistics m in db.meshes)
             {
-                FeatureVector fv = new FeatureVector(m);
-                fv.Normalize(db);
-                distance.Add((m.ID, FeatureVector.EuclidianDistance(fv, inputfv)));
+                m.Features.Normalize(db);
+                distance.Add((m.ID, FeatureVector.EuclidianDistance(m.Features, inputms.Features)));
             }
 
             //Sort the meshes in the database by distance and return the top:

@@ -1,40 +1,105 @@
 ﻿using System;
+using OpenTK;
+// For documentation check:
+// http://accord-framework.net/docs/html/R_Project_Accord_NET.htm
+// https://github.com/accord-net/framework/wiki
+using Accord.Math.Decompositions;
+using Accord.Statistics;
+using System.Linq;
 
 namespace MultimediaRetrieval
 {
     public class FeatureVector
     {
+        public const int NUMBER_OF_SAMPLES = 1000;
+
         public float[] _data;
+
+        public float SurfaceArea { get => _data[0]; set => _data[0] = value; }
+        public float Diameter { get => _data[1]; set => _data[1] = value; }
+        public float Eccentricity { get => _data[2]; set => _data[2] = value; }
+        public float Compactness { get => _data[3]; set => _data[3] = value; }
+        public float Volume { get => _data[4]; set => _data[4] = value; }
+
+        public FeatureVector()
+        {
+            _data = new float[5 + Histogram_A3.BIN_SIZE + Histogram_D1.BIN_SIZE + Histogram_D2.BIN_SIZE + Histogram_D3.BIN_SIZE + Histogram_D4.BIN_SIZE];
+        }
 
         private FeatureVector(float[] data)
         {
             this._data = data;
         }
 
-        public FeatureVector(MeshStatistics m)
+        public FeatureVector(Mesh mesh) : this()
         {
-            _data = new float[5 + m.a3.Bins + m.d1.Bins + m.d2.Bins + m.d3.Bins + m.d4.Bins];
-            _data[0] = m.SurfaceArea;
-            _data[1] = m.Diameter;
-            _data[2] = m.Eccentricity;
-            _data[3] = m.Compactness;
-            _data[4] = m.Volume;
+            foreach (Face f in mesh.faces)
+            {
+                SurfaceArea += f.CalculateArea(ref mesh.vertices);
+            }
+
+            double[,] cov = new double[mesh.vertices.Count, 3];
+            this.Diameter = float.NegativeInfinity;
+            for (int i = 0; i < mesh.vertices.Count; i++)
+            {
+                Vector3 pos = mesh.vertices[i].position;
+                cov[i, 0] = pos.X;
+                cov[i, 1] = pos.Y;
+                cov[i, 2] = pos.Z;
+
+                foreach (Vertex v in mesh.vertices)
+                {
+                    this.Diameter = Math.Max(this.Diameter, Vector3.DistanceSquared(pos, v.position));
+                }
+            }
+            this.Diameter = (float)Math.Sqrt(this.Diameter);
+            cov = cov.Covariance(0);
+            // Eigenvectors are normalized, so retrieve from diagonalmatrix
+            double[,] eig = new EigenvalueDecomposition(cov).DiagonalMatrix;
+            float eig_max = (float)Math.Max(Math.Max(eig[0, 0], eig[1, 1]), eig[2, 2]);
+            float eig_min = (float)Math.Min(Math.Min(eig[0, 0], eig[1, 1]), eig[2, 2]);
+            this.Eccentricity = eig_max / eig_min;
+
+            //For compactness, we need the volume:
+            this.Volume = 0;
+            for (int i = 0; i < mesh.faces.Count; i++)
+            {
+                Volume += mesh.faces[i].CalculateSignedVolume(ref mesh.vertices);
+            }
+            this.Volume = Math.Abs(this.Volume);
+
+            this.Compactness = (float)(Math.Pow(SurfaceArea, 3) / (36 * Math.PI * Math.Pow(Volume, 2)));
 
             int histoIndex = 5;
 
-            m.a3.Data.CopyTo(_data, histoIndex);
-            histoIndex += m.a3.Bins;
+            //The shape property discriptors:
+            Random rand = new Random();
 
-            m.d1.Data.CopyTo(_data, histoIndex);
-            histoIndex += m.d1.Bins;
+            Histogram_A3 a3 = new Histogram_A3();
+            Histogram_D1 d1 = new Histogram_D1();
+            Histogram_D2 d2 = new Histogram_D2();
+            Histogram_D3 d3 = new Histogram_D3();
+            Histogram_D4 d4 = new Histogram_D4();
 
-            m.d2.Data.CopyTo(_data, histoIndex);
-            histoIndex += m.d2.Bins;
+            a3.Sample(mesh, rand, NUMBER_OF_SAMPLES);
+            d1.Sample(mesh, rand, NUMBER_OF_SAMPLES);
+            d2.Sample(mesh, rand, NUMBER_OF_SAMPLES);
+            d3.Sample(mesh, rand, NUMBER_OF_SAMPLES);
+            d4.Sample(mesh, rand, NUMBER_OF_SAMPLES);
 
-            m.d3.Data.CopyTo(_data, histoIndex);
-            histoIndex += m.d3.Bins;
+            a3.Data.CopyTo(_data, histoIndex);
+            histoIndex += a3.Bins;
 
-            m.d4.Data.CopyTo(_data, histoIndex);
+            d1.Data.CopyTo(_data, histoIndex);
+            histoIndex += d1.Bins;
+
+            d2.Data.CopyTo(_data, histoIndex);
+            histoIndex += d2.Bins;
+
+            d3.Data.CopyTo(_data, histoIndex);
+            histoIndex += d3.Bins;
+
+            d4.Data.CopyTo(_data, histoIndex);
         }
 
         public static FeatureVector operator +(FeatureVector a, FeatureVector b)
@@ -99,6 +164,40 @@ namespace MultimediaRetrieval
             }
 
             return (float)Math.Sqrt(result);
+        }
+
+        public static string Headers()
+        {
+            return string.Join(";",
+                "Surface_Area",
+                "Diameter",
+                "Eccentricity",
+                "Compactness",
+                "Volume",
+                Histogram_A3.ToCSVHeader(),
+                Histogram_D1.ToCSVHeader(),
+                Histogram_D2.ToCSVHeader(),
+                Histogram_D3.ToCSVHeader(),
+                Histogram_D4.ToCSVHeader()
+                );
+        }
+
+        public override string ToString()
+        {
+            return string.Join(";", _data);
+        }
+
+        public static FeatureVector Parse(string input)
+        {
+            FeatureVector v = new FeatureVector(input.Split(new char[] { ';' }).Select(float.Parse).ToArray());
+
+            //There are meshes with infinite eccentricity/compactness, fix this:
+            if (float.IsInfinity(v.Compactness))
+                v.Compactness = 0;
+            if (float.IsInfinity(v.Eccentricity))
+                v.Eccentricity = 0;
+
+            return v;
         }
     }
 }

@@ -76,10 +76,10 @@ namespace MultimediaRetrieval
                     return _avg;
 
                 //Create the average FeatureVector.
-                _avg = new FeatureVector(meshes[0]);
-                for (int i = 1; i < meshes.Count; i++)
+                _avg = new FeatureVector();
+                for (int i = 0; i < meshes.Count; i++)
                 {
-                    _avg += new FeatureVector(meshes[i]);
+                    _avg += meshes[i].Features;
                 }
 
                 _avg.Map(f => f / meshes.Count);
@@ -94,11 +94,10 @@ namespace MultimediaRetrieval
                 if (_std != null)
                     return _std;
 
-                _std = new FeatureVector(meshes[0]) - Average;
-                _std.Map(f => f * f);
-                for (int i = 1; i < meshes.Count; i++)
+                _std = new FeatureVector();
+                for (int i = 0; i < meshes.Count; i++)
                 {
-                    FeatureVector x = new FeatureVector(meshes[i]) - _avg;
+                    FeatureVector x = meshes[i].Features - _avg;
                     x.Map(f => f * f);
                     _std += x;
                 }
