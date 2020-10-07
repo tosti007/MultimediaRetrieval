@@ -7,7 +7,7 @@ import shutil
 import numpy as np
 from trimesh.exchange.load import mesh_formats
 
-IGNORE_LIST = np.loadtxt("ignore.list")
+IGNORE_LIST = np.loadtxt("ignore.list", dtype=np.int)
 SUPPORTED_EXTENSIONS = ["." + f for f in mesh_formats()]
 NR_PRINCETON_MESHES = 1814
 
@@ -19,7 +19,7 @@ def listMeshes(dirpath):
             continue
         if getExt(f) not in SUPPORTED_EXTENSIONS:
             continue
-        if getId(f) in IGNORE_LIST:
+        if np.int(getId(f)) in IGNORE_LIST:
             continue
         yield f
 
