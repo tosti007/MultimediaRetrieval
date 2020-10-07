@@ -64,6 +64,7 @@
     <Compile Include="Vertex.cs" />
     <Compile Include="Face.cs" />
     <Compile Include="AABB.cs" />
+    <Compile Include="FeatureVector.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="m0.off">
