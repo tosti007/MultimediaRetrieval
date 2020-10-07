@@ -114,16 +114,17 @@ namespace MultimediaRetrieval
             if (!string.IsNullOrWhiteSpace(InputDir))
                 db.Filter(InputDir);
 
+            db.Normalize();
+
             Mesh inputmesh = Mesh.ReadMesh(InputMesh);
             MeshStatistics inputms = new MeshStatistics(inputmesh);
 
-            inputms.Features.Normalize(db);
+            inputms.Features.Normalize(db.Average, db.StandardDev);
 
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors:
             List<(uint, float)> distance = new List<(uint, float)>();
             foreach(MeshStatistics m in db.meshes)
             {
-                m.Features.Normalize(db);
                 distance.Add((m.ID, FeatureVector.EuclidianDistance(m.Features, inputms.Features)));
             }
 

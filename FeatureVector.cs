@@ -135,17 +135,17 @@ namespace MultimediaRetrieval
         }
 
         //Normalize the feature vector using the average and a standard deviation from a featuredatabase:
-        public void Normalize(FeatureDatabase db)
+        public void Normalize(FeatureVector avg, FeatureVector std)
         {
-            if (_data.Length != db.Average._data.Length || _data.Length != db.StandardDev._data.Length)
+            if (_data.Length != avg._data.Length || _data.Length != std._data.Length)
                 throw new Exception("Attempted to normalize with FeatureVectors of different length.");
 
             for (int i = 0; i < _data.Length; i++)
             {
-                _data[i] = _data[i] - db.Average._data[i];
+                _data[i] = _data[i] - avg._data[i];
 
-                if (db.StandardDev._data[i] != 0)
-                    _data[i] /= db.StandardDev._data[i];
+                if (std._data[i] != 0)
+                    _data[i] /= std._data[i];
 
                 // Else
                 //Console.WriteLine($"Sdev was 0 at index {i}! Did not use it for normalization."); 

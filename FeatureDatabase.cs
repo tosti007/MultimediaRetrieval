@@ -72,6 +72,14 @@ namespace MultimediaRetrieval
             meshes.TrimExcess();
         }
 
+        public void Normalize()
+        {
+            FeatureVector avg = Average;
+            FeatureVector std = StandardDev;
+            foreach (MeshStatistics m in meshes)
+                m.Features.Normalize(avg, std);
+        }
+
         public FeatureVector Average
         {
             get
