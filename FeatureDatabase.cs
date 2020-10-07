@@ -35,9 +35,9 @@ namespace MultimediaRetrieval
                 ));
         }
 
-        public static FeatureDatabase ReadFrom(string filepath, string dirpath)
+        public static FeatureDatabase ReadFrom(string filepath)
         {
-            Dictionary<uint, MeshStatistics> tmp = new Dictionary<uint, MeshStatistics>();
+            FeatureDatabase result = new FeatureDatabase();
 
             using (StreamReader file = new StreamReader(filepath))
             {
@@ -49,23 +49,27 @@ namespace MultimediaRetrieval
                         continue;
 
                     var item = MeshStatistics.Parse(line);
-                    tmp.Add(item.ID, item);
+                    result.meshes.Add(item);
                 }
             }
 
-            FeatureDatabase result = new FeatureDatabase();
-
-            foreach (string filename in DatabaseReader.ListMeshes(dirpath))
-            {
-                uint id = DatabaseReader.GetId(filename);
-
-                if (!tmp.TryGetValue(id, out var item))
-                    continue;
-
-                result.meshes.Add(item);
-            }
-
             return result;
+        }
+
+        public void Filter(string dirpath)
+        {
+            HashSet<uint> ids = new HashSet<uint>(DatabaseReader.ListMeshes(dirpath).Select(DatabaseReader.GetId));
+            List<MeshStatistics> nm = new List<MeshStatistics>(meshes.Count);
+            foreach (MeshStatistics stats in meshes)
+            {
+                if (ids.Contains(stats.ID))
+                {
+                    nm.Add(stats);
+                    ids.Remove(stats.ID);
+                }
+            }
+            meshes = nm;
+            meshes.TrimExcess();
         }
 
         public FeatureVector Average

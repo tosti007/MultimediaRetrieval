@@ -91,12 +91,12 @@ namespace MultimediaRetrieval
         public string InputMesh { get; set; }
 
         [Option('d', "database",
-            Default = "database/step4/",
-            HelpText = "Directory to read the features from.")]
+            HelpText = "Directory to filter the possible meshes with.")]
         public string InputDir { get; set; }
 
         [Option('i', "input",
-            HelpText = "(Default: [DIRECTORY]/output.mr) Directory to read the features from.")]
+            Default = "database/step4/output.mr",
+            HelpText = "File to read the features from.")]
         public string InputFile { get; set; }
 
         [Option('k', "k_parameter",
@@ -109,7 +109,10 @@ namespace MultimediaRetrieval
             if (string.IsNullOrWhiteSpace(InputFile))
                 InputFile = Path.Combine(InputDir, "output.mr");
 
-            FeatureDatabase db = FeatureDatabase.ReadFrom(InputFile, InputDir);
+            FeatureDatabase db = FeatureDatabase.ReadFrom(InputFile);
+
+            if (!string.IsNullOrWhiteSpace(InputDir))
+                db.Filter(InputDir);
 
             Mesh inputmesh = Mesh.ReadMesh(InputMesh);
             MeshStatistics inputms = new MeshStatistics(inputmesh);
