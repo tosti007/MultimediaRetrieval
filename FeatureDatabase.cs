@@ -11,13 +11,16 @@ namespace MultimediaRetrieval
         public List<MeshStatistics> meshes;
         private FeatureVector _avg;
         private FeatureVector _std;
+        public bool Normalized { get; private set; }
 
         private FeatureDatabase()
         {
+            Normalized = false;
             meshes = new List<MeshStatistics>();
         }
         public FeatureDatabase(DatabaseReader classes, string dirpath)
         {
+            Normalized = false;
             meshes = DatabaseReader.ListMeshes(dirpath).AsParallel().Select((file) => {
                 Console.WriteLine("Generating features for {0}", file);
                 return new MeshStatistics(classes, file);
@@ -30,7 +33,15 @@ namespace MultimediaRetrieval
             if (!filepath.EndsWith(".mr", StringComparison.InvariantCulture))
                 filepath += ".mr";
 
-            File.WriteAllLines(filepath, new string[] { MeshStatistics.Headers() }.Concat(
+            List<string> headers = new List<string>(3);
+            if (Normalized)
+            {
+                headers.Add(_avg.ToString());
+                headers.Add(_std.ToString());
+            }
+            headers.Add(MeshStatistics.Headers());
+
+            File.WriteAllLines(filepath, headers.ToArray().Concat(
                 meshes.OrderBy((cls) => cls.ID).Select((cls) => cls.ToString())
                 ));
         }
@@ -43,6 +54,17 @@ namespace MultimediaRetrieval
             {
                 // Ignore the first line with headers
                 string line = file.ReadLine();
+
+                if (line.Count((c) => c == ';') == FeatureVector.Headers().Count((c) => c == ';'))
+                {
+                    // Normalized featuredatabase
+                    result._avg = FeatureVector.Parse(line);
+                    line = file.ReadLine();
+                    result._std = FeatureVector.Parse(line);
+                    line = file.ReadLine();
+                    result.Normalized = true;
+                }
+
                 while ((line = file.ReadLine()) != null)
                 {
                     if (line == string.Empty)
@@ -78,6 +100,7 @@ namespace MultimediaRetrieval
             FeatureVector std = StandardDev;
             foreach (MeshStatistics m in meshes)
                 m.Features.Normalize(avg, std);
+            Normalized = true;
         }
 
         public FeatureVector Average

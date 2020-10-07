@@ -114,7 +114,8 @@ namespace MultimediaRetrieval
             if (!string.IsNullOrWhiteSpace(InputDir))
                 db.Filter(InputDir);
 
-            db.Normalize();
+            if (!db.Normalized)
+                db.Normalize();
 
             Mesh inputmesh = Mesh.ReadMesh(InputMesh);
             MeshStatistics inputms = new MeshStatistics(inputmesh);
