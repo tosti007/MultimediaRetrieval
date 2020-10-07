@@ -46,6 +46,32 @@ namespace MultimediaRetrieval
             Vector3 v = max - min;
             return v.X * v.Y * v.Z;
         }
+
+        public static string Headers()
+        {
+            return string.Join(";",
+                "AABB_min_X",
+                "AABB_min_Y",
+                "AABB_min_Z",
+                "AABB_max_X" +
+                "AABB_max_Y" +
+                "AABB_max_Z",
+                "AABB_Volume"
+                );
+        }
+
+        public override string ToString()
+        {
+            return string.Join(";",
+                min.X,
+                min.Y,
+                min.Z,
+                max.X,
+                max.Y,
+                max.Z,
+                Volume()
+                );
+        }
     }
 
 }
