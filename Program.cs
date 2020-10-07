@@ -84,6 +84,44 @@ namespace MultimediaRetrieval
         }
     }
 
+    [Verb("normalize", HelpText = "Normalize a feature file for later querying.")]
+    class NormalizeOptions
+    {
+        [Option('d', "database",
+            Default = "database/step1/",
+            HelpText = "Directory to filter the possible meshes with.")]
+        public string InputDir { get; set; }
+
+        [Option('i', "input",
+            Default = "database/step4/output.mr",
+            HelpText = "File to read the features from.")]
+        public string InputFile { get; set; }
+
+        [Option('o', "output",
+            Default = "database/output.mr",
+            HelpText = "File path to write the normalized features to.")]
+        public string OutputFile { get; set; }
+
+        public int Execute()
+        {
+            FeatureDatabase db = FeatureDatabase.ReadFrom(InputFile);
+
+            if (!db.Normalized)
+            {
+                Console.Error.WriteLine($"Featurefile {InputFile} is already normalized!");
+                return 1;
+            }
+
+            if (!string.IsNullOrWhiteSpace(InputDir))
+                db.Filter(InputDir);
+
+            db.Normalize();
+            db.WriteToFile(OutputFile);
+
+            return 0;
+        }
+    }
+
     [Verb("query", HelpText = "Query a mesh, given a feature file.")]
     class QueryOptions
     {
@@ -95,7 +133,7 @@ namespace MultimediaRetrieval
         public string InputDir { get; set; }
 
         [Option('i', "input",
-            Default = "database/step4/output.mr",
+            Default = "database/output.mr",
             HelpText = "File to read the features from.")]
         public string InputFile { get; set; }
 
@@ -115,7 +153,11 @@ namespace MultimediaRetrieval
                 db.Filter(InputDir);
 
             if (!db.Normalized)
+            {
+                Console.Error.WriteLine("Featuredatabase is not yet normalized!");
+                Console.Error.WriteLine("Normalized in memory now, but for future cases use the `normalize` command first.");
                 db.Normalize();
+            }
 
             Mesh inputmesh = Mesh.ReadMesh(InputMesh);
             MeshStatistics inputms = new MeshStatistics(inputmesh);
