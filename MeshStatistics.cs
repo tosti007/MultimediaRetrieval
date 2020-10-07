@@ -14,16 +14,16 @@ namespace MultimediaRetrieval
 
         public uint ID;
         public string Classification;
-        public int vertexCount, faceCount;
-        public FaceType faceType;
+        public int VertexCount, FaceCount;
+        public FaceType FaceType;
 
         //The global discriptors:
-        public AABB boundingBox;
-        public float surface_area;
-        public float diameter;
-        public float eccentricity;
-        public float compactness;
-        public float volume;
+        public AABB BoundingBox;
+        public float SurfaceArea;
+        public float Diameter;
+        public float Eccentricity;
+        public float Compactness;
+        public float Volume;
 
         //The shape property discriptors:
         public Histogram_A3 a3;
@@ -58,19 +58,19 @@ namespace MultimediaRetrieval
 
         void GenerateFeatures(Mesh mesh)
         {
-            vertexCount = mesh.vertices.Count;
-            faceCount = mesh.faces.Count;
+            VertexCount = mesh.vertices.Count;
+            FaceCount = mesh.faces.Count;
 
-            faceType = Face.CalculateType(mesh.faces);
-            boundingBox = new AABB(mesh);
+            FaceType = Face.CalculateType(mesh.faces);
+            BoundingBox = new AABB(mesh);
 
             foreach (Face f in mesh.faces)
             {
-                surface_area += f.CalculateArea(ref mesh.vertices);
+                SurfaceArea += f.CalculateArea(ref mesh.vertices);
             }
 
-            double[,] cov = new double[vertexCount, 3];
-            this.diameter = float.NegativeInfinity;
+            double[,] cov = new double[VertexCount, 3];
+            this.Diameter = float.NegativeInfinity;
             for (int i = 0; i < mesh.vertices.Count; i++)
             {
                 Vector3 pos = mesh.vertices[i].position;
@@ -80,26 +80,26 @@ namespace MultimediaRetrieval
 
                 foreach (Vertex v in mesh.vertices)
                 {
-                    this.diameter = Math.Max(this.diameter, Vector3.DistanceSquared(pos, v.position));
+                    this.Diameter = Math.Max(this.Diameter, Vector3.DistanceSquared(pos, v.position));
                 }
             }
-            this.diameter = (float)Math.Sqrt(this.diameter);
+            this.Diameter = (float)Math.Sqrt(this.Diameter);
             cov = cov.Covariance(0);
             // Eigenvectors are normalized, so retrieve from diagonalmatrix
             double[,] eig = new EigenvalueDecomposition(cov).DiagonalMatrix;
             float eig_max = (float)Math.Max(Math.Max(eig[0, 0], eig[1, 1]), eig[2, 2]);
             float eig_min = (float)Math.Min(Math.Min(eig[0, 0], eig[1, 1]), eig[2, 2]);
-            this.eccentricity = eig_max / eig_min;
+            this.Eccentricity = eig_max / eig_min;
 
             //For compactness, we need the volume:
-            this.volume = 0;
-            for (int i = 0; i < faceCount; i++)
+            this.Volume = 0;
+            for (int i = 0; i < FaceCount; i++)
             {
-                volume += mesh.faces[i].CalculateSignedVolume(ref mesh.vertices);
+                Volume += mesh.faces[i].CalculateSignedVolume(ref mesh.vertices);
             }
-            this.volume = Math.Abs(this.volume);
+            this.Volume = Math.Abs(this.Volume);
 
-            this.compactness = (float)(Math.Pow(surface_area, 3) / (36 * Math.PI * Math.Pow(volume, 2)));
+            this.Compactness = (float)(Math.Pow(SurfaceArea, 3) / (36 * Math.PI * Math.Pow(Volume, 2)));
 
             //The shape property discriptors:
             Random rand = new Random();
@@ -151,21 +151,21 @@ namespace MultimediaRetrieval
             return string.Join(";", 
                 ID, 
                 Classification, 
-                vertexCount, 
-                faceCount, 
-                faceType, 
-                boundingBox.min.X, 
-                boundingBox.min.Y, 
-                boundingBox.min.Z, 
-                boundingBox.max.X, 
-                boundingBox.max.Y, 
-                boundingBox.max.Z, 
-                boundingBox.Volume(), 
-                surface_area,
-                diameter,
-                eccentricity,
-                compactness,
-                volume,
+                VertexCount, 
+                FaceCount, 
+                FaceType, 
+                BoundingBox.min.X, 
+                BoundingBox.min.Y, 
+                BoundingBox.min.Z, 
+                BoundingBox.max.X, 
+                BoundingBox.max.Y, 
+                BoundingBox.max.Z, 
+                BoundingBox.Volume(), 
+                SurfaceArea,
+                Diameter,
+                Eccentricity,
+                Compactness,
+                Volume,
                 a3.ToCSV(),
                 d1.ToCSV(),
                 d2.ToCSV(),
@@ -181,26 +181,26 @@ namespace MultimediaRetrieval
 
             stats.ID = uint.Parse(data[0]);
             stats.Classification = data[1];
-            stats.vertexCount = int.Parse(data[2]);
-            stats.faceCount = int.Parse(data[3]);
-            Enum.TryParse(data[4], out stats.faceType);
-            stats.boundingBox = new AABB(
+            stats.VertexCount = int.Parse(data[2]);
+            stats.FaceCount = int.Parse(data[3]);
+            Enum.TryParse(data[4], out stats.FaceType);
+            stats.BoundingBox = new AABB(
                 new Vector3(float.Parse(data[5]), float.Parse(data[6]), float.Parse(data[7])),
                 new Vector3(float.Parse(data[8]), float.Parse(data[9]), float.Parse(data[10]))
                 );
             // AABB Volume 
-            stats.surface_area = float.Parse(data[12]);
-            stats.diameter = float.Parse(data[13]);
-            stats.eccentricity = float.Parse(data[14]);
-            stats.compactness = float.Parse(data[15]);
-            stats.volume = float.Parse(data[16]);
+            stats.SurfaceArea = float.Parse(data[12]);
+            stats.Diameter = float.Parse(data[13]);
+            stats.Eccentricity = float.Parse(data[14]);
+            stats.Compactness = float.Parse(data[15]);
+            stats.Volume = float.Parse(data[16]);
 
             //TODO: Might want to handle this differently.
             //There are meshes with infinite eccentricity/compactness, fix this:
-            if (float.IsInfinity(stats.compactness))
-                stats.compactness = 0;
-            if (float.IsInfinity(stats.eccentricity))
-                stats.eccentricity = 0;
+            if (float.IsInfinity(stats.Compactness))
+                stats.Compactness = 0;
+            if (float.IsInfinity(stats.Eccentricity))
+                stats.Eccentricity = 0;
 
             //The histograms:
             int histoIndex = 17;
