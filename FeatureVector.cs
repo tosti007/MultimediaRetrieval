@@ -107,10 +107,11 @@ namespace MultimediaRetrieval
             if (a._data.Length != b._data.Length)
                 throw new Exception("Attempted to add two FeatureVectors of different length.");
 
+            FeatureVector c = new FeatureVector();
             for (int i = 0; i < a._data.Length; i++)
-                a._data[i] += b._data[i];
+                c._data[i] = a._data[i] + b._data[i];
 
-            return a;
+            return c;
         }
 
         public static FeatureVector operator -(FeatureVector a, FeatureVector b)
@@ -118,10 +119,11 @@ namespace MultimediaRetrieval
             if (a._data.Length != b._data.Length)
                 throw new Exception("Attempted to subtract two FeatureVectors of different length.");
 
+            FeatureVector c = new FeatureVector();
             for (int i = 0; i < a._data.Length; i++)
-                a._data[i] -= b._data[i];
+                c._data[i] = c._data[i] + b._data[i];
 
-            return a;
+            return c;
         }
 
         public void Map(Func<float, float> f)
