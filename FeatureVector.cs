@@ -22,19 +22,19 @@ namespace MultimediaRetrieval
 
             int histoIndex = 5;
 
-            m.a3.Data.CopyTo(_data, histoIndex);
+            m.a3.AsPercentage().CopyTo(_data, histoIndex);
             histoIndex += m.a3.Bins;
 
-            m.d1.Data.CopyTo(_data, histoIndex);
+            m.d1.AsPercentage().CopyTo(_data, histoIndex);
             histoIndex += m.d1.Bins;
 
-            m.d2.Data.CopyTo(_data, histoIndex);
+            m.d2.AsPercentage().CopyTo(_data, histoIndex);
             histoIndex += m.d2.Bins;
 
-            m.d3.Data.CopyTo(_data, histoIndex);
+            m.d3.AsPercentage().CopyTo(_data, histoIndex);
             histoIndex += m.d3.Bins;
 
-            m.d4.Data.CopyTo(_data, histoIndex);
+            m.d4.AsPercentage().CopyTo(_data, histoIndex);
         }
 
         public static FeatureVector operator +(FeatureVector a, FeatureVector b)

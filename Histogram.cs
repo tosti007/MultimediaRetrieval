@@ -12,6 +12,7 @@ namespace MultimediaRetrieval
     //A histogram class for the distribution features in the MeshStatistics
     public abstract class AbstractHistogram
     {
+        public int nr_items;
         float min, max;
         public int[] Data { get; }
 
@@ -32,6 +33,14 @@ namespace MultimediaRetrieval
             {
                 Data[i] = int.Parse(sdata[start + i]);
             }
+        }
+
+        public float[] AsPercentage()
+        {
+            float[] result = new float[Bins];
+            for (int i = 0; i < Bins; i++)
+                result[i] = (float)Data[i] / nr_items;
+            return result;
         }
 
         public string ToCSV()
@@ -67,6 +76,7 @@ namespace MultimediaRetrieval
                 index--;
 
             Data[index]++;
+            nr_items++;
         }
 
         protected virtual void Sample(Mesh mesh, Random rand)
