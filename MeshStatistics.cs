@@ -118,34 +118,38 @@ namespace MultimediaRetrieval
 
             d4 = new Histogram_D4();
             d4.Sample(mesh, rand, NUMBER_OF_SAMPLES);
+
+            Features = new FeatureVector(mesh, this);
         }
 
         public static string Headers()
         {
-            return "ID;" +
-            "Class;" +
-            "#Vertices;" +
-            "#Faces;" +
-            "FaceType;" +
-            "AABB_min_X;" +
-            "AABB_min_Y;" +
-            "AABB_min_Z;" +
-            "AABB_max_X;" +
-            "AABB_max_Y;" +
-            "AABB_max_Z;" +
-            "AABB_Volume;" +
-            "Surface_Area;" +
-            "Diameter;" +
-            "Eccentricity;" +
-            "Compactness;" +
-            "Volume;" +
-            Histogram_A3.ToCSVHeader() + ";" +
-            Histogram_D1.ToCSVHeader() + ";" +
-            Histogram_D2.ToCSVHeader() + ";" +
-            Histogram_D3.ToCSVHeader() + ";" +
-            Histogram_D4.ToCSVHeader();
+            return string.Join(";",
+                "ID",
+                "Class",
+                "#Vertices",
+                "#Faces",
+                "FaceType",
+                "AABB_min_X",
+                "AABB_min_Y",
+                "AABB_min_Z",
+                "AABB_max_X" +
+                "AABB_max_Y" +
+                "AABB_max_Z",
+                "AABB_Volume",
+                "Surface_Area",
+                "Diameter",
+                "Eccentricity",
+                "Compactness",
+                "Volume",
+                Histogram_A3.ToCSVHeader(),
+                Histogram_D1.ToCSVHeader(),
+                Histogram_D2.ToCSVHeader(),
+                Histogram_D3.ToCSVHeader(),
+                Histogram_D4.ToCSVHeader()
+                );
         }
-            
+
         public override string ToString()
         {
             return string.Join(";", 
