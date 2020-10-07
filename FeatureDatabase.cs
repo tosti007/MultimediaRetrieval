@@ -98,7 +98,7 @@ namespace MultimediaRetrieval
                 _std.Map(f => f * f);
                 for (int i = 1; i < meshes.Count; i++)
                 {
-                    FeatureVector x = new FeatureVector(meshes[0]) - _avg;
+                    FeatureVector x = new FeatureVector(meshes[i]) - _avg;
                     x.Map(f => f * f);
                     _std += x;
                 }
