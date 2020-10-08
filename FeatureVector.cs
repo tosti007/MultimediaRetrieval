@@ -87,19 +87,19 @@ namespace MultimediaRetrieval
             d3.Sample(mesh, rand, NUMBER_OF_SAMPLES);
             d4.Sample(mesh, rand, NUMBER_OF_SAMPLES);
 
-            a3.Data.CopyTo(_data, histoIndex);
+            a3.AsPercentage().CopyTo(_data, histoIndex);
             histoIndex += a3.Bins;
 
-            d1.Data.CopyTo(_data, histoIndex);
+            d1.AsPercentage().CopyTo(_data, histoIndex);
             histoIndex += d1.Bins;
 
-            d2.Data.CopyTo(_data, histoIndex);
+            d2.AsPercentage().CopyTo(_data, histoIndex);
             histoIndex += d2.Bins;
 
-            d3.Data.CopyTo(_data, histoIndex);
+            d3.AsPercentage().CopyTo(_data, histoIndex);
             histoIndex += d3.Bins;
 
-            d4.Data.CopyTo(_data, histoIndex);
+            d4.AsPercentage().CopyTo(_data, histoIndex);
         }
 
         public static FeatureVector operator +(FeatureVector a, FeatureVector b)
