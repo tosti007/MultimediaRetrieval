@@ -102,6 +102,11 @@ namespace MultimediaRetrieval
             HelpText = "File path to write the normalized features to.")]
         public string OutputFile { get; set; }
 
+        [Option('v', "vector",
+            Default = false,
+            HelpText = "Print the feature vectors for the given matches.")]
+        public bool Vectors { get; set; }
+
         public int Execute()
         {
             FeatureDatabase db = FeatureDatabase.ReadFrom(InputFile);
@@ -142,6 +147,11 @@ namespace MultimediaRetrieval
             HelpText = "The number of top matching meshes to return.")]
         public int InputK { get; set; }
 
+        [Option('v', "vector",
+            Default = false,
+            HelpText = "Print the feature vectors for the given matches.")]
+        public bool Vectors { get; set; }
+
         public int Execute()
         {
             if (string.IsNullOrWhiteSpace(InputFile))
@@ -159,23 +169,30 @@ namespace MultimediaRetrieval
                 db.Normalize();
             }
 
-            Mesh inputmesh = Mesh.ReadMesh(InputMesh);
-            MeshStatistics inputms = new MeshStatistics(inputmesh);
-
-            inputms.Features.Normalize(db.Average, db.StandardDev);
+            FeatureVector mesh = new MeshStatistics(Mesh.ReadMesh(InputMesh)).Features;
+            mesh.Normalize(db.Average, db.StandardDev);
 
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors:
-            List<(uint, float)> distance = new List<(uint, float)>();
+            List<(MeshStatistics, float)> distance = new List<(MeshStatistics, float)>();
             foreach(MeshStatistics m in db.meshes)
             {
-                distance.Add((m.ID, FeatureVector.EuclidianDistance(m.Features, inputms.Features)));
+                distance.Add((m, FeatureVector.EuclidianDistance(m.Features, mesh)));
             }
 
             //Sort the meshes in the database by distance and return the top:
             distance.Sort((a, b) => a.Item2.CompareTo(b.Item2));
             for (int i = 0; i < InputK; i++)
             {
-                Console.WriteLine($"Close match: {distance[i].Item1}, with distance {distance[i].Item2}.");
+                Console.Write($"Close match: {distance[i].Item1.ID}, with distance {distance[i].Item2}");
+                if (Vectors)
+                {
+                    Console.Write(" and ");
+                    Console.WriteLine(distance[i].Item1.Features.PrettyPrint());
+                }
+                else
+                {
+                    Console.WriteLine(".");
+                }
             }
 
             return 0;

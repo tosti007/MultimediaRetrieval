@@ -189,6 +189,11 @@ namespace MultimediaRetrieval
             return string.Join(";", _data);
         }
 
+        public string PrettyPrint()
+        {
+            return "Feature Vector\n" + string.Join("\n", Headers().Split(';').Zip(ToString().Split(';'), (a, b) => $"    {a}: {b}"));
+        }
+
         public static FeatureVector Parse(string input)
         {
             FeatureVector v = new FeatureVector(input.Split(new char[] { ';' }).Select(float.Parse).ToArray());
