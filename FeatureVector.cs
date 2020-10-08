@@ -121,7 +121,7 @@ namespace MultimediaRetrieval
 
             FeatureVector c = new FeatureVector();
             for (int i = 0; i < a._data.Length; i++)
-                c._data[i] = c._data[i] + b._data[i];
+                c._data[i] = a._data[i] + b._data[i];
 
             return c;
         }

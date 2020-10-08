@@ -172,7 +172,7 @@ namespace MultimediaRetrieval
                 db.FilterNanAndInf(Vectors);
             }
 
-            FeatureVector query = new MeshStatistics(Mesh.ReadMesh(InputMesh)).Features;
+            FeatureVector query = new FeatureVector(Mesh.ReadMesh(InputMesh));
             query.Normalize(db.Average, db.StandardDev);
 
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors:
