@@ -171,14 +171,14 @@ namespace MultimediaRetrieval
                 db.FilterNanAndInf(Vectors);
             }
 
-            FeatureVector mesh = new MeshStatistics(Mesh.ReadMesh(InputMesh)).Features;
-            mesh.Normalize(db.Average, db.StandardDev);
+            FeatureVector query = new MeshStatistics(Mesh.ReadMesh(InputMesh)).Features;
+            query.Normalize(db.Average, db.StandardDev);
 
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors:
             List<(MeshStatistics, float)> distance = new List<(MeshStatistics, float)>();
             foreach(MeshStatistics m in db.meshes)
             {
-                distance.Add((m, FeatureVector.EuclidianDistance(m.Features, mesh)));
+                distance.Add((m, FeatureVector.EuclidianDistance(m.Features, query)));
             }
 
             //Sort the meshes in the database by distance and return the top:

@@ -13,7 +13,7 @@ namespace MultimediaRetrieval
     {
         public const int NUMBER_OF_SAMPLES = 1000;
 
-        public float[] _data;
+        private float[] _data;
 
         public float SurfaceArea { get => _data[0]; set => _data[0] = value; }
         public float Diameter { get => _data[1]; set => _data[1] = value; }
