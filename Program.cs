@@ -112,7 +112,7 @@ namespace MultimediaRetrieval
         {
             FeatureDatabase db = FeatureDatabase.ReadFrom(InputFile);
 
-            if (!db.Normalized)
+            if (db.Normalized)
             {
                 Console.Error.WriteLine($"Featurefile {InputFile} is already normalized!");
                 return 1;
