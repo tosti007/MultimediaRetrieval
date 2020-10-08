@@ -173,6 +173,24 @@ namespace MultimediaRetrieval
             return (float)Math.Sqrt(result);
         }
 
+        //TODO: Test this, might be bad because the featurevectors are generally not normalized (normalized in this context means length == 1)
+        public static float CosineDistance(FeatureVector a, FeatureVector b)
+        {
+            if (a._data.Length != b._data.Length)
+                throw new Exception("Attempted to calculate distance between two FeatureVectors of different length.");
+
+            float result = 0;
+            float alen = 0;
+            float blen = 0;
+            for(int i = 0; i < a._data.Length; i++)
+            {
+                alen += a._data[i];
+                blen += b._data[i];
+                result += a._data[i] * b._data[i];
+            }
+            return 1 - (result / (alen * blen));
+        }
+
         public static string Headers()
         {
             return string.Join(";",
