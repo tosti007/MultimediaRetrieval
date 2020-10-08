@@ -78,6 +78,32 @@ namespace MultimediaRetrieval
             return result;
         }
 
+        public void FilterNanAndInf(bool print)
+        {
+            List<MeshStatistics> nm = new List<MeshStatistics>(meshes.Count);
+            foreach (MeshStatistics stats in meshes)
+            {
+                if (stats.Features.HasValue((x) => float.IsNaN(x) || float.IsInfinity(x)))
+                {
+                    Console.Error.Write($"Bad value found for {stats.ID}");
+                    if (print)
+                    {
+                        Console.Error.Write(" with ");
+                        Console.Error.WriteLine(stats.Features.PrettyPrint());
+                    }
+                    else
+                    {
+                        Console.Error.WriteLine(".");
+                    }
+                } else
+                {
+                    nm.Add(stats);
+                }
+            }
+            meshes = nm;
+            meshes.TrimExcess();
+        }
+
         public void Filter(string dirpath)
         {
             HashSet<uint> ids = new HashSet<uint>(DatabaseReader.ListMeshes(dirpath).Select(DatabaseReader.GetId));

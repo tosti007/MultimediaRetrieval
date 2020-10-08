@@ -134,6 +134,11 @@ namespace MultimediaRetrieval
             }
         }
 
+        public bool HasValue(Func<float, bool> f)
+        {
+            return _data.Any(f);
+        }
+
         //Normalize the feature vector using the average and a standard deviation from a featuredatabase:
         public void Normalize(FeatureVector avg, FeatureVector std)
         {

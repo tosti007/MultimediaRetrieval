@@ -121,6 +121,7 @@ namespace MultimediaRetrieval
                 db.Filter(InputDir);
 
             db.Normalize();
+            db.FilterNanAndInf(Vectors);
             db.WriteToFile(OutputFile);
 
             return 0;
@@ -167,6 +168,7 @@ namespace MultimediaRetrieval
                 Console.Error.WriteLine("Featuredatabase is not yet normalized!");
                 Console.Error.WriteLine("Normalized in memory now, but for future cases use the `normalize` command first.");
                 db.Normalize();
+                db.FilterNanAndInf(Vectors);
             }
 
             FeatureVector mesh = new MeshStatistics(Mesh.ReadMesh(InputMesh)).Features;
