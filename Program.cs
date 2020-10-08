@@ -25,10 +25,11 @@ namespace MultimediaRetrieval
                 return options.Execute();
             }
 
-            return Parser.Default.ParseArguments<ViewOptions, FeatureOptions, QueryOptions>(args)
+            return Parser.Default.ParseArguments<ViewOptions, FeatureOptions, NormalizeOptions, QueryOptions>(args)
                 .MapResult(
                     (ViewOptions opts) => opts.Execute(),
                     (FeatureOptions opts) => opts.Execute(),
+                    (NormalizeOptions opts) => opts.Execute(),
                     (QueryOptions opts) => opts.Execute(),
                 errs => 1);
         }
