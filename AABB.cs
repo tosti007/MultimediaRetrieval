@@ -53,8 +53,8 @@ namespace MultimediaRetrieval
                 "AABB_min_X",
                 "AABB_min_Y",
                 "AABB_min_Z",
-                "AABB_max_X" +
-                "AABB_max_Y" +
+                "AABB_max_X",
+                "AABB_max_Y",
                 "AABB_max_Z",
                 "AABB_Volume"
                 );

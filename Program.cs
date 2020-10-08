@@ -25,10 +25,11 @@ namespace MultimediaRetrieval
                 return options.Execute();
             }
 
-            return Parser.Default.ParseArguments<ViewOptions, FeatureOptions, QueryOptions>(args)
+            return Parser.Default.ParseArguments<ViewOptions, FeatureOptions, NormalizeOptions, QueryOptions>(args)
                 .MapResult(
                     (ViewOptions opts) => opts.Execute(),
                     (FeatureOptions opts) => opts.Execute(),
+                    (NormalizeOptions opts) => opts.Execute(),
                     (QueryOptions opts) => opts.Execute(),
                 errs => 1);
         }
@@ -84,6 +85,50 @@ namespace MultimediaRetrieval
         }
     }
 
+    [Verb("normalize", HelpText = "Normalize a feature file for later querying.")]
+    class NormalizeOptions
+    {
+        [Option('d', "database",
+            Default = "database/step1/",
+            HelpText = "Directory to filter the possible meshes with.")]
+        public string InputDir { get; set; }
+
+        [Option('i', "input",
+            Default = "database/step4/output.mr",
+            HelpText = "File to read the features from.")]
+        public string InputFile { get; set; }
+
+        [Option('o', "output",
+            Default = "database/output.mr",
+            HelpText = "File path to write the normalized features to.")]
+        public string OutputFile { get; set; }
+
+        [Option('v', "vector",
+            Default = false,
+            HelpText = "Print the feature vectors for the given matches.")]
+        public bool Vectors { get; set; }
+
+        public int Execute()
+        {
+            FeatureDatabase db = FeatureDatabase.ReadFrom(InputFile);
+
+            if (db.Normalized)
+            {
+                Console.Error.WriteLine($"Featurefile {InputFile} is already normalized!");
+                return 1;
+            }
+
+            if (!string.IsNullOrWhiteSpace(InputDir))
+                db.Filter(InputDir);
+
+            db.Normalize();
+            db.FilterNanAndInf(Vectors);
+            db.WriteToFile(OutputFile);
+
+            return 0;
+        }
+    }
+
     [Verb("query", HelpText = "Query a mesh, given a feature file.")]
     class QueryOptions
     {
@@ -91,12 +136,12 @@ namespace MultimediaRetrieval
         public string InputMesh { get; set; }
 
         [Option('d', "database",
-            Default = "database/step4/",
-            HelpText = "Directory to read the features from.")]
+            HelpText = "Directory to filter the possible meshes with.")]
         public string InputDir { get; set; }
 
         [Option('i', "input",
-            HelpText = "(Default: [DIRECTORY]/output.mr) Directory to read the features from.")]
+            Default = "database/output.mr",
+            HelpText = "File to read the features from.")]
         public string InputFile { get; set; }
 
         [Option('k', "k_parameter",
@@ -104,33 +149,53 @@ namespace MultimediaRetrieval
             HelpText = "The number of top matching meshes to return.")]
         public int InputK { get; set; }
 
+        [Option('v', "vector",
+            Default = false,
+            HelpText = "Print the feature vectors for the given matches.")]
+        public bool Vectors { get; set; }
+
         public int Execute()
         {
             if (string.IsNullOrWhiteSpace(InputFile))
                 InputFile = Path.Combine(InputDir, "output.mr");
 
-            FeatureDatabase db = FeatureDatabase.ReadFrom(InputFile, InputDir);
+            FeatureDatabase db = FeatureDatabase.ReadFrom(InputFile);
 
-            Mesh inputmesh = Mesh.ReadMesh(InputMesh);
-            MeshStatistics inputms = new MeshStatistics(inputmesh);
-            FeatureVector inputfv = new FeatureVector(inputms);
+            if (!string.IsNullOrWhiteSpace(InputDir))
+                db.Filter(InputDir);
 
-            inputfv.Normalize(db);
+            if (!db.Normalized)
+            {
+                Console.Error.WriteLine("Featuredatabase is not yet normalized!");
+                Console.Error.WriteLine("Normalized in memory now, but for future cases use the `normalize` command first.");
+                db.Normalize();
+                db.FilterNanAndInf(Vectors);
+            }
+
+            FeatureVector query = new FeatureVector(Mesh.ReadMesh(InputMesh));
+            query.Normalize(db.Average, db.StandardDev);
 
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors:
-            List<(uint, float)> distance = new List<(uint, float)>();
+            List<(MeshStatistics, float)> distance = new List<(MeshStatistics, float)>();
             foreach(MeshStatistics m in db.meshes)
             {
-                FeatureVector fv = new FeatureVector(m);
-                fv.Normalize(db);
-                distance.Add((m.ID, FeatureVector.EuclidianDistance(fv, inputfv)));
+                distance.Add((m, FeatureVector.EuclidianDistance(m.Features, query)));
             }
 
             //Sort the meshes in the database by distance and return the top:
             distance.Sort((a, b) => a.Item2.CompareTo(b.Item2));
             for (int i = 0; i < InputK; i++)
             {
-                Console.WriteLine($"Close match: {distance[i].Item1}, with distance {distance[i].Item2}.");
+                Console.Write($"Close match: {distance[i].Item1.ID}, with distance {distance[i].Item2}");
+                if (Vectors)
+                {
+                    Console.Write(" and ");
+                    Console.WriteLine(distance[i].Item1.Features.PrettyPrint());
+                }
+                else
+                {
+                    Console.WriteLine(".");
+                }
             }
 
             return 0;

@@ -11,13 +11,16 @@ namespace MultimediaRetrieval
         public List<MeshStatistics> meshes;
         private FeatureVector _avg;
         private FeatureVector _std;
+        public bool Normalized { get; private set; }
 
         private FeatureDatabase()
         {
+            Normalized = false;
             meshes = new List<MeshStatistics>();
         }
         public FeatureDatabase(DatabaseReader classes, string dirpath)
         {
+            Normalized = false;
             meshes = DatabaseReader.ListMeshes(dirpath).AsParallel().Select((file) => {
                 Console.WriteLine("Generating features for {0}", file);
                 return new MeshStatistics(classes, file);
@@ -30,42 +33,100 @@ namespace MultimediaRetrieval
             if (!filepath.EndsWith(".mr", StringComparison.InvariantCulture))
                 filepath += ".mr";
 
-            File.WriteAllLines(filepath, new string[] { MeshStatistics.Headers() }.Concat(
+            List<string> headers = new List<string>(3);
+            if (Normalized)
+            {
+                headers.Add(_avg.ToString());
+                headers.Add(_std.ToString());
+            }
+            headers.Add(MeshStatistics.Headers());
+
+            File.WriteAllLines(filepath, headers.ToArray().Concat(
                 meshes.OrderBy((cls) => cls.ID).Select((cls) => cls.ToString())
                 ));
         }
 
-        public static FeatureDatabase ReadFrom(string filepath, string dirpath)
+        public static FeatureDatabase ReadFrom(string filepath)
         {
-            Dictionary<uint, MeshStatistics> tmp = new Dictionary<uint, MeshStatistics>();
+            FeatureDatabase result = new FeatureDatabase();
 
             using (StreamReader file = new StreamReader(filepath))
             {
                 // Ignore the first line with headers
                 string line = file.ReadLine();
+
+                if (line.Count((c) => c == ';') == FeatureVector.Headers().Count((c) => c == ';'))
+                {
+                    // Normalized featuredatabase
+                    result._avg = FeatureVector.Parse(line);
+                    line = file.ReadLine();
+                    result._std = FeatureVector.Parse(line);
+                    line = file.ReadLine();
+                    result.Normalized = true;
+                }
+
                 while ((line = file.ReadLine()) != null)
                 {
                     if (line == string.Empty)
                         continue;
 
                     var item = MeshStatistics.Parse(line);
-                    tmp.Add(item.ID, item);
+                    result.meshes.Add(item);
                 }
             }
 
-            FeatureDatabase result = new FeatureDatabase();
-
-            foreach (string filename in DatabaseReader.ListMeshes(dirpath))
-            {
-                uint id = DatabaseReader.GetId(filename);
-
-                if (!tmp.TryGetValue(id, out var item))
-                    continue;
-
-                result.meshes.Add(item);
-            }
-
             return result;
+        }
+
+        public void FilterNanAndInf(bool print)
+        {
+            List<MeshStatistics> nm = new List<MeshStatistics>(meshes.Count);
+            foreach (MeshStatistics stats in meshes)
+            {
+                if (stats.Features.HasValue((x) => float.IsNaN(x) || float.IsInfinity(x)))
+                {
+                    Console.Error.Write($"Bad value found for {stats.ID}");
+                    if (print)
+                    {
+                        Console.Error.Write(" with ");
+                        Console.Error.WriteLine(stats.Features.PrettyPrint());
+                    }
+                    else
+                    {
+                        Console.Error.WriteLine(".");
+                    }
+                } else
+                {
+                    nm.Add(stats);
+                }
+            }
+            meshes = nm;
+            meshes.TrimExcess();
+        }
+
+        public void Filter(string dirpath)
+        {
+            HashSet<uint> ids = new HashSet<uint>(DatabaseReader.ListMeshes(dirpath).Select(DatabaseReader.GetId));
+            List<MeshStatistics> nm = new List<MeshStatistics>(meshes.Count);
+            foreach (MeshStatistics stats in meshes)
+            {
+                if (ids.Contains(stats.ID))
+                {
+                    nm.Add(stats);
+                    ids.Remove(stats.ID);
+                }
+            }
+            meshes = nm;
+            meshes.TrimExcess();
+        }
+
+        public void Normalize()
+        {
+            FeatureVector avg = Average;
+            FeatureVector std = StandardDev;
+            foreach (MeshStatistics m in meshes)
+                m.Features.Normalize(avg, std);
+            Normalized = true;
         }
 
         public FeatureVector Average
@@ -76,10 +137,10 @@ namespace MultimediaRetrieval
                     return _avg;
 
                 //Create the average FeatureVector.
-                _avg = new FeatureVector(meshes[0]);
-                for (int i = 1; i < meshes.Count; i++)
+                _avg = new FeatureVector();
+                for (int i = 0; i < meshes.Count; i++)
                 {
-                    _avg += new FeatureVector(meshes[i]);
+                    _avg += meshes[i].Features;
                 }
 
                 _avg.Map(f => f / meshes.Count);
@@ -94,11 +155,10 @@ namespace MultimediaRetrieval
                 if (_std != null)
                     return _std;
 
-                _std = new FeatureVector(meshes[0]) - Average;
-                _std.Map(f => f * f);
-                for (int i = 1; i < meshes.Count; i++)
+                _std = new FeatureVector();
+                for (int i = 0; i < meshes.Count; i++)
                 {
-                    FeatureVector x = new FeatureVector(meshes[i]) - _avg;
+                    FeatureVector x = meshes[i].Features - _avg;
                     x.Map(f => f * f);
                     _std += x;
                 }
