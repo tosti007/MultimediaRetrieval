@@ -13,6 +13,13 @@ namespace MultimediaRetrieval
     {
         public const int NUMBER_OF_SAMPLES = 1000;
         public const int HISTOGRAM_START_INDEX = 5;
+        private static readonly Histogram[] HISTOGRAMS = {
+                new Histogram(HistogramType.A3, HISTOGRAM_START_INDEX +  0, 10, 0, (float)Math.PI),
+                new Histogram(HistogramType.D1, HISTOGRAM_START_INDEX + 10, 10, 0, 0.8f),
+                new Histogram(HistogramType.D2, HISTOGRAM_START_INDEX + 20, 10, 0, 1),
+                new Histogram(HistogramType.D3, HISTOGRAM_START_INDEX + 30, 10, 0, 0.6f),
+                new Histogram(HistogramType.D4, HISTOGRAM_START_INDEX + 40, 10, 0, 0.4f),
+            };
 
         private float[] _data;
 
@@ -24,7 +31,8 @@ namespace MultimediaRetrieval
 
         public FeatureVector()
         {
-            _data = new float[5 + Histogram_A3.BIN_SIZE + Histogram_D1.BIN_SIZE + Histogram_D2.BIN_SIZE + Histogram_D3.BIN_SIZE + Histogram_D4.BIN_SIZE];
+            int length = HISTOGRAM_START_INDEX + HISTOGRAMS.Select((h) => h.Bins).Sum();
+            _data = new float[length];
         }
 
         private FeatureVector(float[] data)
@@ -74,33 +82,8 @@ namespace MultimediaRetrieval
             //The shape property discriptors:
             Random rand = new Random();
 
-            Histogram_A3 a3 = new Histogram_A3();
-            Histogram_D1 d1 = new Histogram_D1();
-            Histogram_D2 d2 = new Histogram_D2();
-            Histogram_D3 d3 = new Histogram_D3();
-            Histogram_D4 d4 = new Histogram_D4();
-
-            a3.Sample(mesh, rand, NUMBER_OF_SAMPLES);
-            d1.Sample(mesh, rand, NUMBER_OF_SAMPLES);
-            d2.Sample(mesh, rand, NUMBER_OF_SAMPLES);
-            d3.Sample(mesh, rand, NUMBER_OF_SAMPLES);
-            d4.Sample(mesh, rand, NUMBER_OF_SAMPLES);
-
-            int histoIndex = HISTOGRAM_START_INDEX;
-
-            a3.Data.CopyTo(_data, histoIndex);
-            histoIndex += a3.Bins;
-
-            d1.Data.CopyTo(_data, histoIndex);
-            histoIndex += d1.Bins;
-
-            d2.Data.CopyTo(_data, histoIndex);
-            histoIndex += d2.Bins;
-
-            d3.Data.CopyTo(_data, histoIndex);
-            histoIndex += d3.Bins;
-
-            d4.Data.CopyTo(_data, histoIndex);
+            foreach (Histogram hist in HISTOGRAMS)
+                hist.Sample(ref _data, mesh, rand, NUMBER_OF_SAMPLES);
         }
 
         public static FeatureVector operator +(FeatureVector a, FeatureVector b)
@@ -161,22 +144,8 @@ namespace MultimediaRetrieval
 
         public void HistogramsAsPercentages()
         {
-            int histoIndex = HISTOGRAM_START_INDEX;
-
-            AbstractHistogram.AsPercentage(ref _data, histoIndex, Histogram_A3.BIN_SIZE);
-            histoIndex += Histogram_A3.BIN_SIZE;
-
-            AbstractHistogram.AsPercentage(ref _data, histoIndex, Histogram_D1.BIN_SIZE);
-            histoIndex += Histogram_D1.BIN_SIZE;
-
-            AbstractHistogram.AsPercentage(ref _data, histoIndex, Histogram_D2.BIN_SIZE);
-            histoIndex += Histogram_D2.BIN_SIZE;
-
-            AbstractHistogram.AsPercentage(ref _data, histoIndex, Histogram_D3.BIN_SIZE);
-            histoIndex += Histogram_D3.BIN_SIZE;
-
-            AbstractHistogram.AsPercentage(ref _data, histoIndex, Histogram_D4.BIN_SIZE);
-            histoIndex += Histogram_D4.BIN_SIZE;
+            foreach (Histogram hist in HISTOGRAMS)
+                hist.AsPercentage(ref _data);
         }
 
         public static float EuclidianDistance(FeatureVector a, FeatureVector b)
@@ -220,12 +189,9 @@ namespace MultimediaRetrieval
                 "Eccentricity",
                 "Compactness",
                 "Volume",
-                Histogram_A3.ToCSVHeader(),
-                Histogram_D1.ToCSVHeader(),
-                Histogram_D2.ToCSVHeader(),
-                Histogram_D3.ToCSVHeader(),
-                Histogram_D4.ToCSVHeader()
-                );
+                string.Join(";",
+                    HISTOGRAMS.Select((h) => h.Headers())
+                ));
         }
 
         public override string ToString()

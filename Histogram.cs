@@ -9,208 +9,149 @@ using OpenTK;
 
 namespace MultimediaRetrieval
 {
-    //A histogram class for the distribution features in the MeshStatistics
-    public abstract class AbstractHistogram
+    public enum HistogramType
     {
-        public int nr_items;
-        float min, max;
-        public int[] Data { get; }
+        A3,
+        D1, 
+        D2, 
+        D3,
+        D4
+    }
 
-        public int Bins => Data.Length;
+    public struct Histogram
+    {
+        public HistogramType Name;
+        public int StartIndex;
+        public int Bins;
+        public float Min, Max;
 
-        public AbstractHistogram(float min, float max, int bins)
+        public Histogram(HistogramType name, int start, int bins, float min, float max)
         {
-            this.min = min;
-            this.max = max;
-
-            Data = new int[bins];
+            this.Name = name;
+            this.StartIndex = start;
+            this.Bins = bins;
+            this.Min = min;
+            this.Max = max;
         }
 
-        //Loads in a Histogram from string data, starting at the given start index.
-        public void LoadData(string[] sdata, int start)
+        public string ToCSV(ref float[] data)
         {
-            for(int i = 0; i < Bins; i++)
-            {
-                Data[i] = int.Parse(sdata[start + i]);
-            }
+            return string.Join(";", data.Skip(StartIndex).Take(Bins));
         }
 
-        public float[] AsPercentage()
+        public string Headers()
         {
-            float[] result = new float[Bins];
+            string[] result = new string[Bins];
+            float diff = (Max - Min) / Bins;
             for (int i = 0; i < Bins; i++)
-                result[i] = (float)Data[i] / nr_items;
-            return result;
-        }
-
-        public string ToCSV()
-        {
-            return string.Join(";", Data);
-        }
-
-        protected static string ToCSVHeader(string title, float min, float max, int bins)
-        {
-            string[] result = new string[bins];
-            float diff = (max - min) / bins;
-            for (int i = 0; i < bins; i++)
             {
-                float start = i * diff + min;
-                float end = (i + 1) * diff + min;
-                result[i] = $"{title}({start},{end})";
+                float start = i * diff + Min;
+                float end = (i + 1) * diff + Min;
+                result[i] = $"{Name}({start},{end})";
             }
             return string.Join(";", result);
         }
 
-        public void AddData(float f)
-        {
-            if (f < min || f > max)
-                Console.Error.WriteLine($"Data {f} was out of range of min: {min} and max: {max}.");
-
-            float diff = max - min;
-            float step = diff / Bins;
-            int index = (int)Math.Floor((f - min) / step);
-
-            if (index == Data.Length)
-                index--;
-
-            Data[index]++;
-            nr_items++;
-        }
-
-        protected virtual void Sample(Mesh mesh, Random rand)
-        {
-            throw new NotImplementedException("Sample not implemented for this histogram");
-        }
-
-        public void Sample(Mesh mesh, Random rand, int nr_samples)
-        {
-            for (int i = 0; i < nr_samples; i++)
-                Sample(mesh, rand);
-        }
-
-        public static void AsPercentage(ref float[] data, int start, int nr_bins)
+        public void AsPercentage(ref float[] data)
         {
             float total = 0;
 
-            for (int i = 0; i < nr_bins; i++)
-                total += data[start + i];
+            for (int i = 0; i < Bins; i++)
+                total += data[StartIndex + i];
 
             if (total == 0)
                 return;
 
-            for (int i = 0; i < nr_bins; i++)
-                data[start + i] /= total;
+            for (int i = 0; i < Bins; i++)
+                data[StartIndex + i] /= total;
         }
-    }
 
-    public class Histogram_A3 : AbstractHistogram
-    {
-        public const string NAME = "A3";
-        public const int BIN_SIZE = 10;
-        public const float MIN = 0;
-        public const float MAX = (float)Math.PI;
-
-        public Histogram_A3() : base(MIN, MAX, BIN_SIZE) { }
-
-        public static string ToCSVHeader() =>
-            ToCSVHeader(NAME, MIN, MAX, BIN_SIZE);
-
-        protected override void Sample(Mesh mesh, Random rand)
+        public void AddData(ref float[] data, float f)
         {
-            //For A3, sample the angle between 3 random vertices.
+            if (f < Min || f > Max)
+                throw new Exception($"Data {f} was out of range of min: {Min} and max: {Max}.");
+
+            float diff = Max - Min;
+            float step = diff / Bins;
+            int index = (int)Math.Floor((f - Min) / step);
+
+            if (index == Bins)
+                index--;
+
+            data[StartIndex + index]++;
+        }
+
+        public void Sample(ref float[] data, Mesh mesh, Random rand, int nr_samples)
+        {
+            for (int i = 0; i < nr_samples; i++)
+                Sample(ref data, mesh, rand);
+        }
+
+        public void Sample(ref float[] data, Mesh mesh, Random rand)
+        {
+            float sample;
+            switch (Name)
+            {
+                case HistogramType.A3:
+                    sample = Sample_A3(mesh, rand);
+                    break;
+                case HistogramType.D1:
+                    sample = Sample_D1(mesh, rand);
+                    break;
+                case HistogramType.D2:
+                    sample = Sample_D2(mesh, rand);
+                    break;
+                case HistogramType.D3:
+                    sample = Sample_D3(mesh, rand);
+                    break;
+                case HistogramType.D4:
+                    sample = Sample_D4(mesh, rand);
+                    break;
+                default:
+                    throw new NotImplementedException($"Sample not implemented for histogram {Name}");
+            }
+            AddData(ref data, sample);
+        }
+
+        private float Sample_A3(Mesh mesh, Random rand)
+        {
             Vector3 v1 = mesh.Sample(rand);
             Vector3 v2 = mesh.Sample(rand);
             Vector3 v3 = mesh.Sample(rand);
             Vector3 ab = v2 - v1;
             Vector3 bc = v3 - v2;
             if (ab.Length * bc.Length == 0)
-            {
-                AddData(0);
-                return;
-            }
-
-            AddData(Vector3.CalculateAngle(ab, bc));
+                return 0;
+            return Vector3.CalculateAngle(ab, bc);
         }
-    }
 
-    public class Histogram_D1 : AbstractHistogram
-    {
-        public const string NAME = "D1";
-        public const int BIN_SIZE = 10;
-        public const float MIN = 0;
-        public const float MAX = 0.8f;
-
-        public Histogram_D1() : base(MIN, MAX, BIN_SIZE) { }
-
-        public static string ToCSVHeader() =>
-            ToCSVHeader(NAME, MIN, MAX, BIN_SIZE);
-
-        protected override void Sample(Mesh mesh, Random rand)
+        private float Sample_D1(Mesh mesh, Random rand)
         {
             //For D1, sample the distance between the barycentre and a random vertex.
             //The barycenter is normalized! It is always at (0,0,0)!
             Vector3 v = mesh.Sample(rand);
-            AddData(v.Length);
+            return v.Length;
         }
-    }
 
-    public class Histogram_D2 : AbstractHistogram
-    {
-        public const string NAME = "D2";
-        public const int BIN_SIZE = 10;
-        public const float MIN = 0;
-        public const float MAX = 1;
-
-        public Histogram_D2() : base(MIN, MAX, BIN_SIZE) { }
-
-        public static string ToCSVHeader() =>
-            ToCSVHeader(NAME, MIN, MAX, BIN_SIZE);
-
-        protected override void Sample(Mesh mesh, Random rand)
+        private float Sample_D2(Mesh mesh, Random rand)
         {
             //For D2, sample the distance between two vertices.
             Vector3 v1 = mesh.Sample(rand);
             Vector3 v2 = mesh.Sample(rand);
             Vector3 ab = v2 - v1;
-            AddData(ab.Length);
+            return ab.Length;
         }
-    }
 
-    public class Histogram_D3 : AbstractHistogram
-    {
-        public const string NAME = "D3";
-        public const int BIN_SIZE = 10;
-        public const float MIN = 0;
-        public const float MAX = 0.6f;
-
-        public Histogram_D3() : base(MIN, MAX, BIN_SIZE) { }
-
-        public static string ToCSVHeader() =>
-            ToCSVHeader(NAME, MIN, MAX, BIN_SIZE);
-
-        protected override void Sample(Mesh mesh, Random rand)
+        private float Sample_D3(Mesh mesh, Random rand)
         {
             //For D3, sample the  square root of area of triangle given by 3 vertices.
             Vector3 v1 = mesh.Sample(rand);
             Vector3 v2 = mesh.Sample(rand);
             Vector3 v3 = mesh.Sample(rand);
-            AddData((float)Math.Sqrt(Face.CalculateArea(v1, v2, v3)));
+            return (float)Math.Sqrt(Face.CalculateArea(v1, v2, v3));
         }
-    }
 
-    public class Histogram_D4 : AbstractHistogram
-    {
-        public const string NAME = "D4";
-        public const int BIN_SIZE = 10;
-        public const float MIN = 0;
-        public const float MAX = 0.4f;
-
-        public Histogram_D4() : base(MIN, MAX, BIN_SIZE) { }
-
-        public static string ToCSVHeader() =>
-            ToCSVHeader(NAME, MIN, MAX, BIN_SIZE);
-
-        protected override void Sample(Mesh mesh, Random rand)
+        private float Sample_D4(Mesh mesh, Random rand)
         {
             //For D4, sample cube root of volume of tetrahedron formed by 4 random vertices
             // https://math.stackexchange.com/questions/3616760/how-to-calculate-the-volume-of-tetrahedron-given-by-4-points
@@ -220,7 +161,7 @@ namespace MultimediaRetrieval
             Vector4 v4 = new Vector4(mesh.Sample(rand), 1);
             Matrix4 m = new Matrix4(v1, v2, v3, v4);
             double area = Math.Abs(m.Determinant / 6.0);
-            AddData((float)Math.Pow(Math.Abs(area), 1.0 / 3.0));
+            return (float)Math.Pow(Math.Abs(area), 1.0 / 3.0);
         }
     }
 }
