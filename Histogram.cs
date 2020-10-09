@@ -66,7 +66,7 @@ namespace MultimediaRetrieval
         public void AddData(float f)
         {
             if (f < min || f > max)
-                throw new Exception($"Data {f} was out of range of min: {min} and max: {max}.");
+                Console.Error.WriteLine($"Data {f} was out of range of min: {min} and max: {max}.");
 
             float diff = max - min;
             float step = diff / Bins;
@@ -140,7 +140,7 @@ namespace MultimediaRetrieval
         public const string NAME = "D1";
         public const int BIN_SIZE = 10;
         public const float MIN = 0;
-        public const float MAX = 1;
+        public const float MAX = 0.8f;
 
         public Histogram_D1() : base(MIN, MAX, BIN_SIZE) { }
 
@@ -183,7 +183,7 @@ namespace MultimediaRetrieval
         public const string NAME = "D3";
         public const int BIN_SIZE = 10;
         public const float MIN = 0;
-        public const float MAX = 1;
+        public const float MAX = 0.6f;
 
         public Histogram_D3() : base(MIN, MAX, BIN_SIZE) { }
 
@@ -205,7 +205,7 @@ namespace MultimediaRetrieval
         public const string NAME = "D4";
         public const int BIN_SIZE = 10;
         public const float MIN = 0;
-        public const float MAX = 1;
+        public const float MAX = 0.4f;
 
         public Histogram_D4() : base(MIN, MAX, BIN_SIZE) { }
 
