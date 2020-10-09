@@ -80,7 +80,8 @@ namespace MultimediaRetrieval
             this.Compactness = (float)(Math.Pow(SurfaceArea, 3) / (36 * Math.PI * Math.Pow(Volume, 2)));
 
             //The shape property discriptors:
-            Random rand = new Random();
+            // TODO: Remove this seed later on, but for testing purposes keep it.
+            Random rand = new Random(1234);
 
             foreach (Histogram hist in HISTOGRAMS)
                 hist.Sample(ref _data, mesh, rand, NUMBER_OF_SAMPLES);
