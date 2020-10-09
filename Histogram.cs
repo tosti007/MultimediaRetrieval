@@ -45,22 +45,20 @@ namespace MultimediaRetrieval
 
         public string ToCSV()
         {
-            string[] result = new string[Bins];
-            for (int i = 0; i < Bins; i++)
-            {
-                result[i] = Data[i].ToString();
-            }
-            return result.Aggregate((pstring, csv) => $"{pstring};{csv}");
+            return string.Join(";", Data);
         }
 
         protected static string ToCSVHeader(string title, float min, float max, int bins)
         {
             string[] result = new string[bins];
-            for(int i = 0; i < bins; i++)
+            float diff = (max - min) / bins;
+            for (int i = 0; i < bins; i++)
             {
-                result[i] = title + " (" + (i * ((max - min)/bins) + min).ToString() + "," + ((i + 1) * ((max - min) / bins) + min).ToString() + ")";
+                float start = i * diff + min;
+                float end = (i + 1) * diff + min;
+                result[i] = $"{title}({start},{end})";
             }
-            return result.Aggregate((pstring, csv) => $"{pstring};{csv}");
+            return string.Join(";", result);
         }
 
         public void AddData(float f)
