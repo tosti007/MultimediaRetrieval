@@ -21,17 +21,21 @@ namespace MultimediaRetrieval
     public struct Histogram
     {
         public HistogramType Name;
-        public int StartIndex;
-        public int Bins;
+        public int Bins, StartIndex;
         public float Min, Max;
 
-        public Histogram(HistogramType name, int start, int bins, float min, float max)
+        public Histogram(HistogramType name, int bins, float min, float max, int start)
         {
             this.Name = name;
-            this.StartIndex = start;
             this.Bins = bins;
             this.Min = min;
             this.Max = max;
+            this.StartIndex = start;
+        }
+
+        public Histogram(HistogramType name, int bins, float min, float max) 
+            :this(name, bins, min, max, 0)
+        {
         }
 
         public string ToCSV(ref float[] data)
@@ -162,6 +166,16 @@ namespace MultimediaRetrieval
             Matrix4 m = new Matrix4(v1, v2, v3, v4);
             double area = Math.Abs(m.Determinant / 6.0);
             return (float)Math.Pow(Math.Abs(area), 1.0 / 3.0);
+        }
+
+
+        public static Histogram[] UpdateStartIndex(int baseStartIndex, params Histogram[] items)
+        {
+            if (items.Length > 0)
+                items[0].StartIndex = baseStartIndex;
+            for (int i = 1; i < items.Length; i++)
+                items[i].StartIndex = items[i - 1].StartIndex + items[i - 1].Bins;
+            return items;
         }
     }
 }

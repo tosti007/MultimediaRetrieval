@@ -13,13 +13,13 @@ namespace MultimediaRetrieval
     {
         public const int NUMBER_OF_SAMPLES = 1000;
         public const int HISTOGRAM_START_INDEX = 5;
-        private static readonly Histogram[] HISTOGRAMS = {
-                new Histogram(HistogramType.A3, HISTOGRAM_START_INDEX +  0, 10, 0, (float)Math.PI),
-                new Histogram(HistogramType.D1, HISTOGRAM_START_INDEX + 10, 10, 0, 0.8f),
-                new Histogram(HistogramType.D2, HISTOGRAM_START_INDEX + 20, 10, 0, 1),
-                new Histogram(HistogramType.D3, HISTOGRAM_START_INDEX + 30, 10, 0, 0.6f),
-                new Histogram(HistogramType.D4, HISTOGRAM_START_INDEX + 40, 10, 0, 0.4f),
-            };
+        public static readonly Histogram[] HISTOGRAMS = Histogram.UpdateStartIndex(HISTOGRAM_START_INDEX,
+                new Histogram(HistogramType.A3, 10, 0, (float)Math.PI),
+                new Histogram(HistogramType.D1, 10, 0, 0.8f),
+                new Histogram(HistogramType.D2, 10, 0, 1),
+                new Histogram(HistogramType.D3, 10, 0, 0.6f),
+                new Histogram(HistogramType.D4, 10, 0, 0.4f)
+            );
 
         private float[] _data;
 
