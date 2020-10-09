@@ -122,10 +122,15 @@ namespace MultimediaRetrieval
 
         public void Normalize()
         {
+            foreach (MeshStatistics m in meshes)
+                m.Features.HistogramsAsPercentages();
+
             FeatureVector avg = Average;
             FeatureVector std = StandardDev;
+
             foreach (MeshStatistics m in meshes)
                 m.Features.Normalize(avg, std);
+
             Normalized = true;
         }
 

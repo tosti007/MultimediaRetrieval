@@ -89,6 +89,20 @@ namespace MultimediaRetrieval
             for (int i = 0; i < nr_samples; i++)
                 Sample(mesh, rand);
         }
+
+        public static void AsPercentage(ref float[] data, int start, int nr_bins)
+        {
+            float total = 0;
+
+            for (int i = 0; i < nr_bins; i++)
+                total += data[start + i];
+
+            if (total == 0)
+                return;
+
+            for (int i = 0; i < nr_bins; i++)
+                data[start + i] /= total;
+        }
     }
 
     public class Histogram_A3 : AbstractHistogram

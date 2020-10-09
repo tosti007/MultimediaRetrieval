@@ -173,6 +173,7 @@ namespace MultimediaRetrieval
             }
 
             FeatureVector query = new FeatureVector(Mesh.ReadMesh(InputMesh));
+            query.HistogramsAsPercentages();
             query.Normalize(db.Average, db.StandardDev);
 
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors:

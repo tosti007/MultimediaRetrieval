@@ -12,6 +12,7 @@ namespace MultimediaRetrieval
     public class FeatureVector
     {
         public const int NUMBER_OF_SAMPLES = 1000;
+        public const int HISTOGRAM_START_INDEX = 5;
 
         private float[] _data;
 
@@ -70,8 +71,6 @@ namespace MultimediaRetrieval
 
             this.Compactness = (float)(Math.Pow(SurfaceArea, 3) / (36 * Math.PI * Math.Pow(Volume, 2)));
 
-            int histoIndex = 5;
-
             //The shape property discriptors:
             Random rand = new Random();
 
@@ -87,19 +86,21 @@ namespace MultimediaRetrieval
             d3.Sample(mesh, rand, NUMBER_OF_SAMPLES);
             d4.Sample(mesh, rand, NUMBER_OF_SAMPLES);
 
-            a3.AsPercentage().CopyTo(_data, histoIndex);
+            int histoIndex = HISTOGRAM_START_INDEX;
+
+            a3.Data.CopyTo(_data, histoIndex);
             histoIndex += a3.Bins;
 
-            d1.AsPercentage().CopyTo(_data, histoIndex);
+            d1.Data.CopyTo(_data, histoIndex);
             histoIndex += d1.Bins;
 
-            d2.AsPercentage().CopyTo(_data, histoIndex);
+            d2.Data.CopyTo(_data, histoIndex);
             histoIndex += d2.Bins;
 
-            d3.AsPercentage().CopyTo(_data, histoIndex);
+            d3.Data.CopyTo(_data, histoIndex);
             histoIndex += d3.Bins;
 
-            d4.AsPercentage().CopyTo(_data, histoIndex);
+            d4.Data.CopyTo(_data, histoIndex);
         }
 
         public static FeatureVector operator +(FeatureVector a, FeatureVector b)
@@ -156,6 +157,26 @@ namespace MultimediaRetrieval
                 //Console.WriteLine($"Sdev was 0 at index {i}! Did not use it for normalization."); 
                 //TODO: Make sure this doesn't happen by changing histo-bins for example.
             }
+        }
+
+        public void HistogramsAsPercentages()
+        {
+            int histoIndex = HISTOGRAM_START_INDEX;
+
+            AbstractHistogram.AsPercentage(ref _data, histoIndex, Histogram_A3.BIN_SIZE);
+            histoIndex += Histogram_A3.BIN_SIZE;
+
+            AbstractHistogram.AsPercentage(ref _data, histoIndex, Histogram_D1.BIN_SIZE);
+            histoIndex += Histogram_D1.BIN_SIZE;
+
+            AbstractHistogram.AsPercentage(ref _data, histoIndex, Histogram_D2.BIN_SIZE);
+            histoIndex += Histogram_D2.BIN_SIZE;
+
+            AbstractHistogram.AsPercentage(ref _data, histoIndex, Histogram_D3.BIN_SIZE);
+            histoIndex += Histogram_D3.BIN_SIZE;
+
+            AbstractHistogram.AsPercentage(ref _data, histoIndex, Histogram_D4.BIN_SIZE);
+            histoIndex += Histogram_D4.BIN_SIZE;
         }
 
         public static float EuclidianDistance(FeatureVector a, FeatureVector b)
