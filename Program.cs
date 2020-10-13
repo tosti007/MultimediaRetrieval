@@ -208,8 +208,8 @@ namespace MultimediaRetrieval
             string printformat;
             if (AsCSV)
             {
-                Console.WriteLine("ID, Class, Distance");
-                printformat = "{0}, {1}, {2}";
+                Console.WriteLine("ID,Class,Distance");
+                printformat = "{0},{1},{2}";
             }
             else
             {
