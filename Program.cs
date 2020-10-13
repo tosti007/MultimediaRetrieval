@@ -202,7 +202,7 @@ namespace MultimediaRetrieval
 
             foreach (var (match, distance) in meshes)
             {
-                Console.Write($"Close match: {match.ID}, with distance {distance}");
+                Console.Write($"Close match: {match.ID} ({match.Classification}), with distance {distance}");
                 if (Vectors)
                 {
                     Console.Write(" and ");
