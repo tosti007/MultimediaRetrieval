@@ -11,6 +11,8 @@ namespace MultimediaRetrieval
 {
     public class FeatureVector
     {
+        #region Variables
+
         public const int NUMBER_OF_SAMPLES = 1000;
         public const int HISTOGRAM_START_INDEX = 5;
         public static readonly Histogram[] HISTOGRAMS = Histogram.UpdateStartIndex(HISTOGRAM_START_INDEX,
@@ -22,12 +24,17 @@ namespace MultimediaRetrieval
             );
 
         private float[] _data;
+        public int Size => _data.Length;
 
-        public float SurfaceArea { get => _data[0]; set => _data[0] = value; }
-        public float Diameter { get => _data[1]; set => _data[1] = value; }
-        public float Eccentricity { get => _data[2]; set => _data[2] = value; }
-        public float Compactness { get => _data[3]; set => _data[3] = value; }
-        public float Volume { get => _data[4]; set => _data[4] = value; }
+        public float SurfaceArea { get => _data[0]; private set => _data[0] = value; }
+        public float Diameter { get => _data[1]; private set => _data[1] = value; }
+        public float Eccentricity { get => _data[2]; private set => _data[2] = value; }
+        public float Compactness { get => _data[3]; private set => _data[3] = value; }
+        public float Volume { get => _data[4]; private set => _data[4] = value; }
+
+        #endregion
+
+        #region Constructors
 
         public FeatureVector()
         {
@@ -87,6 +94,16 @@ namespace MultimediaRetrieval
                 hist.Sample(ref _data, mesh, rand, NUMBER_OF_SAMPLES);
         }
 
+        #endregion
+
+        #region Operators
+
+        public float this[int i]
+        {
+            get { return _data[i]; }
+            private set { _data[i] = value; }
+        }
+
         public static FeatureVector operator +(FeatureVector a, FeatureVector b)
         {
             if (a._data.Length != b._data.Length)
@@ -110,6 +127,10 @@ namespace MultimediaRetrieval
 
             return c;
         }
+
+        #endregion
+
+        #region Normalizing and data functions
 
         public void Map(Func<float, float> f)
         {
@@ -149,38 +170,9 @@ namespace MultimediaRetrieval
                 hist.AsPercentage(ref _data);
         }
 
-        public static float EuclidianDistance(FeatureVector a, FeatureVector b)
-        {
-            if (a._data.Length != b._data.Length)
-                throw new Exception("Attempted to calculate distance between two FeatureVectors of different length.");
+        #endregion
 
-            float result = 0;
-            for (int i = 0; i < a._data.Length; i++)
-            {
-                float value = a._data[i] - b._data[i];
-                result += value * value;
-            }
-
-            return (float)Math.Sqrt(result);
-        }
-
-        //TODO: Test this, might be bad because the featurevectors are generally not normalized (normalized in this context means length == 1)
-        public static float CosineDistance(FeatureVector a, FeatureVector b)
-        {
-            if (a._data.Length != b._data.Length)
-                throw new Exception("Attempted to calculate distance between two FeatureVectors of different length.");
-
-            float result = 0;
-            float alen = 0;
-            float blen = 0;
-            for(int i = 0; i < a._data.Length; i++)
-            {
-                alen += a._data[i];
-                blen += b._data[i];
-                result += a._data[i] * b._data[i];
-            }
-            return 1 - (result / (alen * blen));
-        }
+        #region String functions
 
         public static string Headers()
         {
@@ -217,5 +209,48 @@ namespace MultimediaRetrieval
 
             return v;
         }
+
+        #endregion
+
+        #region Distance functions
+
+        public float Distance(FeatureVector other)
+            => Distance(this, other);
+
+        public static float Distance(FeatureVector a, FeatureVector b)
+        {
+            if (a.Size != b.Size)
+                throw new Exception("Attempted to calculate distance between two FeatureVectors of different length.");
+
+            return EuclidianDistance(a, b, 0, a.Size);
+        }
+
+        private static float EuclidianDistance(FeatureVector a, FeatureVector b, int start, int end)
+        {
+            float result = 0;
+            for (int i = start; i < end; i++)
+            {
+                float value = a[i] - b[i];
+                result += value * value;
+            }
+            return (float)Math.Sqrt(result);
+        }
+
+        //TODO: Test this, might be bad because the featurevectors are generally not normalized (normalized in this context means length == 1)
+        private static float CosineDistance(FeatureVector a, FeatureVector b, int start, int end)
+        {
+            float result = 0;
+            float alen = 0;
+            float blen = 0;
+            for (int i = start; i < end; i++)
+            {
+                alen += a[i];
+                blen += b[i];
+                result += a[i] * b[i];
+            }
+            return 1 - (result / (alen * blen));
+        }
+
+        #endregion
     }
 }
