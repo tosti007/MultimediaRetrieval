@@ -190,9 +190,9 @@ namespace MultimediaRetrieval
 
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors.
             //Sort the meshes in the database by distance and return the selected.
-            IEnumerable<(MeshStatistics, float)> meshes = db.meshes
+            IEnumerable<(MeshStatistics, float)> meshes = db.meshes.AsParallel()
                 .Select((m) => (m, FeatureVector.EuclidianDistance(m.Features, query)))
-                .OrderBy((arg) => arg.Item2);
+                .OrderBy((arg) => arg.Item2).AsSequential();
 
             if (InputK != null)
                 meshes = meshes.Take(InputK.Value);
