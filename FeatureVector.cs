@@ -225,8 +225,9 @@ namespace MultimediaRetrieval
             float distance = 0;
 
             distance += EuclidianDistance(a, b, 0, HISTOGRAM_START_INDEX);
+
             foreach (Histogram h in HISTOGRAMS)
-                distance += EuclidianDistance(a, b, h.StartIndex, h.StartIndex + h.Bins) / h.Bins;
+                distance += EarthMoversDistance(a, b, h.StartIndex, h.StartIndex + h.Bins) / h.Bins;
 
             return distance;
         }
@@ -255,6 +256,19 @@ namespace MultimediaRetrieval
                 result += a[i] * b[i];
             }
             return 1 - (result / (alen * blen));
+        }
+
+        private static float EarthMoversDistance(FeatureVector a, FeatureVector b, int start, int end)
+        {
+            float previous = 0;
+            float distance = 0;
+
+            for (int i = start; i < end; i++)
+            {
+                previous += a[i] - b[i];
+                distance += Math.Abs(previous);
+            }
+            return distance;
         }
 
         #endregion
