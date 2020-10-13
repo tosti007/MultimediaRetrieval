@@ -157,6 +157,11 @@ namespace MultimediaRetrieval
             HelpText = "(Default: null) The maximal distance for matching meshes to return, this will be null if k is given.")]
         public float? InputT { get; set; }
 
+        [Option("csv",
+            Default = false, 
+            HelpText = "Output the matches as CSV.")]
+        public bool AsCSV { get; set; }
+
         public int Execute()
         {
             if (InputT != null && InputK != null)
@@ -200,18 +205,28 @@ namespace MultimediaRetrieval
             if (InputT != null)
                 meshes = meshes.TakeWhile((arg) => arg.Item2 <= InputT.Value);
 
+            string printformat;
+            if (AsCSV)
+            {
+                Console.WriteLine("ID, Class, Distance");
+                printformat = "{0}, {1}, {2}";
+            }
+            else
+            {
+                printformat = "Close match: {0} ({1}), with distance {2}";
+            }
+
             foreach (var (match, distance) in meshes)
             {
-                Console.Write($"Close match: {match.ID} ({match.Classification}), with distance {distance}");
-                if (Vectors)
+                Console.Write(printformat, match.ID, match.Classification, distance);
+
+                if (!AsCSV && Vectors)
                 {
                     Console.Write(" and ");
-                    Console.WriteLine(match.Features.PrettyPrint());
+                    Console.Write(match.Features.PrettyPrint());
                 }
-                else
-                {
-                    Console.WriteLine(".");
-                }
+
+                Console.WriteLine();
             }
 
             return 0;
