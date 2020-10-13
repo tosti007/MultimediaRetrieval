@@ -144,18 +144,30 @@ namespace MultimediaRetrieval
             HelpText = "File to read the features from.")]
         public string InputFile { get; set; }
 
-        [Option('k', "k_parameter",
-            Default = 5,
-            HelpText = "The number of top matching meshes to return.")]
-        public int InputK { get; set; }
-
         [Option('v', "vector",
             Default = false,
             HelpText = "Print the feature vectors for the given matches.")]
         public bool Vectors { get; set; }
 
+        [Option('k', "k_parameter",
+            HelpText = "(Default: 5) The number of top matching meshes to return, this will be null if t is given.")]
+        public int? InputK { get; set; }
+
+        [Option('t', "t_parameter",
+            HelpText = "(Default: null) The maximal distance for matching meshes to return, this will be null if k is given.")]
+        public float? InputT { get; set; }
+
         public int Execute()
         {
+            if (InputT != null && InputK != null)
+            {
+                Console.Error.WriteLine("T and K cannot both be set.");
+                return 1;
+            }
+
+            if (InputT == null && InputK == null)
+                InputK = 5;
+
             if (string.IsNullOrWhiteSpace(InputFile))
                 InputFile = Path.Combine(InputDir, "output.mr");
 
@@ -176,22 +188,25 @@ namespace MultimediaRetrieval
             query.HistogramsAsPercentages();
             query.Normalize(db.Average, db.StandardDev);
 
-            //Fill a list of ID's to distances between the input feature vector and the database feature vectors:
-            List<(MeshStatistics, float)> distance = new List<(MeshStatistics, float)>();
-            foreach(MeshStatistics m in db.meshes)
-            {
-                distance.Add((m, FeatureVector.EuclidianDistance(m.Features, query)));
-            }
+            //Fill a list of ID's to distances between the input feature vector and the database feature vectors.
+            //Sort the meshes in the database by distance and return the selected.
+            IEnumerable<(MeshStatistics, float)> meshes = db.meshes
+                .Select((m) => (m, FeatureVector.EuclidianDistance(m.Features, query)))
+                .OrderBy((arg) => arg.Item2);
 
-            //Sort the meshes in the database by distance and return the top:
-            distance.Sort((a, b) => a.Item2.CompareTo(b.Item2));
-            for (int i = 0; i < InputK; i++)
+            if (InputK != null)
+                meshes = meshes.Take(InputK.Value);
+
+            if (InputT != null)
+                meshes = meshes.TakeWhile((arg) => arg.Item2 <= InputT.Value);
+
+            foreach (var (match, distance) in meshes)
             {
-                Console.Write($"Close match: {distance[i].Item1.ID}, with distance {distance[i].Item2}");
+                Console.Write($"Close match: {match.ID}, with distance {distance}");
                 if (Vectors)
                 {
                     Console.Write(" and ");
-                    Console.WriteLine(distance[i].Item1.Features.PrettyPrint());
+                    Console.WriteLine(match.Features.PrettyPrint());
                 }
                 else
                 {
