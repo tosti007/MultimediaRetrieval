@@ -46,6 +46,12 @@ namespace MultimediaRetrieval
         private float[,] vertices;
         private uint[,] faces;
 
+
+        public MeshViewer(int width, int height, string title, string meshfile)
+            : this(width, height, title, Mesh.ReadMesh(meshfile), new Camera(1.5f, 30f, 45f))
+        {
+        }
+
         public MeshViewer(int width, int height, string title, Mesh mesh, Camera camera)
             : base(width, height, GraphicsMode.Default, title)
         {

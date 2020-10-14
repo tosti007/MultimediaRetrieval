@@ -43,9 +43,7 @@ namespace MultimediaRetrieval
 
         public int Execute()
         {
-            Mesh mesh = Mesh.ReadMesh(MeshFile);
-            Camera camera = new Camera(1.5f, 30f, 45f);
-            using (MeshViewer view = new MeshViewer(800, 600, "MultimediaRetrieval", mesh, camera))
+            using (MeshViewer view = new MeshViewer(800, 600, "MultimediaRetrieval - " + MeshFile, MeshFile))
                 view.Run(60.0);
 
             return 0;
