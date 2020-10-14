@@ -222,7 +222,13 @@ namespace MultimediaRetrieval
             if (a.Size != b.Size)
                 throw new Exception("Attempted to calculate distance between two FeatureVectors of different length.");
 
-            return EuclidianDistance(a, b, 0, a.Size);
+            float distance = 0;
+
+            distance += EuclidianDistance(a, b, 0, HISTOGRAM_START_INDEX);
+            foreach (Histogram h in HISTOGRAMS)
+                distance += EuclidianDistance(a, b, h.StartIndex, h.StartIndex + h.Bins) / h.Bins;
+
+            return distance;
         }
 
         private static float EuclidianDistance(FeatureVector a, FeatureVector b, int start, int end)
