@@ -69,7 +69,7 @@ namespace MultimediaRetrieval
 
             // Setup the shader
             string basepath = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location)));
-            _shader = new Shader(basepath + "/shader.vert", basepath + "/shader.frag");
+            _shader = new Shader(basepath + "/Viewer/shader.vert", basepath + "/Viewer/shader.frag");
             _shader.Use();
             _shader.SetMatrix4("model", _mesh.Model);
             RefreshCameraMatrix();
