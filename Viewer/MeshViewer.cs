@@ -18,6 +18,56 @@ using EnableCap = OpenTK.Graphics.OpenGL4.EnableCap;
 
 namespace MultimediaRetrieval
 {
+    public class MeshRenderInfo
+    {
+        private Mesh _mesh;
+        public Matrix4 Model = Matrix4.Identity;
+        public int VertexBufferObject; // VBO = Data
+        public int ElementBufferObject; // EBO = Indices
+        public int NrFaces;
+
+        public MeshRenderInfo(Mesh m)
+        {
+            _mesh = m;
+        }
+
+        public void OnLoad()
+        {
+            VertexBufferObject = GL.GenBuffer();
+            ElementBufferObject = GL.GenBuffer();
+
+            Bind();
+
+            var vertices = _mesh.BufferVertices();
+            var faces = _mesh.BufferFaces();
+            NrFaces = faces.Length;
+
+            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, faces.Length * sizeof(uint), faces, BufferUsageHint.StaticDraw);
+
+            _mesh = null;
+        }
+
+        public void Bind()
+        {
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
+        }
+
+        public void Draw()
+        {
+            GL.DrawElements(PrimitiveType.Triangles, NrFaces, DrawElementsType.UnsignedInt, 0);
+        }
+
+        public void OnUnload()
+        {
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+            GL.DeleteBuffer(VertexBufferObject);
+            GL.DeleteBuffer(ElementBufferObject);
+        }
+    }
+
     public class MeshViewer : GameWindow
     {
         private static Vector3 CLEAR_COLOR = new Vector3(1f);
@@ -26,13 +76,11 @@ namespace MultimediaRetrieval
         private static Vector3 LIGHT_COLOR = new Vector3(1f);
         private const float LINE_WIDTH = 3f;
 
-        private Mesh _mesh;
+        private MeshRenderInfo _mesh;
         private Camera _camera;
         private Shader _shader;
 
         private int _vertexArrayObject; // VAO = Attribute properties
-        private int _vertexBufferObject; // VBO = Data
-        private int _elementBufferObject; // EBO = Indices
 
         private bool _stepTime = false;
         private bool _stepTimeDown = false;
@@ -43,9 +91,6 @@ namespace MultimediaRetrieval
         private bool _drawAxis = true;
         private bool _drawAxisDown = false;
 
-        private float[,] vertices;
-        private uint[,] faces;
-
 
         public MeshViewer(int width, int height, string title, string meshfile)
             : this(width, height, title, Mesh.ReadMesh(meshfile), new Camera(1.5f, 30f, 45f))
@@ -55,7 +100,7 @@ namespace MultimediaRetrieval
         public MeshViewer(int width, int height, string title, Mesh mesh, Camera camera)
             : base(width, height, GraphicsMode.Default, title)
         {
-            _mesh = mesh;
+            _mesh = new MeshRenderInfo(mesh);
             _camera = camera;
         }
 
@@ -71,22 +116,13 @@ namespace MultimediaRetrieval
             string basepath = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location)));
             _shader = new Shader(basepath + "/Viewer/shader.vert", basepath + "/Viewer/shader.frag");
             _shader.Use();
-            _shader.SetMatrix4("model", _mesh.Model);
-            RefreshCameraMatrix();
             _shader.SetVector3("ambientColor", AMBIENT_COLOR);
             _shader.SetVector3("lightColor", LIGHT_COLOR);
+            _shader.SetMatrix4("model", _mesh.Model);
+            RefreshCameraMatrix();
 
-            // Setup vertices
-            vertices = _mesh.BufferVertices();
-            _vertexBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
-
-            // Setup faces
-            faces = _mesh.BufferFaces();
-            _elementBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, faces.Length * sizeof(uint), faces, BufferUsageHint.StaticDraw);
+            // Setup Mesh
+            _mesh.OnLoad();
 
             // Setup VAO
             _vertexArrayObject = GL.GenVertexArray();
@@ -111,8 +147,7 @@ namespace MultimediaRetrieval
                 DrawAxis();
 
             // Bind the mesh to the current draw
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
+            _mesh.Bind();
 
             // Bind the settings
             GL.BindVertexArray(_vertexArrayObject);
@@ -122,14 +157,14 @@ namespace MultimediaRetrieval
                 // Draw the triangles
                 _shader.SetVector3("objectColor", OBJECT_COLOR);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-                GL.DrawElements(PrimitiveType.Triangles, faces.Length, DrawElementsType.UnsignedInt, 0);
+                _mesh.Draw();
             }
             if ((_drawMode & 2) > 0)
             {
                 // Draw the lines           
                 _shader.SetVector3("objectColor", Vector3.Zero);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-                GL.DrawElements(PrimitiveType.Triangles, faces.Length, DrawElementsType.UnsignedInt, 0);
+                _mesh.Draw();
             }
 
             Context.SwapBuffers();
@@ -221,13 +256,11 @@ namespace MultimediaRetrieval
 
         protected override void OnUnload(EventArgs e)
         {
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-            GL.BindVertexArray(0);
+            _mesh.OnUnload();
+
             GL.UseProgram(0);
 
-            GL.DeleteBuffer(_vertexBufferObject);
-            GL.DeleteBuffer(_elementBufferObject);
+            GL.BindVertexArray(0);
             GL.DeleteVertexArray(_vertexArrayObject);
 
             _shader.Dispose();

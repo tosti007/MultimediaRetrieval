@@ -11,8 +11,6 @@ namespace MultimediaRetrieval
         public List<Vertex> vertices;
         public List<Face> faces;
 
-        public Matrix4 Model = Matrix4.Identity;
-
         public Mesh(List<Vertex> vertices, List<Face> faces)
         {
             this.vertices = vertices;
