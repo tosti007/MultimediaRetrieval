@@ -251,11 +251,11 @@ namespace MultimediaRetrieval
             float blen = 0;
             for (int i = start; i < end; i++)
             {
-                alen += a[i];
-                blen += b[i];
+                alen += a[i] * a[i];
+                blen += b[i] * b[i];
                 result += a[i] * b[i];
             }
-            return 1 - (result / (alen * blen));
+            return (result / (float)Math.Sqrt(alen * blen) * -1 + 1) * 5;
         }
 
         private static float EarthMoversDistance(FeatureVector a, FeatureVector b, int start, int end)
