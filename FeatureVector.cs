@@ -255,7 +255,7 @@ namespace MultimediaRetrieval
                 blen += b[i] * b[i];
                 result += a[i] * b[i];
             }
-            return (result / (float)Math.Sqrt(alen * blen) * -1 + 1) * 5;
+            return 1 - result / (float)Math.Sqrt(alen * blen);
         }
 
         private static float EarthMoversDistance(FeatureVector a, FeatureVector b, int start, int end)
