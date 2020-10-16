@@ -19,10 +19,12 @@ namespace MultimediaRetrieval
                 Console.WriteLine("Visual Studio execution detected, changing workdirectory to {0}", workdir);
                 Directory.SetCurrentDirectory(workdir);
 
+                
                 FeatureOptions options = new FeatureOptions {
                     InputFile = "database/step1/output.mr",
                     InputDir = "database/step4/"
                 };
+
                 return options.Execute();
             }
 
@@ -233,7 +235,7 @@ namespace MultimediaRetrieval
             {
                 int dim = query.Size;
                 float eps = 0.0f;
-                KDtree instance = new KDtree();
+                wrapper.KDTree instance = new wrapper.KDTree();
                 float[] queryArr = query.Flattened();
                 float[] dataArr = db.Flattened();
                 unsafe
@@ -242,9 +244,10 @@ namespace MultimediaRetrieval
                     {
                         fixed (float* dataArrPtr = dataArr)
                         {
+                            Console.WriteLine("Results from ANN:");
                             int* topIndicesPtr = instance.RunKDtree(dim, db.meshes.Count, InputK.Value, dataArrPtr, queryArrPtr, eps);
                             for (int i = 0; i < InputK; i++)
-                                Console.Write($"Close match: {db.meshes[topIndicesPtr[i]].ID}");
+                                Console.WriteLine($"Close match: {db.meshes[topIndicesPtr[i]].ID} with class {db.meshes[topIndicesPtr[i]].Classification}");
                         }
                     }
                 }
