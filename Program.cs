@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using CommandLine;
 using OpenTK.Graphics.OpenGL;
+using wrapper;
 
 namespace MultimediaRetrieval
 {
@@ -227,6 +228,28 @@ namespace MultimediaRetrieval
                 Console.WriteLine();
             }
 
+            //Do the same with KDTree:
+            if(InputK != null)
+            {
+                int dim = query.Size;
+                float eps = 0.0f;
+                KDtree instance = new KDtree();
+                float[] queryArr = query.Flattened();
+                float[] dataArr = db.Flattened();
+                unsafe
+                {
+                    fixed (float* queryArrPtr = queryArr)
+                    {
+                        fixed (float* dataArrPtr = dataArr)
+                        {
+                            int* topIndicesPtr = instance.RunKDtree(dim, db.meshes.Count, InputK.Value, dataArrPtr, queryArrPtr, eps);
+                            for (int i = 0; i < InputK; i++)
+                                Console.Write($"Close match: {db.meshes[topIndicesPtr[i]].ID}");
+                        }
+                    }
+                }
+            }
+            
             return 0;
         }
     }
