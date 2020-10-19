@@ -211,7 +211,10 @@ namespace MultimediaRetrieval
             query.Normalize(db.Average, db.StandardDev);
 
             if (TSNE)
+            {
+                Console.WriteLine("Reducing dimensionality using TSNE...");
                 db.ReduceDimensions(query);
+            }
 
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors.
             //Sort the meshes in the database by distance and return the selected.
@@ -252,7 +255,7 @@ namespace MultimediaRetrieval
 
                 MeshStatistics[] results = ann.Search(query);
 
-                Console.WriteLine("Results from ANN:");
+                Console.WriteLine("Results from ANN (with our distance metric):");
                 PrintResults(GetDistanceAndSort(results, query));
             }
 #endif

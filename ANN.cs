@@ -54,7 +54,6 @@ namespace MultimediaRetrieval
             {
                 fixed (float* queryArrPtr = queryArr)
                 {
-                    Console.WriteLine("Results from ANN:");
                     int* topIndicesPtr = instance.SearchKDTree(dim, K, queryArrPtr, eps);
                     for (int i = 0; i < K; i++)
                         result[i] = _db.meshes[topIndicesPtr[i]];
