@@ -5,7 +5,9 @@ using System.Linq;
 using System.Text;
 using CommandLine;
 using OpenTK.Graphics.OpenGL;
+#if Windows
 using wrapper;
+#endif
 
 namespace MultimediaRetrieval
 {
@@ -165,17 +167,17 @@ namespace MultimediaRetrieval
 
         public bool AsCSV { get; set; }
 
+#if Windows
         [Option("ann",
             Default = false,
             HelpText = "Output the results of an ANN k-nearest neighbour search. This will not execute if no k is given.")]
-
         public bool WithANN { get; set; }
 
         [Option("newtree",
             Default = false,
             HelpText = "If ANN is performed, generate a new tree to the kdtree.tree file. Otherwise, this file will be read to obtain the tree.")]
-
         public bool NewTree { get; set; }
+#endif
 
         public int Execute()
         {
@@ -244,6 +246,7 @@ namespace MultimediaRetrieval
                 Console.WriteLine();
             }
 
+#if Windows
             //Do the same with KDTree:
             if (WithANN)
             {
@@ -288,7 +291,8 @@ namespace MultimediaRetrieval
                         }
                     }
                 }
-            }                     
+            }
+#endif
             return 0;
         }
     }
