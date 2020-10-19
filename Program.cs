@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using CommandLine;
 using OpenTK.Graphics.OpenGL;
 using wrapper;
@@ -170,6 +171,12 @@ namespace MultimediaRetrieval
 
         public bool WithANN { get; set; }
 
+        [Option("newtree",
+            Default = false,
+            HelpText = "If ANN is performed, generate a new tree to the kdtree.tree file. Otherwise, this file will be read to obtain the tree.")]
+
+        public bool NewTree { get; set; }
+
         public int Execute()
         {
             if (InputT != null && InputK != null)
@@ -238,9 +245,9 @@ namespace MultimediaRetrieval
             }
 
             //Do the same with KDTree:
-            if(WithANN)
+            if (WithANN)
             {
-                if(InputK == null)
+                if (InputK == null)
                 {
                     Console.WriteLine("Unable to perform ANN, no k specified.");
                 }
@@ -248,25 +255,40 @@ namespace MultimediaRetrieval
                 {
                     int dim = query.Size;
                     float eps = 0.0f;
+                    int npts = db.meshes.Count;
                     wrapper.KDTree instance = new wrapper.KDTree();
+                    if (NewTree || !File.Exists("kdtree.tree"))
+                    {
+                        Console.WriteLine("Creating new ANN KDTree.");
+                        unsafe
+                        {
+                            float[] dataArr = db.Flattened();
+                            fixed (float* dataArrPtr = dataArr)
+                            {
+                                instance.CreateKDTree(dim, npts, InputK.Value, dataArrPtr);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Loading existing ANN KDTree.");
+                        instance.LoadKDTree();
+                    }
+
                     float[] queryArr = query.Flattened();
-                    float[] dataArr = db.Flattened();
+
                     unsafe
                     {
                         fixed (float* queryArrPtr = queryArr)
                         {
-                            fixed (float* dataArrPtr = dataArr)
-                            {
-                                Console.WriteLine("Results from ANN:");
-                                int* topIndicesPtr = instance.RunKDtree(dim, db.meshes.Count, InputK.Value, dataArrPtr, queryArrPtr, eps);
-                                for (int i = 0; i < InputK; i++)
-                                    Console.WriteLine($"Close match: {db.meshes[topIndicesPtr[i]].ID} with class {db.meshes[topIndicesPtr[i]].Classification}");
-                            }
+                            Console.WriteLine("Results from ANN:");
+                            int* topIndicesPtr = instance.SearchKDTree(dim, InputK.Value, queryArrPtr, eps);
+                            for (int i = 0; i < InputK; i++)
+                                Console.WriteLine($"Close match: {db.meshes[topIndicesPtr[i]].ID} with class {db.meshes[topIndicesPtr[i]].Classification}");
                         }
                     }
                 }
-            }
-            
+            }                     
             return 0;
         }
     }
