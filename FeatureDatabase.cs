@@ -173,13 +173,12 @@ namespace MultimediaRetrieval
             }
         }
 
-        public float[] Flattened()
+        public float[] ToArray()
         {
             int dim = meshes[0].Features.Size;
             float[] result = new float[dim * meshes.Count];
             for (int i = 0; i < meshes.Count; i++)
-                for (int j = 0; j < dim; j++)
-                    result[i * dim + j] = meshes[i].Features.Flattened()[j];
+                meshes[i].Features.ToArray().CopyTo(result, i * dim)
 
             return result; 
         }
@@ -192,8 +191,8 @@ namespace MultimediaRetrieval
             double[][] observations = new double[meshes.Count + 1][];
 
             for (int i = 0; i < meshes.Count; i++)
-                observations[i] = meshes[i].Features.ToArray();
-            observations[meshes.Count] = query.ToArray();
+                observations[i] = meshes[i].Features.ToArrayDouble();
+            observations[meshes.Count] = query.ToArrayDouble();
 
             // Create a new t-SNE algorithm 
             TSNE tSNE = new TSNE()

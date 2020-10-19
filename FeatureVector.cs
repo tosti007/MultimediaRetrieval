@@ -170,7 +170,12 @@ namespace MultimediaRetrieval
                 hist.AsPercentage(ref _data);
         }
 
-        public double[] ToArray()
+        public float[] ToArray()
+        {
+            return _data;
+        }
+
+        public double[] ToArrayDouble()
         {
             double[] result = new double[Size];
             for (int i = 0; i < Size; i++)
@@ -293,9 +298,5 @@ namespace MultimediaRetrieval
         }
 
         #endregion
-        public float[] Flattened()
-        {
-            return _data;
-        }
     }
 }
