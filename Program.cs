@@ -270,9 +270,9 @@ namespace MultimediaRetrieval
                     if (NewTree || !File.Exists("kdtree.tree"))
                     {
                         Console.WriteLine("Creating new ANN KDTree.");
+                        float[] dataArr = db.ToArray();
                         unsafe
                         {
-                            float[] dataArr = db.Flattened();
                             fixed (float* dataArrPtr = dataArr)
                             {
                                 instance.CreateKDTree(dim, npts, InputK.Value, dataArrPtr);
@@ -285,7 +285,7 @@ namespace MultimediaRetrieval
                         instance.LoadKDTree();
                     }
 
-                    float[] queryArr = query.Flattened();
+                    float[] queryArr = query.ToArray();
 
                     unsafe
                     {
