@@ -164,8 +164,12 @@ namespace MultimediaRetrieval
         [Option("csv",
             Default = false, 
             HelpText = "Output the matches as CSV.")]
-
         public bool AsCSV { get; set; }
+
+        [Option("tsne",
+            Default = false,
+            HelpText = "Use the tSNE algorithm to reduce the feature vector dimensionallity.")]
+        public bool TSNE { get; set; }
 
 #if Windows
         [Option("ann",
@@ -210,10 +214,13 @@ namespace MultimediaRetrieval
             query.HistogramsAsPercentages();
             query.Normalize(db.Average, db.StandardDev);
 
+            if (TSNE)
+                db.ReduceDimensions(query);
+
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors.
             //Sort the meshes in the database by distance and return the selected.
             IEnumerable<(MeshStatistics, float)> meshes = db.meshes.AsParallel()
-                .Select((m) => (m, query.Distance(m.Features)))
+                .Select((m) => (m, query.Distance(m.Features, TSNE)))
                 .OrderBy((arg) => arg.Item2).AsSequential();
 
             if (InputK != null)

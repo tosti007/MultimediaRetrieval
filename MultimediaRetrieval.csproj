@@ -70,6 +70,9 @@
     <Reference Include="Accord.Statistics">
       <HintPath>packages\Accord.Statistics.3.8.0\lib\net462\Accord.Statistics.dll</HintPath>
     </Reference>
+    <Reference Include="Accord.MachineLearning">
+      <HintPath>packages\Accord.MachineLearning.3.8.0\lib\net462\Accord.MachineLearning.dll</HintPath>
+    </Reference>
     <Reference Include="wrapper, Version=1.0.7594.36748, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>ANN\MS_Win32\Debug\wrapper.dll</HintPath>

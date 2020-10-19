@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using Accord.Statistics.Testing;
+using Accord.MachineLearning.Clustering;
 
 namespace MultimediaRetrieval
 {
@@ -181,7 +181,35 @@ namespace MultimediaRetrieval
                 for (int j = 0; j < dim; j++)
                     result[i * dim + j] = meshes[i].Features.Flattened()[j];
 
-            return result;
+            return result; 
+        }
+
+        public void ReduceDimensions(FeatureVector query, int NumberOfOutputs = 5, double Perplexity = 1.5, double Theta = 0.5)
+        {
+            // Accord.Math.Random.Generator.Seed = 0;
+
+            // Declare some observations
+            double[][] observations = new double[meshes.Count + 1][];
+
+            for (int i = 0; i < meshes.Count; i++)
+                observations[i] = meshes[i].Features.ToArray();
+            observations[meshes.Count] = query.ToArray();
+
+            // Create a new t-SNE algorithm 
+            TSNE tSNE = new TSNE()
+            {
+                NumberOfInputs = query.Size,
+                NumberOfOutputs = NumberOfOutputs,
+                Perplexity = Perplexity,
+                Theta = Theta
+            };
+
+            // Transform to a reduced dimensionality space
+            double[][] output = tSNE.Transform(observations);
+
+            for (int i = 0; i < meshes.Count; i++)
+                meshes[i].Features.FromArray(output[i]);
+            query.FromArray(output[meshes.Count]);
         }
     }
 }

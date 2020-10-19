@@ -42,7 +42,7 @@ namespace MultimediaRetrieval
             _data = new float[length];
         }
 
-        private FeatureVector(float[] data)
+        public FeatureVector(float[] data)
         {
             this._data = data;
         }
@@ -170,6 +170,21 @@ namespace MultimediaRetrieval
                 hist.AsPercentage(ref _data);
         }
 
+        public double[] ToArray()
+        {
+            double[] result = new double[Size];
+            for (int i = 0; i < Size; i++)
+                result[i] = _data[i];
+            return result;
+        }
+
+        public void FromArray(double[] data)
+        {
+            _data = new float[data.Length];
+            for (int i = 0; i < data.Length; i++)
+                _data[i] = (float)data[i];
+        }
+
         #endregion
 
         #region String functions
@@ -214,20 +229,26 @@ namespace MultimediaRetrieval
 
         #region Distance functions
 
-        public float Distance(FeatureVector other)
-            => Distance(this, other);
+        public float Distance(FeatureVector other, bool singleAlgorithm)
+            => Distance(this, other, singleAlgorithm);
 
-        public static float Distance(FeatureVector a, FeatureVector b)
+        public static float Distance(FeatureVector a, FeatureVector b, bool singleAlgorithm)
         {
             if (a.Size != b.Size)
                 throw new Exception("Attempted to calculate distance between two FeatureVectors of different length.");
 
             float distance = 0;
 
-            distance += EuclidianDistance(a, b, 0, HISTOGRAM_START_INDEX);
-
-            foreach (Histogram h in HISTOGRAMS)
-                distance += EarthMoversDistance(a, b, h.StartIndex, h.StartIndex + h.Bins) / h.Bins;
+            if (singleAlgorithm)
+            {
+                distance += EuclidianDistance(a, b, 0, a.Size);
+            }
+            else
+            {
+                distance += EuclidianDistance(a, b, 0, HISTOGRAM_START_INDEX);
+                foreach (Histogram h in HISTOGRAMS)
+                    distance += EarthMoversDistance(a, b, h.StartIndex, h.StartIndex + h.Bins) / h.Bins;
+            }
 
             return distance;
         }
