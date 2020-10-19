@@ -107,6 +107,11 @@ namespace MultimediaRetrieval
             HelpText = "Print the feature vectors for the given matches.")]
         public bool Vectors { get; set; }
 
+        [Option("tsne",
+            Default = false,
+            HelpText = "Use the tSNE algorithm to reduce the feature vector dimensionallity.")]
+        public bool TSNE { get; set; }
+
         public int Execute()
         {
             FeatureDatabase db = FeatureDatabase.ReadFrom(InputFile);
@@ -123,6 +128,13 @@ namespace MultimediaRetrieval
             db.Normalize();
             db.FilterNanAndInf(Vectors);
             db.WriteToFile(OutputFile);
+
+            if (TSNE)
+            {
+                Console.WriteLine("Reducing dimensionality using TSNE...");
+                db.ReduceDimensions();
+                db.WriteToFile(OutputFile + "tsne", "Class;X;Y", (m) => m.Classification + ";" + m.Features);
+            }
 
             return 0;
         }
@@ -160,11 +172,6 @@ namespace MultimediaRetrieval
             Default = false, 
             HelpText = "Output the matches as CSV.")]
         public bool AsCSV { get; set; }
-
-        [Option("tsne",
-            Default = false,
-            HelpText = "Use the tSNE algorithm to reduce the feature vector dimensionallity.")]
-        public bool TSNE { get; set; }
 
 #if Windows
         [Option("ann",
@@ -209,12 +216,6 @@ namespace MultimediaRetrieval
             FeatureVector query = new FeatureVector(Mesh.ReadMesh(InputMesh));
             query.HistogramsAsPercentages();
             query.Normalize(db.Average, db.StandardDev);
-
-            if (TSNE)
-            {
-                Console.WriteLine("Reducing dimensionality using TSNE...");
-                db.ReduceDimensions(query);
-            }
 
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors.
             //Sort the meshes in the database by distance and return the selected.
@@ -266,7 +267,7 @@ namespace MultimediaRetrieval
         public IEnumerable<(MeshStatistics, float)> GetDistanceAndSort(IEnumerable<MeshStatistics> meshes, FeatureVector query)
         {
             return meshes.AsParallel()
-                .Select((m) => (m, query.Distance(m.Features, TSNE)))
+                .Select((m) => (m, query.Distance(m.Features)))
                 .OrderBy((arg) => arg.Item2).AsSequential();
         }
 

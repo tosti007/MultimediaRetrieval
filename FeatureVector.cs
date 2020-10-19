@@ -234,26 +234,19 @@ namespace MultimediaRetrieval
 
         #region Distance functions
 
-        public float Distance(FeatureVector other, bool singleAlgorithm)
-            => Distance(this, other, singleAlgorithm);
+        public float Distance(FeatureVector other)
+            => Distance(this, other);
 
-        public static float Distance(FeatureVector a, FeatureVector b, bool singleAlgorithm)
+        public static float Distance(FeatureVector a, FeatureVector b)
         {
             if (a.Size != b.Size)
                 throw new Exception("Attempted to calculate distance between two FeatureVectors of different length.");
 
             float distance = 0;
 
-            if (singleAlgorithm)
-            {
-                distance += EuclidianDistance(a, b, 0, a.Size);
-            }
-            else
-            {
-                distance += EuclidianDistance(a, b, 0, HISTOGRAM_START_INDEX);
-                foreach (Histogram h in HISTOGRAMS)
-                    distance += EarthMoversDistance(a, b, h.StartIndex, h.StartIndex + h.Bins) / h.Bins;
-            }
+            distance += EuclidianDistance(a, b, 0, HISTOGRAM_START_INDEX);
+            foreach (Histogram h in HISTOGRAMS)
+                distance += EarthMoversDistance(a, b, h.StartIndex, h.StartIndex + h.Bins) / h.Bins;
 
             return distance;
         }

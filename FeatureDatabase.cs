@@ -41,8 +41,13 @@ namespace MultimediaRetrieval
             }
             headers.Add(MeshStatistics.Headers());
 
-            File.WriteAllLines(filepath, headers.ToArray().Concat(
-                meshes.OrderBy((cls) => cls.ID).Select((cls) => cls.ToString())
+            WriteToFile(filepath, string.Join("\n", headers), (m) => m.ToString());
+        }
+
+        public void WriteToFile(string filepath, string header, Func<MeshStatistics, string> tostring)
+        {
+            File.WriteAllLines(filepath, new[] { header }.Concat(
+                meshes.OrderBy((cls) => cls.ID).Select(tostring)
                 ));
         }
 
@@ -183,21 +188,27 @@ namespace MultimediaRetrieval
             return result; 
         }
 
-        public void ReduceDimensions(FeatureVector query, int NumberOfOutputs = 5, double Perplexity = 1.5, double Theta = 0.5)
+        public double[][] ToArrayDouble()
+        {
+            double[][] result = new double[meshes.Count][];
+
+            for (int i = 0; i < meshes.Count; i++)
+                result[i] = meshes[i].Features.ToArrayDouble();
+
+            return result;
+        }
+
+        public void ReduceDimensions(int NumberOfOutputs = 2, double Perplexity = 1.5, double Theta = 0.5)
         {
             // Accord.Math.Random.Generator.Seed = 0;
 
             // Declare some observations
-            double[][] observations = new double[meshes.Count + 1][];
-
-            for (int i = 0; i < meshes.Count; i++)
-                observations[i] = meshes[i].Features.ToArrayDouble();
-            observations[meshes.Count] = query.ToArrayDouble();
+            double[][] observations = ToArrayDouble();
 
             // Create a new t-SNE algorithm 
             TSNE tSNE = new TSNE()
             {
-                NumberOfInputs = query.Size,
+                NumberOfInputs = observations[0].Length,
                 NumberOfOutputs = NumberOfOutputs,
                 Perplexity = Perplexity,
                 Theta = Theta
@@ -208,7 +219,6 @@ namespace MultimediaRetrieval
 
             for (int i = 0; i < meshes.Count; i++)
                 meshes[i].Features.FromArray(output[i]);
-            query.FromArray(output[meshes.Count]);
         }
     }
 }
