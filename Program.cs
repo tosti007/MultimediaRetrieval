@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using CommandLine;
 using OpenTK.Graphics.OpenGL;
+using wrapper;
 
 namespace MultimediaRetrieval
 {
@@ -18,10 +19,12 @@ namespace MultimediaRetrieval
                 Console.WriteLine("Visual Studio execution detected, changing workdirectory to {0}", workdir);
                 Directory.SetCurrentDirectory(workdir);
 
+                
                 FeatureOptions options = new FeatureOptions {
                     InputFile = "database/step1/output.mr",
                     InputDir = "database/step4/"
                 };
+
                 return options.Execute();
             }
 
@@ -158,7 +161,14 @@ namespace MultimediaRetrieval
         [Option("csv",
             Default = false, 
             HelpText = "Output the matches as CSV.")]
+
         public bool AsCSV { get; set; }
+
+        [Option("ann",
+            Default = false,
+            HelpText = "Output the results of an ANN k-nearest neighbour search. This will not execute if no k is given.")]
+
+        public bool WithANN { get; set; }
 
         public int Execute()
         {
@@ -227,6 +237,36 @@ namespace MultimediaRetrieval
                 Console.WriteLine();
             }
 
+            //Do the same with KDTree:
+            if(WithANN)
+            {
+                if(InputK == null)
+                {
+                    Console.WriteLine("Unable to perform ANN, no k specified.");
+                }
+                else
+                {
+                    int dim = query.Size;
+                    float eps = 0.0f;
+                    wrapper.KDTree instance = new wrapper.KDTree();
+                    float[] queryArr = query.Flattened();
+                    float[] dataArr = db.Flattened();
+                    unsafe
+                    {
+                        fixed (float* queryArrPtr = queryArr)
+                        {
+                            fixed (float* dataArrPtr = dataArr)
+                            {
+                                Console.WriteLine("Results from ANN:");
+                                int* topIndicesPtr = instance.RunKDtree(dim, db.meshes.Count, InputK.Value, dataArrPtr, queryArrPtr, eps);
+                                for (int i = 0; i < InputK; i++)
+                                    Console.WriteLine($"Close match: {db.meshes[topIndicesPtr[i]].ID} with class {db.meshes[topIndicesPtr[i]].Classification}");
+                            }
+                        }
+                    }
+                }
+            }
+            
             return 0;
         }
     }

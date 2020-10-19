@@ -272,5 +272,9 @@ namespace MultimediaRetrieval
         }
 
         #endregion
+        public float[] Flattened()
+        {
+            return _data;
+        }
     }
 }

@@ -172,5 +172,16 @@ namespace MultimediaRetrieval
                 return _std;
             }
         }
+
+        public float[] Flattened()
+        {
+            int dim = meshes[0].Features.Size;
+            float[] result = new float[dim * meshes.Count];
+            for (int i = 0; i < meshes.Count; i++)
+                for (int j = 0; j < dim; j++)
+                    result[i * dim + j] = meshes[i].Features.Flattened()[j];
+
+            return result;
+        }
     }
 }
