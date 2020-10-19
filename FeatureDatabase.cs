@@ -178,7 +178,7 @@ namespace MultimediaRetrieval
             int dim = meshes[0].Features.Size;
             float[] result = new float[dim * meshes.Count];
             for (int i = 0; i < meshes.Count; i++)
-                meshes[i].Features.ToArray().CopyTo(result, i * dim)
+                meshes[i].Features.ToArray().CopyTo(result, i * dim);
 
             return result; 
         }
