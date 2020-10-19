@@ -93,6 +93,7 @@
     <Compile Include="Viewer\Camera.cs" />
     <Compile Include="Viewer\MeshViewer.cs" />
     <Compile Include="Viewer\Shader.cs" />
+    <Compile Include="ANN.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="m0.off">
@@ -127,6 +128,6 @@
     <DefineConstants>$(DefineConstants)Linux;</DefineConstants>
   </PropertyGroup>
   <Target BeforeTargets="Build" Name="Defined Constants">
-    <Message Importance="High" Text="$(DefineConstants)"/>
+    <Message Importance="High" Text="$(DefineConstants)" />
   </Target>
 </Project>

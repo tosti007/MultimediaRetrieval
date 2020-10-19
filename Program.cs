@@ -2,12 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using CommandLine;
-using OpenTK.Graphics.OpenGL;
-#if Windows
-using wrapper;
-#endif
 
 namespace MultimediaRetrieval
 {
@@ -177,6 +172,7 @@ namespace MultimediaRetrieval
             HelpText = "Output the results of an ANN k-nearest neighbour search. This will not execute if no k is given.")]
         public bool WithANN { get; set; }
 
+        // TODO: Move this to normalize
         [Option("newtree",
             Default = false,
             HelpText = "If ANN is performed, generate a new tree to the kdtree.tree file. Otherwise, this file will be read to obtain the tree.")]
@@ -219,9 +215,7 @@ namespace MultimediaRetrieval
 
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors.
             //Sort the meshes in the database by distance and return the selected.
-            IEnumerable<(MeshStatistics, float)> meshes = db.meshes.AsParallel()
-                .Select((m) => (m, query.Distance(m.Features, TSNE)))
-                .OrderBy((arg) => arg.Item2).AsSequential();
+            IEnumerable<(MeshStatistics, float)> meshes = GetDistanceAndSort(db.meshes, query);
 
             if (InputK != null)
                 meshes = meshes.Take(InputK.Value);
@@ -229,6 +223,52 @@ namespace MultimediaRetrieval
             if (InputT != null)
                 meshes = meshes.TakeWhile((arg) => arg.Item2 <= InputT.Value);
 
+            PrintResults(meshes);
+
+#if Windows
+            //Do the same with KDTree:
+            if (WithANN)
+            {
+                if (InputK == null)
+                {
+                    Console.WriteLine("Unable to perform ANN, no k specified.");
+                    return 1;
+                }
+
+                int dim = query.Size;
+                float eps = 0.0f;
+                int npts = db.meshes.Count;
+                ANN ann = new ANN(db, InputK.Value);
+                if (NewTree || !ann.FileExists())
+                {
+                    Console.WriteLine("Creating new ANN KDTree.");
+                    ann.Create();
+                }
+                else
+                {
+                    Console.WriteLine("Loading existing ANN KDTree.");
+                    ann.Load();
+                }
+
+                MeshStatistics[] results = ann.Search(query);
+
+                Console.WriteLine("Results from ANN:");
+                PrintResults(GetDistanceAndSort(results, query));
+            }
+#endif
+
+            return 0;
+        }
+
+        public IEnumerable<(MeshStatistics, float)> GetDistanceAndSort(IEnumerable<MeshStatistics> meshes, FeatureVector query)
+        {
+            return meshes.AsParallel()
+                .Select((m) => (m, query.Distance(m.Features, TSNE)))
+                .OrderBy((arg) => arg.Item2).AsSequential();
+        }
+
+        public void PrintResults(IEnumerable<(MeshStatistics, float)> meshes)
+        {
             string printformat;
             if (AsCSV)
             {
@@ -252,55 +292,6 @@ namespace MultimediaRetrieval
 
                 Console.WriteLine();
             }
-
-#if Windows
-            //Do the same with KDTree:
-            if (WithANN)
-            {
-                if (InputK == null)
-                {
-                    Console.WriteLine("Unable to perform ANN, no k specified.");
-                }
-                else
-                {
-                    int dim = query.Size;
-                    float eps = 0.0f;
-                    int npts = db.meshes.Count;
-                    wrapper.KDTree instance = new wrapper.KDTree();
-                    if (NewTree || !File.Exists("kdtree.tree"))
-                    {
-                        Console.WriteLine("Creating new ANN KDTree.");
-                        float[] dataArr = db.ToArray();
-                        unsafe
-                        {
-                            fixed (float* dataArrPtr = dataArr)
-                            {
-                                instance.CreateKDTree(dim, npts, InputK.Value, dataArrPtr);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Loading existing ANN KDTree.");
-                        instance.LoadKDTree();
-                    }
-
-                    float[] queryArr = query.ToArray();
-
-                    unsafe
-                    {
-                        fixed (float* queryArrPtr = queryArr)
-                        {
-                            Console.WriteLine("Results from ANN:");
-                            int* topIndicesPtr = instance.SearchKDTree(dim, InputK.Value, queryArrPtr, eps);
-                            for (int i = 0; i < InputK; i++)
-                                Console.WriteLine($"Close match: {db.meshes[topIndicesPtr[i]].ID} with class {db.meshes[topIndicesPtr[i]].Classification}");
-                        }
-                    }
-                }
-            }
-#endif
-            return 0;
         }
     }
 }
