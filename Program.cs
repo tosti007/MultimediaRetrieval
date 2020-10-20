@@ -26,13 +26,25 @@ namespace MultimediaRetrieval
                 return options.Execute();
             }
 
-            return Parser.Default.ParseArguments<ViewOptions, FeatureOptions, NormalizeOptions, QueryOptions>(args)
+            return Parser.Default.ParseArguments<DistanceMethodOptions, ViewOptions, FeatureOptions, NormalizeOptions, QueryOptions>(args)
                 .MapResult(
+                    (DistanceMethodOptions opts) => opts.Execute(),
                     (ViewOptions opts) => opts.Execute(),
                     (FeatureOptions opts) => opts.Execute(),
                     (NormalizeOptions opts) => opts.Execute(),
                     (QueryOptions opts) => opts.Execute(),
                 errs => 1);
+        }
+    }
+
+    [Verb("distancemethods", HelpText = "Print the possible distance methods")]
+    class DistanceMethodOptions
+    {
+        public int Execute()
+        {
+            foreach (DistanceFunction f in Enum.GetValues(typeof(DistanceFunction)))
+                Console.WriteLine(f);
+            return 0;
         }
     }
 
@@ -225,7 +237,12 @@ namespace MultimediaRetrieval
                 db.Filter(InputDir);
 
             if (InputK.HasValue)
-                InputK = Math.Min(InputK.Value, db.meshes.Count);
+            {
+                if (InputK.Value == 0)
+                    InputK = db.meshes.Count;
+                else
+                    InputK = Math.Min(InputK.Value, db.meshes.Count);
+            }
 
             if (!db.Normalized)
             {
