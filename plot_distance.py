@@ -40,7 +40,7 @@ for i in range(len(dfs)):
 
 # Plot the data as a dist plot, with a subplot for each file
 colors = sns.color_palette("Set1", len(selected))
-plots = sns.displot(data=pd.concat(dfs), palette=colors, kind="hist", kde=True, x="Distance", hue="Class", row="File")
+plots = sns.displot(data=pd.concat(dfs), palette=colors, kind="kde", x="Distance", hue="Class", row="File")
 
 # Draw lines of the means on each subplot
 for i, df in enumerate(means):
