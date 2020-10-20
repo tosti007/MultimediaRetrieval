@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
-TOP5=True
+TOP=True
+TOPN=5
 
 import sys
 import numpy as np
@@ -18,20 +19,20 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-TOP5=str2bool(sys.argv[1])
+TOP=str2bool(sys.argv[1])
 
 f = sys.argv[2] if len(sys.argv) > 2 else "database/output.mrtsne"
 
 df = pd.read_csv(f, sep=";")
 
-if TOP5:
-    classes = df.groupby("Class").count()["X"].sort_values(ascending=False).index
-    df = df[df["Class"].isin(classes[-5:])]
+if TOP:
+    classes = df.groupby("Class").count()["X"].sort_values(ascending=False)
+    df = df[df["Class"].isin(classes.index[:TOPN])]
 
-sns.scatterplot(data=df, x="X", y="Y", hue="Class", legend=TOP5, 
+sns.scatterplot(data=df, x="X", y="Y", hue="Class", legend=TOP,
         palette=sns.hls_palette(len(np.unique(df["Class"]))),
-        estimator=None, alpha=1 - (not TOP5) * 0.6)
+        estimator=None, alpha=1 - (not TOP) * 0.6)
 
-filename = "plots/step5_tsne_" + ("top5" if TOP5 else "all") + ".jpg"
+filename = "plots/step5_tsne_" + ("top" + str(TOPN) if TOP else "all") + ".jpg"
 plt.savefig(filename, dpi=300, transparent=True, bbox_inches=None)
 
