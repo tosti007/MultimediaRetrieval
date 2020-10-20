@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using OpenTK;
 // For documentation check:
 // http://accord-framework.net/docs/html/R_Project_Accord_NET.htm
@@ -234,21 +235,50 @@ namespace MultimediaRetrieval
 
         #region Distance functions
 
-        public float Distance(FeatureVector other)
-            => Distance(this, other);
+        public float Distance(DistanceFunction[] functions, FeatureVector other)
+            => Distance(functions, this, other);
 
-        public static float Distance(FeatureVector a, FeatureVector b)
+        public static float Distance(DistanceFunction[] functions, FeatureVector a, FeatureVector b)
         {
             if (a.Size != b.Size)
                 throw new Exception("Attempted to calculate distance between two FeatureVectors of different length.");
 
             float distance = 0;
 
-            distance += EuclidianDistance(a, b, 0, HISTOGRAM_START_INDEX);
-            foreach (Histogram h in HISTOGRAMS)
-                distance += EarthMoversDistance(a, b, h.StartIndex, h.StartIndex + h.Bins) / h.Bins;
+            if (functions.Length == 1)
+            {
+                distance += Distance(functions[0], a, b, 0, a.Size);
+            }
+            else if (functions.Length == 2)
+            {
+                distance += Distance(functions[0], a, b, 0, HISTOGRAM_START_INDEX);
+                foreach (Histogram h in HISTOGRAMS)
+                    distance += Distance(functions[0], a, b, h);
+            }
+            else
+                throw new Exception("DistanceFunction array should be of length 1 or 2.");
 
             return distance;
+        }
+
+        private static float Distance(DistanceFunction function, FeatureVector a, FeatureVector b, Histogram h)
+        {
+            return Distance(function, a, b, h.StartIndex, h.StartIndex + h.Bins) / h.Bins;
+        }
+
+        private static float Distance(DistanceFunction function, FeatureVector a, FeatureVector b, int start, int end)
+        {
+            switch (function)
+            {
+                case DistanceFunction.Euclidian:
+                    return EuclidianDistance(a, b, start, end);
+                case DistanceFunction.Cosine: 
+                    return CosineDistance(a, b, start, end);
+                case DistanceFunction.Earthmovers:
+                    return EarthMoversDistance(a, b, start, end);
+                default:
+                    throw new NotImplementedException($"Method {function} is not implemented as a distance function!");
+            }
         }
 
         private static float EuclidianDistance(FeatureVector a, FeatureVector b, int start, int end)
@@ -291,5 +321,22 @@ namespace MultimediaRetrieval
         }
 
         #endregion
+    }
+
+    public enum DistanceFunction
+    {
+        Euclidian,
+        Cosine,
+        Earthmovers,
+    }
+
+    public static class DistanceFunctionExtensions
+    {
+        public static DistanceFunction[] Parse(this IEnumerable<DistanceFunction> f)
+        {
+            if (f.Count() == 1)
+                f = Enumerable.Repeat(f.First(), 2);
+            return f.ToArray();
+        }
     }
 }

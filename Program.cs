@@ -173,6 +173,11 @@ namespace MultimediaRetrieval
             HelpText = "Output the matches as CSV.")]
         public bool AsCSV { get; set; }
 
+        [Option('m', "method",
+            Default = new[] { DistanceFunction.Euclidian, DistanceFunction.Earthmovers },
+            HelpText = "The distance function to use.")]
+        public IEnumerable<DistanceFunction> DistanceFuncs { get; set; }
+
 #if Windows
         [Option("ann",
             Default = false,
@@ -199,6 +204,12 @@ namespace MultimediaRetrieval
 
             if (string.IsNullOrWhiteSpace(InputFile))
                 InputFile = Path.Combine(InputDir, "output.mr");
+
+            if (!DistanceFuncs.Any() || DistanceFuncs.Count() > 2)
+            {
+                Console.Error.WriteLine("Method option can only contain 1 or 2 values!");
+                return 1;
+            }
 
 #if Windows
             if (WithANN && !InputK.HasValue)
@@ -272,7 +283,7 @@ namespace MultimediaRetrieval
         public IEnumerable<(MeshStatistics, float)> GetDistanceAndSort(IEnumerable<MeshStatistics> meshes, FeatureVector query)
         {
             return meshes.AsParallel()
-                .Select((m) => (m, query.Distance(m.Features)))
+                .Select((m) => (m, query.Distance(DistanceFuncs.Parse(), m.Features)))
                 .OrderBy((arg) => arg.Item2).AsSequential();
         }
 
