@@ -49,6 +49,6 @@ for i, df in enumerate(means):
     if SHOW_STD:
         plots.axes[i, 0].vlines(df["std_min"], lims.y0, lims.y1 * 0.75, colors=colors)
         plots.axes[i, 0].vlines(df["std_max"], lims.y0, lims.y1 * 0.75, colors=colors)
-plt.xlim(left=0)
+plt.xlim(left=0, right=7.5)
 plt.show()
 
