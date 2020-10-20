@@ -15,11 +15,11 @@ for i in $methods; do
 	for j in $methods; do
 		echo "Handling: $i and $j"
 		outfile="$i$j.csv"
-		$call query "$1" -m "$i $j" --csv -k 0 > "$outfile"
+		$call query "$1" -m "$i" "$j" --csv -k 0 > "$outfile"
 		files="$files $outfile"
 	done
 done
 
-python plot_distance.py "$files"
+echo "$files" | xargs python plot_distance.py
 
 exit 0
