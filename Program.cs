@@ -188,22 +188,33 @@ namespace MultimediaRetrieval
 
         public int Execute()
         {
-            if (InputT != null && InputK != null)
+            if (InputT.HasValue && InputK.HasValue)
             {
                 Console.Error.WriteLine("T and K cannot both be set.");
                 return 1;
             }
 
-            if (InputT == null && InputK == null)
+            if (!InputT.HasValue && !InputK.HasValue)
                 InputK = 5;
 
             if (string.IsNullOrWhiteSpace(InputFile))
                 InputFile = Path.Combine(InputDir, "output.mr");
 
+#if Windows
+            if (WithANN && !InputK.HasValue)
+            {
+                Console.WriteLine("Unable to perform ANN, no k specified.");
+                return 1;
+            }
+#endif
+
             FeatureDatabase db = FeatureDatabase.ReadFrom(InputFile);
 
             if (!string.IsNullOrWhiteSpace(InputDir))
                 db.Filter(InputDir);
+
+            if (InputK.HasValue)
+                InputK = Math.Min(InputK.Value, db.meshes.Count);
 
             if (!db.Normalized)
             {
@@ -221,10 +232,10 @@ namespace MultimediaRetrieval
             //Sort the meshes in the database by distance and return the selected.
             IEnumerable<(MeshStatistics, float)> meshes = GetDistanceAndSort(db.meshes, query);
 
-            if (InputK != null)
+            if (InputK.HasValue)
                 meshes = meshes.Take(InputK.Value);
 
-            if (InputT != null)
+            if (InputT.HasValue)
                 meshes = meshes.TakeWhile((arg) => arg.Item2 <= InputT.Value);
 
             PrintResults(meshes);
@@ -233,12 +244,6 @@ namespace MultimediaRetrieval
             //Do the same with KDTree:
             if (WithANN)
             {
-                if (InputK == null)
-                {
-                    Console.WriteLine("Unable to perform ANN, no k specified.");
-                    return 1;
-                }
-
                 int dim = query.Size;
                 float eps = 0.0f;
                 int npts = db.meshes.Count;
