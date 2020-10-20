@@ -119,10 +119,13 @@ namespace MultimediaRetrieval
             HelpText = "Print the feature vectors for the given matches.")]
         public bool Vectors { get; set; }
 
+        // Good options:
+        //   100, 2.5
+        //    30, 1,5
         [Option("tsne",
-            Default = false,
-            HelpText = "Use the tSNE algorithm to reduce the feature vector dimensionallity.")]
-        public bool TSNE { get; set; }
+            Default = null,
+            HelpText = "(Default: if on 30,1.5) Use the tSNE algorithm to reduce the feature vector dimensionallity.")]
+        public string TSNE { get; set; }
 
         public int Execute()
         {
@@ -141,10 +144,22 @@ namespace MultimediaRetrieval
             db.FilterNanAndInf(Vectors);
             db.WriteToFile(OutputFile);
 
-            if (TSNE)
+            if (TSNE != null)
             {
+                double p, t;
+                if (string.IsNullOrWhiteSpace(TSNE))
+                {
+                    p = 100;
+                    t = 2.5;
+                }
+                else
+                {
+                    double[] data = TSNE.Split(',').Select(double.Parse).ToArray();
+                    p = data[0];
+                    t = data[1];
+                }
                 Console.WriteLine("Reducing dimensionality using TSNE...");
-                db.ReduceDimensions();
+                db.ReduceDimensions(NumberOfOutputs: 2, Perplexity: p, Theta: t);
                 db.WriteToFile(OutputFile + "tsne", "Class;X;Y", (m) => m.Classification + ";" + m.Features);
             }
 

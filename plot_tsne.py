@@ -8,8 +8,19 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-f = sys.argv[1] if len(sys.argv) > 1 else "database/output.mrtsne"
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
+TOP5=str2bool(sys.argv[1])
+
+f = sys.argv[2] if len(sys.argv) > 2 else "database/output.mrtsne"
 
 df = pd.read_csv(f, sep=";")
 

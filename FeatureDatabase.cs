@@ -198,9 +198,10 @@ namespace MultimediaRetrieval
             return result;
         }
 
-        public void ReduceDimensions(int NumberOfOutputs = 2, double Perplexity = 1.5, double Theta = 0.5)
+        public void ReduceDimensions(int NumberOfOutputs = 2, double Perplexity = 100, double Theta = 2.5)
         {
-            // Accord.Math.Random.Generator.Seed = 0;
+            Accord.Math.Random.Generator.Seed = 0;
+            Console.WriteLine($"Using Perplexity {Perplexity} and Theta {Theta}");
 
             // Declare some observations
             double[][] observations = ToArrayDouble();
