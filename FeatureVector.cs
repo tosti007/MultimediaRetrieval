@@ -253,7 +253,7 @@ namespace MultimediaRetrieval
             {
                 distance += Distance(functions[0], a, b, 0, HISTOGRAM_START_INDEX);
                 foreach (Histogram h in HISTOGRAMS)
-                    distance += Distance(functions[0], a, b, h);
+                    distance += Distance(functions[1], a, b, h);
             }
             else
                 throw new Exception("DistanceFunction array should be of length 1 or 2.");
