@@ -21,6 +21,6 @@ sns.scatterplot(data=df, x="X", y="Y", hue="Class", legend=TOP5,
         palette=sns.hls_palette(len(np.unique(df["Class"]))),
         estimator=None, alpha=1 - (not TOP5) * 0.6)
 
-filename = "plots/step4_tsne_" + ("top5" if TOP5 else "all") + ".jpg"
+filename = "plots/step5_tsne_" + ("top5" if TOP5 else "all") + ".jpg"
 plt.savefig(filename, dpi=300, transparent=True, bbox_inches=None)
 
