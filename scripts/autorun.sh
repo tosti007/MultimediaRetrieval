@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-call="mono ../bin/Debug/MultimediaRetrieval.exe "
+call="mono ../MultimediaRetrieval/bin/Debug/MultimediaRetrieval.exe "
 
 # Stop the script if any command fails
 set -e

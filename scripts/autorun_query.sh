@@ -4,7 +4,7 @@
 
 outdir="../plots/"
 mkdir -p "$outdir"
-call="mono ../bin/Debug/MultimediaRetrieval.exe "
+call="mono ../MultimediaRetrieval/bin/Debug/MultimediaRetrieval.exe "
 
 methods="$($call distancemethods)"
 
