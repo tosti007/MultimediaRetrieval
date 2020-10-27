@@ -19,8 +19,8 @@ namespace MultimediaRetrieval
 
                 
                 FeatureOptions options = new FeatureOptions {
-                    InputFile = "database/step1/output.mr",
-                    InputDir = "database/step4/"
+                    InputFile = "../database/step1/output.mr",
+                    InputDir = "../database/step4/"
                 };
 
                 return options.Execute();

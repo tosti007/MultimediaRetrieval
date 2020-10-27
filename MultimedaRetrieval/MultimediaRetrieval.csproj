@@ -96,9 +96,6 @@
     <Compile Include="ANN.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="m0.off">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
     <None Include="Viewer\shader.vert" />
