@@ -21,18 +21,23 @@ def str2bool(v):
 
 TOP=str2bool(sys.argv[1])
 
-f = sys.argv[2] if len(sys.argv) > 2 else "database/output.mrtsne"
+f_i = sys.argv[2] if len(sys.argv) > 2 else "database/output.mrtsne"
+f_o = sys.argv[3] if len(sys.argv) > 3 else "plots/step5_tsne_" + ("top" + str(TOPN) if TOP else "all") + ".jpg"
 
-df = pd.read_csv(f, sep=";")
+df = pd.read_csv(f_i, sep=";")
+
+print(df.describe())
 
 if TOP:
     classes = df.groupby("Class").count()["X"].sort_values(ascending=False)
-    df = df[df["Class"].isin(classes.index[:TOPN])]
+    classes = set(classes.index[:TOPN])
+    #classes.remove("handheld")
+    #classes.remove("plant")
+    df = df[df["Class"].isin(classes)]
 
 sns.scatterplot(data=df, x="X", y="Y", hue="Class", legend=TOP,
         palette=sns.hls_palette(len(np.unique(df["Class"]))),
         estimator=None, alpha=1 - (not TOP) * 0.6)
 
-filename = "plots/step5_tsne_" + ("top" + str(TOPN) if TOP else "all") + ".jpg"
-plt.savefig(filename, dpi=300, transparent=True, bbox_inches=None)
+plt.savefig(f_o, dpi=300, transparent=True, bbox_inches=None)
 

@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-NR_SELECTED = 5
+NR_SELECTED = 3
 SHOW_STD = False
 
 import sys
@@ -24,10 +24,10 @@ dfs = [df.sort_values(by=["Distance"]) for df in dfs]
 # Find the mean distance for each class and sort these values
 means = [df.groupby('Class').agg([np.mean, np.std])["Distance"] for df in dfs]
 means = [df.sort_values(by=['mean']) for df in means]
-# We only want the top 5 classes for our plot
-# But some files may have a different top 5, so select them all
+# We only want the top n classes for our plot
+# But some files may have a different top n, so select them all
 selected = [df.index[:NR_SELECTED] for df in means]
-selected += [df["Class"][:5] for df in dfs]
+selected += [df["Class"][:NR_SELECTED] for df in dfs]
 selected = np.unique(selected)
 
 print(selected)
