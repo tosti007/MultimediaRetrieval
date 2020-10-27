@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-TOP=True
+TOP=False
 TOPN=5
 
 import sys
@@ -19,10 +19,9 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-TOP=str2bool(sys.argv[1])
-
-f_i = sys.argv[2] if len(sys.argv) > 2 else "database/output.mrtsne"
-f_o = sys.argv[3] if len(sys.argv) > 3 else "plots/step5_tsne_" + ("top" + str(TOPN) if TOP else "all") + ".jpg"
+TOP = str2boolsys.argv[1]) if len(sys.argv) > 1 else False
+f_i = sys.argv[2] if len(sys.argv) > 2 else "../database/output.mrtsne"
+f_o = sys.argv[3] if len(sys.argv) > 3 else "../plots/step5_tsne_" + ("top" + str(TOPN) if TOP else "all") + ".jpg"
 
 df = pd.read_csv(f_i, sep=";")
 
@@ -40,4 +39,3 @@ sns.scatterplot(data=df, x="X", y="Y", hue="Class", legend=TOP,
         estimator=None, alpha=1 - (not TOP) * 0.6)
 
 plt.savefig(f_o, dpi=300, transparent=True, bbox_inches=None)
-

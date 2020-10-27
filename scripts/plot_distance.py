@@ -52,5 +52,5 @@ for i, df in enumerate(means):
     if SHOW_STD:
         plots.axes[i, 0].vlines(df["std_min"], lims.y0, lims.y1 * 0.75, colors=colors)
         plots.axes[i, 0].vlines(df["std_max"], lims.y0, lims.y1 * 0.75, colors=colors)
-plt.savefig("plots/step4_distances.jpg", dpi=300, bbox_inches="tight")
 
+plt.savefig("../plots/step4_distances.jpg", dpi=300, bbox_inches="tight")

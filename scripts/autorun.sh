@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+call="mono ../bin/Debug/MultimediaRetrieval.exe "
+
 # Stop the script if any command fails
 set -e
 
@@ -13,16 +15,16 @@ show () {
 cd "$(dirname $0)"
 
 # Make pip use local environment instead of global install
-if [ ! -d "database/step4" ]; then
+if [ ! -d "../database/step4" ]; then
     show "Normalizing meshfiles"
     MeshConverter/autorun.sh
 fi
 
 show "Making features"
-mono bin/Debug/MultimediaRetrieval.exe feature
+$call feature
 
 show "Normalizing features"
-mono bin/Debug/MultimediaRetrieval.exe normalize
+$call normalize
 
 show "Done autorunning"
 show "Ready for query"

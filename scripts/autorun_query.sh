@@ -2,11 +2,11 @@
 
 [[ -z "$1" ]] && echo "No meshfile set!"
 
-outdir="plots/"
-call="mono bin/Debug/MultimediaRetrieval.exe "
-methods="$($call distancemethods)"
-
+outdir="../plots/"
 mkdir -p "$outdir"
+call="mono ../bin/Debug/MultimediaRetrieval.exe "
+
+methods="$($call distancemethods)"
 
 echo "Using queryfile $1"
 echo "Using methods:"

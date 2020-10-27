@@ -1,12 +1,11 @@
 #! /bin/bash
 
-outdir="plots/tsne"
-call="mono bin/Debug/MultimediaRetrieval.exe "
+outdir="../plots/tsne"
+mkdir -p "$outdir"
+call="mono ../bin/Debug/MultimediaRetrieval.exe "
 
 theta="$(seq 0.1 0.2 0.8 | sed 's/,/\./g')"
 perplexity="$(seq 71 10 91)"
-
-mkdir -p "$outdir"
 
 echo "Using theta:"
 echo "$theta"
