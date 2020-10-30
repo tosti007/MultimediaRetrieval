@@ -22,23 +22,20 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-TOP = str2boolsys.argv[1]) if len(sys.argv) > 1 else False
+TOP = str2bool(sys.argv[1]) if len(sys.argv) > 1 else False
 f_i = sys.argv[2] if len(sys.argv) > 2 else "database/output.mrtsne"
 f_o = sys.argv[3] if len(sys.argv) > 3 else "plots/step5_tsne_" + ("top" + str(TOPN) if TOP else "all") + ".jpg"
 
 df = pd.read_csv(f_i, sep=";")
 
-print(df.describe())
+palette = dict(zip(np.unique(df["Class"]), sns.hls_palette(len(unique_classes))))
 
 if TOP:
     classes = df.groupby("Class").count()["X"].sort_values(ascending=False)
     classes = set(classes.index[:TOPN])
-    #classes.remove("handheld")
-    #classes.remove("plant")
-    df = df[df["Class"].isin(classes)]
+    df = df[df["Class"].isin(classes)].sort_values(by="Class")
 
 sns.scatterplot(data=df, x="X", y="Y", hue="Class", legend=TOP,
-        palette=sns.hls_palette(len(np.unique(df["Class"]))),
-        estimator=None, alpha=1 - (not TOP) * 0.6)
+        palette=palette, estimator=None, alpha=1 - (not TOP) * 0.6)
 
 plt.savefig(f_o, dpi=300, transparent=True, bbox_inches=None)
