@@ -271,18 +271,6 @@ namespace MultimediaRetrieval
             query.HistogramsAsPercentages();
             query.Normalize(db.Average, db.StandardDev);
 
-            //Fill a list of ID's to distances between the input feature vector and the database feature vectors.
-            //Sort the meshes in the database by distance and return the selected.
-            IEnumerable<(MeshStatistics, float)> meshes = GetDistanceAndSort(db.meshes, query);
-
-            if (InputK.HasValue)
-                meshes = meshes.Take(InputK.Value);
-
-            if (InputT.HasValue)
-                meshes = meshes.TakeWhile((arg) => arg.Item2 <= InputT.Value);
-
-            PrintResults(meshes);
-
 #if Windows
             //Do the same with KDTree:
             if (WithANN)
@@ -303,8 +291,21 @@ namespace MultimediaRetrieval
 
                 Console.WriteLine("Results from ANN (with our distance metric):");
                 PrintResults(GetDistanceAndSort(results, query));
+                return 0;
             }
 #endif
+
+            //Fill a list of ID's to distances between the input feature vector and the database feature vectors.
+            //Sort the meshes in the database by distance and return the selected.
+            IEnumerable<(MeshStatistics, float)> meshes = GetDistanceAndSort(db.meshes, query);
+
+            if (InputK.HasValue)
+                meshes = meshes.Take(InputK.Value);
+
+            if (InputT.HasValue)
+                meshes = meshes.TakeWhile((arg) => arg.Item2 <= InputT.Value);
+
+            PrintResults(meshes);
 
             return 0;
         }
