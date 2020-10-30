@@ -287,11 +287,8 @@ namespace MultimediaRetrieval
             //Do the same with KDTree:
             if (WithANN)
             {
-                int dim = query.Size;
-                float eps = 0.0f;
-                int npts = db.meshes.Count;
                 ANN ann = new ANN(db, InputK.Value);
-                if (NewTree || !ann.FileExists())
+                if (NewTree || !ANN.FileExists())
                 {
                     Console.WriteLine("Creating new ANN KDTree.");
                     ann.Create();

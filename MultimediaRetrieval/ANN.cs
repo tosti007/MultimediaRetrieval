@@ -1,6 +1,6 @@
-﻿using System;
+﻿#if Windows
+using System;
 using System.IO;
-#if Windows
 using wrapper;
 
 namespace MultimediaRetrieval
@@ -21,7 +21,7 @@ namespace MultimediaRetrieval
 
         }
 
-        public bool FileExists()
+        public static bool FileExists()
         {
             return File.Exists("kdtree.tree");
         }
