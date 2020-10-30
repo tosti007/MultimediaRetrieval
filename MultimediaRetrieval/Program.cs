@@ -138,6 +138,13 @@ namespace MultimediaRetrieval
             HelpText = "The distance function to use, does not work for tSNE.")]
         public IEnumerable<DistanceFunction> DistanceFuncs { get; set; }
 
+#if Windows
+        [Option("ann",
+            Default = null,
+            HelpText = "Create an ANN k-nearest neighbour tree. Needs to have the K specified for the search.")]
+        public int? ANN { get; set; }
+#endif
+
         public int Execute()
         {
             FeatureDatabase db = FeatureDatabase.ReadFrom(InputFile);
@@ -160,6 +167,15 @@ namespace MultimediaRetrieval
                 var tree = new ClusterTree(DistanceFuncs.Parse(), db.meshes, KMedoids.Value);
                 tree.WriteToFile(OutputFile + "kmed");
             }
+
+#if Windows
+            if (ANN.HasValue)
+            {
+                Console.WriteLine("Creating new ANN KDTree.");
+                ANN ann = new ANN();
+                ann.Create(db, ANN.Value);
+            }
+#endif
 
             if (TSNE != null)
             {
@@ -232,16 +248,38 @@ namespace MultimediaRetrieval
             Default = false,
             HelpText = "Output the results of an ANN k-nearest neighbour search. This will not execute if no k is given.")]
         public bool WithANN { get; set; }
-
-        // TODO: Move this to normalize
-        [Option("newtree",
-            Default = false,
-            HelpText = "If ANN is performed, generate a new tree to the kdtree.tree file. Otherwise, this file will be read to obtain the tree.")]
-        public bool NewTree { get; set; }
 #endif
 
         public bool ParseInput()
         {
+#if Windows
+            ANN ann = null;
+            if (WithANN)
+            {
+                ann = new ANN();
+                if (ANN.FileExists())
+                {
+                    if (InputK.HasValue)
+                    {
+                        Console.Error.WriteLine("K cannot be set with ANN set");
+                        Console.Error.WriteLine("If you want to change the K value, run normalize again.");
+                        return false;
+                    }
+
+                    if (InputT.HasValue)
+                    {
+                        Console.Error.WriteLine("T cannot be set with ANN set");
+                        return false;
+                    }
+
+                    Console.WriteLine("Loading existing ANN KDTree.");
+                    ann.Load();
+                    InputK = ann.K;
+                    Console.WriteLine("Using K value for ANN: {0}", InputK.Value);
+                }
+            }
+#endif
+
             if (InputT.HasValue && InputK.HasValue)
             {
                 Console.Error.WriteLine("T and K cannot both be set.");
@@ -263,16 +301,9 @@ namespace MultimediaRetrieval
             if (KMedoids && !File.Exists(InputFile + "kmed"))
             {
                 Console.Error.WriteLine("K-Mediods file does not exist yet, use normalize first.");
-                return 1;
-            }
-
-#if Windows
-            if (WithANN && !InputK.HasValue)
-            {
-                Console.WriteLine("Unable to perform ANN, no k specified.");
                 return false;
             }
-#endif
+
             return true;
         }
 
@@ -339,16 +370,12 @@ namespace MultimediaRetrieval
             //Do the same with KDTree:
             if (WithANN)
             {
-                ANN ann = new ANN(db, InputK.Value);
-                if (NewTree || !ANN.FileExists())
+                if (!ann.HasData())
                 {
-                    Console.WriteLine("Creating new ANN KDTree.");
-                    ann.Create();
-                }
-                else
-                {
-                    Console.WriteLine("Loading existing ANN KDTree.");
-                    ann.Load();
+                    Console.Error.WriteLine("No ANN file exists, creating one now.");
+                    Console.Error.WriteLine("Next time use normalize first.");
+                    ANN ann = new ANN();
+                    ann.Create(db, InputK.Value);
                 }
 
                 MeshStatistics[] results = ann.Search(query);

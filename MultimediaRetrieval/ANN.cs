@@ -8,17 +8,22 @@ namespace MultimediaRetrieval
     public class ANN
     {
         private wrapper.KDTree instance;
-        private FeatureDatabase _db;
         public int K { get; private set; }
 
-        public ANN(FeatureDatabase db, int k_input)
+        public ANN()
         {
-            instance = new wrapper.KDTree();
-            K = k_input;
-            _db = db;
-            if (db.meshes.Count == 0)
-                throw new ArgumentException("Cannot use a FeatureDatabase with no elements for ANN");
+            instance = null;
+        }
 
+        ~ANN()
+        {
+            if (instance != null)
+                instance.RemoveKDtree();
+        }
+
+        public bool HasData()
+        {
+            return instance != null;
         }
 
         public static bool FileExists()
@@ -26,11 +31,13 @@ namespace MultimediaRetrieval
             return File.Exists("kdtree.tree");
         }
 
-        public void Create()
+        public void Create(FeatureDatabase db, int k_input)
         {
-            int npts = _db.meshes.Count;
-            float[] dataArr = _db.ToArray();
-            int dim = _db.meshes[0].Features.Size;
+            instance = new wrapper.KDTree();
+            K = k_input;
+            int npts = db.meshes.Count;
+            float[] dataArr = db.ToArray();
+            int dim = db.meshes[0].Features.Size;
             unsafe
             {
                 fixed (float* dataArrPtr = dataArr)
@@ -42,13 +49,14 @@ namespace MultimediaRetrieval
 
         public void Load()
         {
-            instance.LoadKDTree();
+            instance = new wrapper.KDTree();
+            K = instance.LoadKDTree();
         }
 
-        public MeshStatistics[] Search(FeatureVector query, float eps = 0.0f)
+        public MeshStatistics[] Search(FeatureDatabase db, FeatureVector query, float eps = 0.0f)
         {
             float[] queryArr = query.ToArray();
-            int dim = _db.meshes[0].Features.Size;
+            int dim = db.meshes[0].Features.Size;
             MeshStatistics[] result = new MeshStatistics[K];
             unsafe
             {
@@ -56,7 +64,7 @@ namespace MultimediaRetrieval
                 {
                     int* topIndicesPtr = instance.SearchKDTree(dim, K, queryArrPtr, eps);
                     for (int i = 0; i < K; i++)
-                        result[i] = _db.meshes[topIndicesPtr[i]];
+                        result[i] = db.meshes[topIndicesPtr[i]];
                 }
             }
             return result;

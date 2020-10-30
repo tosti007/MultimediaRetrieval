@@ -29,16 +29,23 @@ namespace wrapper {
 
 			std::ofstream file;             // write the tree to file
 			file.open("kdtree.tree");
+			file << k << std::endl;
 			kdTree->Dump(ANNtrue, file);
 			file.close();
 		}
 
-		void LoadKDTree()
+		int LoadKDTree()
 		{
 			std::ifstream file;
+			int k;
+
 			file.open("kdtree.tree");
+  			file >> n;
+			std::cin << file.peek() != '\n';
 			kdTree = new ANNkd_tree(file);
 			file.close();
+
+			return k
 		}
 
 		int* SearchKDTree(int dim, int k, float query[], float eps)
@@ -65,11 +72,16 @@ namespace wrapper {
 			for (int i = 0; i < k; i++)         // Put the NN IDs into the result.
 				result[i] = nnIdx[i];
 
+			delete[] queryPt;
 			delete[] nnIdx;						// clean things up
 			delete[] dists;
+			return result;
+		}
+
+		void RemoveKDtree()
+		{
 			delete kdTree;
 			annClose();							// done with ANN
-			return result;
 		}
 
 		int* RunKDtree(int dim, int npts, int k, float data[], float query[], float eps)
