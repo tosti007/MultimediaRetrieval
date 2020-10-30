@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-outdir="../tmp"
+outdir="../database/step0"
 use_Princeton=true
 use_LPSB=false
 
