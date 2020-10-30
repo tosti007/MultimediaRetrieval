@@ -28,7 +28,8 @@ f_o = sys.argv[3] if len(sys.argv) > 3 else "plots/step5_tsne_" + ("top" + str(T
 
 df = pd.read_csv(f_i, sep=";")
 
-palette = dict(zip(np.unique(df["Class"]), sns.hls_palette(len(unique_classes))))
+unique_classes = np.unique(df["Class"])
+palette = dict(zip(unique_classes, sns.hls_palette(len(unique_classes))))
 
 if TOP:
     classes = df.groupby("Class").count()["X"].sort_values(ascending=False)
