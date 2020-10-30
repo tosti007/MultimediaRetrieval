@@ -10,6 +10,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+os.chdir(os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0]))))
 sns.set_theme(style="darkgrid")
 
 # Read the files
@@ -53,4 +54,4 @@ for i, df in enumerate(means):
         plots.axes[i, 0].vlines(df["std_min"], lims.y0, lims.y1 * 0.75, colors=colors)
         plots.axes[i, 0].vlines(df["std_max"], lims.y0, lims.y1 * 0.75, colors=colors)
 
-plt.savefig("../plots/step4_distances.jpg", dpi=300, bbox_inches="tight")
+plt.savefig("plots/step4_distances.jpg", dpi=300, bbox_inches="tight")
