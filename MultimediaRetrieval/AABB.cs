@@ -70,6 +70,18 @@ namespace MultimediaRetrieval
                 max.Z
                 );
         }
-    }
 
+        public const int ParseLength = 6;
+        public static AABB Parse(string input)
+            => Parse(input.Split(';').ToArray());
+
+        public static AABB Parse(string[] input)
+        {
+            float[] data = input.Take(ParseLength).Select(float.Parse).ToArray();
+            return new AABB(
+               new Vector3(data[0], data[1], data[2]),
+               new Vector3(data[3], data[4], data[5])
+               );
+        }
+    }
 }

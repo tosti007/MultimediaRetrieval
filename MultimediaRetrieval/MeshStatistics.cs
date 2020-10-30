@@ -75,20 +75,18 @@ namespace MultimediaRetrieval
 
         public static MeshStatistics Parse(string input)
         {
-            string[] data = input.Split(new char[] { ';' }, 13);
+            string[] data = input.Split(new char[] { ';' }, 5 + 1);
             var stats = new MeshStatistics();
 
             stats.ID = uint.Parse(data[0]);
             stats.Classification = data[1];
             stats.VertexCount = int.Parse(data[2]);
             stats.FaceCount = int.Parse(data[3]);
-            Enum.TryParse(data[4], out stats.FaceType);
-            stats.BoundingBox = new AABB(
-                new Vector3(float.Parse(data[5]), float.Parse(data[6]), float.Parse(data[7])),
-                new Vector3(float.Parse(data[8]), float.Parse(data[9]), float.Parse(data[10]))
-                );
-            // AABB Volume 
-            stats.Features = FeatureVector.Parse(data[12]);
+            stats.FaceType = (FaceType)Enum.Parse(typeof(FaceType), data[4]);
+
+            data = data[data.Length - 1].Split(new char[] { ';' }, AABB.ParseLength + 1);
+            stats.BoundingBox = AABB.Parse(data);
+            stats.Features = FeatureVector.Parse(data[data.Length - 1]);
 
             return stats;
         }
