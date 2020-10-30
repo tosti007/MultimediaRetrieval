@@ -1,11 +1,16 @@
 #! /bin/bash
 
-[[ -z "$1" ]] && echo "No meshfile set!"
+outdir="plots/"
+call="mono MultimediaRetrieval/bin/Debug/MultimediaRetrieval.exe "
 
-outdir="../plots/"
+if [[ -z "$1" ]]; then
+	echo "No meshfile set!"
+	exit 1
+fi
+
+cd "$(dirname $0)"
+cd ..
 mkdir -p "$outdir"
-call="mono ../MultimediaRetrieval/bin/Debug/MultimediaRetrieval.exe "
-
 methods="$($call distancemethods)"
 
 echo "Using queryfile $1"
