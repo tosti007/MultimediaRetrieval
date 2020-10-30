@@ -42,7 +42,7 @@ namespace MultimediaRetrieval
             FaceCount = mesh.faces.Count;
 
             FaceType = Face.CalculateType(mesh.faces);
-            BoundingBox = new AABB(mesh);
+            BoundingBox = mesh.BoundingBox;
 
             Features = new FeatureVector(mesh);
         }

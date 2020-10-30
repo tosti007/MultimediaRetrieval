@@ -10,6 +10,17 @@ namespace MultimediaRetrieval
     {
         public List<Vertex> vertices;
         public List<Face> faces;
+        private AABB? _bbox;
+
+        public AABB BoundingBox
+        {
+            get
+            {
+                if (!_bbox.HasValue)
+                    _bbox = new AABB(this);
+                return _bbox.Value;
+            }
+        }
 
         public Mesh(List<Vertex> vertices, List<Face> faces)
         {

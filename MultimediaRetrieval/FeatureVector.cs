@@ -15,7 +15,7 @@ namespace MultimediaRetrieval
         #region Variables
 
         public const int NUMBER_OF_SAMPLES = 1000;
-        public const int HISTOGRAM_START_INDEX = 5;
+        public const int HISTOGRAM_START_INDEX = 6;
         public static readonly Histogram[] HISTOGRAMS = Histogram.UpdateStartIndex(HISTOGRAM_START_INDEX,
                 new Histogram(HistogramType.A3, 10, 0, (float)Math.PI),
                 new Histogram(HistogramType.D1, 10, 0, 0.8f),
@@ -27,11 +27,12 @@ namespace MultimediaRetrieval
         private float[] _data;
         public int Size => _data.Length;
 
-        public float SurfaceArea { get => _data[0]; private set => _data[0] = value; }
-        public float Diameter { get => _data[1]; private set => _data[1] = value; }
-        public float Eccentricity { get => _data[2]; private set => _data[2] = value; }
-        public float Compactness { get => _data[3]; private set => _data[3] = value; }
-        public float Volume { get => _data[4]; private set => _data[4] = value; }
+        public float AABBVolume { get => _data[0]; private set => _data[0] = value; }
+        public float SurfaceArea { get => _data[1]; private set => _data[1] = value; }
+        public float Diameter { get => _data[2]; private set => _data[2] = value; }
+        public float Eccentricity { get => _data[3]; private set => _data[3] = value; }
+        public float Compactness { get => _data[4]; private set => _data[4] = value; }
+        public float Volume { get => _data[5]; private set => _data[5] = value; }
 
         #endregion
 
@@ -50,6 +51,8 @@ namespace MultimediaRetrieval
 
         public FeatureVector(Mesh mesh) : this()
         {
+            this.AABBVolume = mesh.BoundingBox.Volume();
+
             foreach (Face f in mesh.faces)
             {
                 SurfaceArea += f.CalculateArea(ref mesh.vertices);
@@ -198,11 +201,12 @@ namespace MultimediaRetrieval
         public static string Headers()
         {
             return string.Join(";",
+                "AABB_Volume",
                 "Surface_Area",
                 "Diameter",
                 "Eccentricity",
                 "Compactness",
-                "Volume",
+                "Mesh_Volume",
                 string.Join(";",
                     HISTOGRAMS.Select((h) => h.Headers())
                 ));
