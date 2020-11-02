@@ -35,12 +35,14 @@ namespace MultimediaRetrieval
             }
         }
 
-        public IEnumerable<MeshStatistics> Search(FeatureVector query, int k = 0)
+        public IEnumerable<MeshStatistics> Search(FeatureVector query)
         {
             var sorted = Clusters.AsParallel()
                 .OrderBy((c) => query.Distance(Functions, c.Center.Features))
                 .AsSequential();
 
+            return sorted.First().Items;
+            /*
             foreach (var g in sorted)
             {
                 foreach (var n in g.Items)
@@ -49,6 +51,7 @@ namespace MultimediaRetrieval
                 if (k <= 0)
                     break;
             }
+            */
         }
 
         public void WriteToFile(string filepath)

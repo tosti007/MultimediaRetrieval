@@ -366,7 +366,7 @@ namespace MultimediaRetrieval
             {
                 Console.WriteLine("Using K-Medoids for searching");
                 var tree = ClusterTree.ReadFrom(db, InputFile + "kmed");
-                selected = tree.Search(query, InputK.GetValueOrDefault(0));
+                selected = tree.Search(query);
             }
             else
                 selected = db.meshes;
