@@ -7,28 +7,139 @@ namespace MultimediaRetrieval
 {
     public class ClusterTree
     {
-        public List<ClusterGroup> Clusters;
+        public List<ClusterGroup<MeshStatistics>> Clusters;
         public DistanceFunction[] Functions;
-        private Dictionary<(uint, uint), float> _distances;
 
         private ClusterTree()
         {
-            Clusters = new List<ClusterGroup>();
+            Clusters = new List<ClusterGroup<MeshStatistics>>();
             Functions = null;
-            _distances = null;
         }
         public ClusterTree(DistanceFunction[] f, List<MeshStatistics> meshes, int k)
         {
+            var builder = new ClusterTreeBuilder(f, meshes, k);
+            this.Clusters = builder.ClustersAsStats();
+        }
+
+        public void Print()
+        {
+            Console.WriteLine("Cluster with {0} clusters", Clusters.Count);
+            for (int i = 0; i < Clusters.Count; i++)
+            {
+                Console.WriteLine("Cluster {0} with center {1}", i + 1, Clusters[i].Center.ID);
+                foreach (var n in Clusters[i].Items)
+                {
+                    Console.WriteLine("\tMesh {0}", n.ID);
+                }
+            }
+        }
+
+        public IEnumerable<MeshStatistics> Search(FeatureVector query, int k)
+        {
+            var sorted = Clusters.AsParallel()
+                .OrderBy((c) => query.Distance(Functions, c.Center.Features))
+                .AsSequential();
+
+            foreach (var g in sorted)
+            {
+                foreach (var n in g.Items)
+                    yield return n;
+                k -= g.Items.Count;
+                if (k <= 0)
+                    break;
+            }
+        }
+
+        public void WriteToFile(string filepath, string header, Func<MeshStatistics, string> tostring)
+        {
+            File.WriteAllLines(filepath, new[] { "KMediods " + string.Join(" ", Functions) }.Concat(
+                Clusters.Select((c) => c.Center.ID + ";" +
+                    string.Join(";", c.Items.Select((n) => n.ID)))
+                ));
+        }
+
+        public static ClusterTree ReadFrom(FeatureDatabase db, string filepath)
+        {
+            var items = new Dictionary<uint, MeshStatistics>();
+            foreach (var m in db.meshes)
+                items.Add(m.ID, m);
+
+            ClusterTree result = new ClusterTree();
+
+            using (StreamReader file = new StreamReader(filepath))
+            {
+                string line = file.ReadLine();
+                result.Functions = line.Split(' ').Skip(1).Select((f) => (DistanceFunction)Enum.Parse(typeof(DistanceFunction), f)).Parse();
+
+                while ((line = file.ReadLine()) != null)
+                {
+                    var data = line.Split(';').Select(uint.Parse);
+                    var item = new ClusterGroup<MeshStatistics>(items[data.First()], data.Skip(1).Select((i) => items[i]).ToList());
+                    result.Clusters.Add(item);
+                }
+            }
+
+            return result;
+        }
+    }
+
+    public class ClusterGroup<T> where T : class
+    {
+        public T Center;
+        public List<T> Items;
+
+        public ClusterGroup() : this(null) { }
+        public ClusterGroup(T n) : this (n, new List<T>()) { }
+        public ClusterGroup(T n, List<T> items)
+        {
+            Items = items;
+            Center = n;
+        }
+    }
+
+    public class ClusterNode
+    {
+        public MeshStatistics Value;
+        public ClusterGroup<ClusterNode> Cluster { get; private set; }
+
+        public ClusterNode(MeshStatistics v) : this(v, null) { }
+        public ClusterNode(MeshStatistics v, ClusterGroup<ClusterNode> cluster)
+        {
+            Value = v;
+            SetCluster(cluster);
+        }
+
+        public void SetCluster(ClusterGroup<ClusterNode> c)
+        {
+            if (Cluster != c)
+            {
+                if (Cluster != null)
+                    Cluster.Items.Remove(this);
+                Cluster = c;
+                if (Cluster != null)
+                    Cluster.Items.Add(this);
+            }
+        }
+    }
+
+    public class ClusterTreeBuilder
+    {
+        public List<ClusterGroup<ClusterNode>> Clusters;
+        public List<ClusterNode> Nodes;
+        public DistanceFunction[] Functions;
+        public Dictionary<(uint, uint), float> Distances;
+
+        public ClusterTreeBuilder(DistanceFunction[] f, List<MeshStatistics> meshes, int k)
+        {
             if (meshes.Count < k)
-                throw new Exception("Cannot create a clustertree with more clusters than elements!");
+                throw new Exception("Cannot create a ClusterTree with more clusters than elements!");
 
             Functions = f;
-            _distances = new Dictionary<(uint, uint), float>((meshes.Count - 1) * meshes.Count / 2);
-
-            List<ClusterNode> Nodes = meshes.Select((m) => new ClusterNode(m)).ToList();
-            Clusters = new List<ClusterGroup>(k)
+            Distances = new Dictionary<(uint, uint), float>((meshes.Count - 1) * meshes.Count / 2);
+            Nodes = meshes.Select((m) => new ClusterNode(m)).ToList();
+            Clusters = new List<ClusterGroup<ClusterNode>>(k)
             {
-                new ClusterGroup(Nodes[0])
+                new ClusterGroup<ClusterNode>(Nodes[0])
             };
 
             while (Clusters.Count < k)
@@ -59,7 +170,9 @@ namespace MultimediaRetrieval
                 if (largest == null)
                     throw new Exception("ClusterNode is null where it shouldn't be!");
 
-                Clusters.Add(new ClusterGroup(largest));
+                var newgroup = new ClusterGroup<ClusterNode>(largest);
+                largest.SetCluster(newgroup);
+                Clusters.Add(newgroup);
             }
 
             foreach (var n in Nodes)
@@ -76,7 +189,7 @@ namespace MultimediaRetrieval
             }
         }
 
-        private bool UpdateCenter(ClusterGroup c, DistanceFunction[] functions)
+        private bool UpdateCenter(ClusterGroup<ClusterNode> c, DistanceFunction[] functions)
         {
             float distance = float.PositiveInfinity;
             ClusterNode smallest = null;
@@ -101,9 +214,9 @@ namespace MultimediaRetrieval
             return false;
         }
 
-        private bool UpdateCluster(ClusterNode n, List<ClusterGroup> clusters)
+        private bool UpdateCluster(ClusterNode n, List<ClusterGroup<ClusterNode>> clusters)
         {
-            ClusterGroup smallest = null;
+            ClusterGroup<ClusterNode> smallest = null;
             float distance = float.PositiveInfinity;
             foreach (var c in clusters)
             {
@@ -127,118 +240,25 @@ namespace MultimediaRetrieval
             }
             return false;
         }
+
         private float Distance(ClusterNode a, ClusterNode b)
         {
-            if (a.Mesh.ID > b.Mesh.ID) return Distance(b, a);
+            if (a.Value.ID > b.Value.ID) return Distance(b, a);
 
-            var key = (a.Mesh.ID, b.Mesh.ID);
+            var key = (a.Value.ID, b.Value.ID);
 
-            if (!_distances.ContainsKey(key))
-                _distances.Add(key, FeatureVector.Distance(Functions, a.Mesh.Features, b.Mesh.Features));
+            if (!Distances.ContainsKey(key))
+                Distances.Add(key, FeatureVector.Distance(Functions, a.Value.Features, b.Value.Features));
 
-            return _distances[key];
+            return Distances[key];
         }
 
-        public void Print()
+        public List<ClusterGroup<MeshStatistics>> ClustersAsStats()
         {
-            Console.WriteLine("Cluster with {0} clusters", Clusters.Count);
-            for (int i = 0; i < Clusters.Count; i++)
-            {
-                Console.WriteLine("Cluster {0} with center {1}", i + 1, Clusters[i].Center.Mesh.ID);
-                foreach (var n in Clusters[i].Items)
-                {
-                    Console.WriteLine("\tMesh {0}", n.Mesh.ID);
-                }
-            }
-        }
-
-        public IEnumerable<MeshStatistics> Search(FeatureVector query, int k)
-        {
-            var sorted = Clusters.AsParallel()
-                .OrderBy((c) => query.Distance(Functions, c.Center.Mesh.Features))
-                .AsSequential();
-
-            foreach (var g in sorted)
-            {
-                foreach (var n in g.Items)
-                    yield return n.Mesh;
-                k -= g.Items.Count;
-                if (k <= 0)
-                    break;
-            }
-        }
-
-        public void WriteToFile(string filepath, string header, Func<MeshStatistics, string> tostring)
-        {
-            File.WriteAllLines(filepath, new[] { "KMediods" + string.Join(" ", Functions) }.Concat(
-                Clusters.Select((c) => c.Center.Mesh.ID + ";" +
-                    string.Join(";", c.Items.Select((n) => n.Mesh.ID)))
-                ));
-        }
-
-        public static ClusterTree ReadFrom(FeatureDatabase db, string filepath)
-        {
-            Dictionary<uint, ClusterNode> items = new Dictionary<uint, ClusterNode>();
-            foreach (var m in db.meshes)
-                items.Add(m.ID, new ClusterNode(m));
-
-            ClusterTree result = new ClusterTree();
-
-            using (StreamReader file = new StreamReader(filepath))
-            {
-                string line = file.ReadLine();
-                result.Functions = line.Split(' ').Skip(1).Select((f) => (DistanceFunction)Enum.Parse(typeof(DistanceFunction), f)).Parse();
-
-                while ((line = file.ReadLine()) != null)
-                {
-                    var item = new ClusterGroup();
-                    var data = line.Split(';').Select(uint.Parse);
-                    item.Center = items[data.First()];
-                    item.Items = data.Skip(1).Select((i) => items[i]).ToList();
-                }
-            }
-
-            return result;
-        }
-    }
-
-    public class ClusterGroup
-    {
-        public ClusterNode Center;
-        public List<ClusterNode> Items;
-
-        public ClusterGroup() : this(null) { }
-        public ClusterGroup(ClusterNode n)
-        {
-            Items = new List<ClusterNode>();
-            Center = n;
-            if (n != null)
-                n.SetCluster(this);
-        }
-    }
-
-    public class ClusterNode
-    {
-        public MeshStatistics Mesh;
-        public ClusterGroup Cluster { get; private set; }
-
-        public ClusterNode(MeshStatistics m) : this(m, null) { }
-        public ClusterNode(MeshStatistics m, ClusterGroup cluster)
-        {
-            Mesh = m;
-            SetCluster(cluster);
-        }
-
-        public void SetCluster(ClusterGroup c)
-        {
-            if (Cluster != c)
-            {
-                if (Cluster != null)
-                    Cluster.Items.Remove(this);
-                Cluster = c;
-                if (Cluster != null)
-                    Cluster.Items.Add(this);
-            }
+            return Clusters.Select((c) =>
+                new ClusterGroup<MeshStatistics>(c.Center.Value,
+                    c.Items.Select((n) => n.Value).ToList()
+                )).ToList();
         }
     }
 }
