@@ -34,7 +34,7 @@ namespace MultimediaRetrieval
             }
         }
 
-        public IEnumerable<MeshStatistics> Search(FeatureVector query, int k)
+        public IEnumerable<MeshStatistics> Search(FeatureVector query, int k = 0)
         {
             var sorted = Clusters.AsParallel()
                 .OrderBy((c) => query.Distance(Functions, c.Center.Features))
@@ -50,7 +50,7 @@ namespace MultimediaRetrieval
             }
         }
 
-        public void WriteToFile(string filepath, string header, Func<MeshStatistics, string> tostring)
+        public void WriteToFile(string filepath)
         {
             File.WriteAllLines(filepath, new[] { "KMediods " + string.Join(" ", Functions) }.Concat(
                 Clusters.Select((c) => c.Center.ID + ";" +
@@ -134,6 +134,8 @@ namespace MultimediaRetrieval
             if (meshes.Count < k)
                 throw new Exception("Cannot create a ClusterTree with more clusters than elements!");
 
+            Console.WriteLine("Building ClusterTree - Start");
+
             Functions = f;
             Distances = new Dictionary<(uint, uint), float>((meshes.Count - 1) * meshes.Count / 2);
             Nodes = meshes.Select((m) => new ClusterNode(m)).ToList();
@@ -142,6 +144,7 @@ namespace MultimediaRetrieval
                 new ClusterGroup<ClusterNode>(Nodes[0])
             };
 
+            Console.WriteLine("Building ClusterTree - Init");
             while (Clusters.Count < k)
             {
                 float max = float.NegativeInfinity;
@@ -181,12 +184,14 @@ namespace MultimediaRetrieval
             bool changed = true;
             while (changed)
             {
+                Console.WriteLine("Building ClusterTree - Iter");
                 changed = false;
                 foreach (var c in Clusters)
                     changed |= UpdateCenter(c, Functions);
                 foreach (var n in Nodes)
                     changed |= UpdateCluster(n, Clusters);
             }
+            Console.WriteLine("Building ClusterTree - Done");
         }
 
         private bool UpdateCenter(ClusterGroup<ClusterNode> c, DistanceFunction[] functions)

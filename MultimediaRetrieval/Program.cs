@@ -120,6 +120,11 @@ namespace MultimediaRetrieval
             HelpText = "Print the feature vectors for the given matches.")]
         public bool Vectors { get; set; }
 
+        [Option("medoids",
+            Default = null,
+            HelpText = "Generate a K-Mediods cluster tree with [ARG] clusters and safe it to \"[OUTPUT]kmed\" file.")]
+        public int? KMedoids { get; set; }
+
         // Good options:
         //   100, 2.5
         //    30, 1,5
@@ -127,6 +132,11 @@ namespace MultimediaRetrieval
             Default = null,
             HelpText = "(Default: if on 30,1.5) Use the tSNE algorithm to reduce the feature vector dimensionallity.")]
         public string TSNE { get; set; }
+
+        [Option('m', "method",
+            Default = new[] { DistanceFunction.Euclidian, DistanceFunction.Earthmovers },
+            HelpText = "The distance function to use, does not work for tSNE.")]
+        public IEnumerable<DistanceFunction> DistanceFuncs { get; set; }
 
         public int Execute()
         {
@@ -144,6 +154,12 @@ namespace MultimediaRetrieval
             db.Normalize();
             db.FilterNanAndInf(Vectors);
             db.WriteToFile(OutputFile);
+
+            if (KMedoids.HasValue)
+            {
+                var tree = new ClusterTree(DistanceFuncs.Parse(), db.meshes, KMedoids.Value);
+                tree.WriteToFile(OutputFile + "kmed");
+            }
 
             if (TSNE != null)
             {
@@ -206,6 +222,11 @@ namespace MultimediaRetrieval
             HelpText = "The distance function to use.")]
         public IEnumerable<DistanceFunction> DistanceFuncs { get; set; }
 
+        [Option("medoids",
+            Default = false,
+            HelpText = "Use the KMediods tree file at \"[INPUT]kmed\" to search for meshes.")]
+        public bool KMedoids { get; set; }
+
 #if Windows
         [Option("ann",
             Default = false,
@@ -237,6 +258,12 @@ namespace MultimediaRetrieval
             {
                 Console.Error.WriteLine("Method option can only contain 1 or 2 values!");
                 return false;
+            }
+
+            if (KMedoids && !File.Exists(InputFile + "kmed"))
+            {
+                Console.Error.WriteLine("K-Mediods file does not exist yet, use normalize first.");
+                return 1;
             }
 
 #if Windows
@@ -333,6 +360,16 @@ namespace MultimediaRetrieval
 
             //Fill a list of ID's to distances between the input feature vector and the database feature vectors.
             //Sort the meshes in the database by distance and return the selected.
+            IEnumerable<MeshStatistics> selected;
+
+            if (KMedoids)
+            {
+                var tree = ClusterTree.ReadFrom(db, InputFile + "kmed");
+                selected = tree.Search(query, InputK.GetValueOrDefault(0));
+            }
+            else
+                selected = db.meshes;
+
             IEnumerable<(MeshStatistics, float)> meshes = GetDistanceAndSort(db.meshes, query);
 
             if (InputK.HasValue)
