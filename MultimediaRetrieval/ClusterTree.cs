@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.IO;
 using System.Collections.Generic;
 
 namespace MultimediaRetrieval
@@ -7,16 +8,19 @@ namespace MultimediaRetrieval
     public class ClusterTree
     {
         List<ClusterGroup> Clusters;
-        List<ClusterNode> Nodes;
         DistanceFunction[] Functions;
 
+        private ClusterTree()
+        {
+            Clusters = new List<ClusterGroup>();
+        }
         public ClusterTree(DistanceFunction[] f, List<MeshStatistics> meshes, int k)
         {
             if (meshes.Count < k)
                 throw new Exception("Cannot create a clustertree with more clusters than elements!");
 
             Functions = f;
-            Nodes = meshes.Select((m) => new ClusterNode(m)).ToList();
+            List<ClusterNode> Nodes = meshes.Select((m) => new ClusterNode(m)).ToList();
             Clusters = new List<ClusterGroup>(k)
             {
                 new ClusterGroup(Nodes[0])
@@ -69,7 +73,7 @@ namespace MultimediaRetrieval
 
         public void Print()
         {
-            Console.WriteLine("Cluster with {0} clusters and {1} nodes", Clusters.Count, Nodes.Count);
+            Console.WriteLine("Cluster with {0} clusters", Clusters.Count);
             for (int i = 0; i < Clusters.Count; i++)
             {
                 Console.WriteLine("Cluster {0} with center {1}", i + 1, Clusters[i].Center.Mesh.ID);
@@ -94,6 +98,39 @@ namespace MultimediaRetrieval
                 if (k <= 0)
                     break;
             }
+        }
+
+        public void WriteToFile(string filepath, string header, Func<MeshStatistics, string> tostring)
+        {
+            File.WriteAllLines(filepath, new[] { "KMediods" + string.Join(" ", Functions) }.Concat(
+                Clusters.Select((c) => c.Center.Mesh.ID + ";" +
+                    string.Join(";", c.Items.Select((n) => n.Mesh.ID)))
+                ));
+        }
+
+        public static ClusterTree ReadFrom(FeatureDatabase db, string filepath)
+        {
+            Dictionary<uint, ClusterNode> items = new Dictionary<uint, ClusterNode>();
+            foreach (var m in db.meshes)
+                items.Add(m.ID, new ClusterNode(m));
+
+            ClusterTree result = new ClusterTree();
+
+            using (StreamReader file = new StreamReader(filepath))
+            {
+                string line = file.ReadLine();
+                result.Functions = line.Split(' ').Skip(1).Select((f) => (DistanceFunction)Enum.Parse(typeof(DistanceFunction), f)).Parse();
+
+                while ((line = file.ReadLine()) != null)
+                {
+                    var item = new ClusterGroup();
+                    var data = line.Split(';').Select(uint.Parse);
+                    item.Center = items[data.First()];
+                    item.Items = data.Skip(1).Select((i) => items[i]).ToList();
+                }
+            }
+
+            return result;
         }
     }
 
