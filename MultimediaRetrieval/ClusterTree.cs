@@ -58,17 +58,70 @@ namespace MultimediaRetrieval
             }
 
             foreach (var n in Nodes)
-                n.UpdateCluster(Functions, Clusters);
+                UpdateCluster(n, Clusters);
 
             bool changed = true;
             while (changed)
             {
                 changed = false;
                 foreach (var c in Clusters)
-                    changed |= c.UpdateCenter(Functions);
+                    changed |= UpdateCenter(c, Functions);
                 foreach (var n in Nodes)
-                    changed |= n.UpdateCluster(Functions, Clusters);
+                    changed |= UpdateCluster(n, Clusters);
             }
+        }
+
+        public bool UpdateCenter(ClusterGroup c, DistanceFunction[] functions)
+        {
+            float distance = float.PositiveInfinity;
+            ClusterNode smallest = null;
+            foreach (var n1 in c.Items)
+            {
+                float sum = 0;
+                foreach (var n2 in c.Items)
+                    sum += ClusterNode.Distance(functions, n1, n2);
+                if (distance > sum)
+                {
+                    distance = sum;
+                    smallest = n1;
+                }
+            }
+            if (smallest != c.Center)
+            {
+                //if (smallest == null)
+                //    Console.Error.WriteLine("UPDATECENTER SETTING TO NULL {0}", nodes.Count());
+                c.Center = smallest;
+                return true;
+            }
+            return false;
+        }
+
+        public bool UpdateCluster(ClusterNode n, List<ClusterGroup> clusters)
+        {
+            ClusterGroup smallest = null;
+            float distance = float.PositiveInfinity;
+            foreach (var c in clusters)
+            {
+                //if (c.Center == null)
+                //    Console.Error.WriteLine("OHBOI");
+                float d = ClusterNode.Distance(Functions, n, c.Center);
+                if (d < distance)
+                {
+                    smallest = c;
+                    distance = d;
+                }
+            }
+            if (smallest != n.Cluster)
+            {
+                if (smallest != null)
+                    smallest.Items.Remove(n);
+                //if (smallest == null)
+                //    Console.Error.WriteLine("UPDATECLUSTER SETTING TO NULL");
+                n.Cluster = smallest;
+                n.Cluster.Items.Add(n);
+                return true;
+            }
+            return false;
         }
 
         public void Print()
@@ -150,31 +203,6 @@ namespace MultimediaRetrieval
                 Items.Add(n);
             }
         }
-
-        public bool UpdateCenter(DistanceFunction[] functions)
-        {
-            float distance = float.PositiveInfinity;
-            ClusterNode smallest = null;
-            foreach (var n1 in Items)
-            {
-                float sum = 0;
-                foreach (var n2 in Items)
-                    sum += ClusterNode.Distance(functions, n1, n2);
-                if (distance > sum)
-                {
-                    distance = sum;
-                    smallest = n1;
-                }
-            }
-            if (smallest != Center)
-            {
-                //if (smallest == null)
-                //    Console.Error.WriteLine("UPDATECENTER SETTING TO NULL {0}", nodes.Count());
-                Center = smallest;
-                return true;
-            }
-            return false;
-        }
     }
 
     public class ClusterNode
@@ -191,34 +219,6 @@ namespace MultimediaRetrieval
             if (cluster != null)
                 Cluster.Items.Add(this);
             _distances = new Dictionary<uint, float>();
-        }
-
-        public bool UpdateCluster(DistanceFunction[] functions, List<ClusterGroup> clusters)
-        {
-            ClusterGroup smallest = null;
-            float distance = float.PositiveInfinity;
-            foreach (var c in clusters)
-            {
-                //if (c.Center == null)
-                //    Console.Error.WriteLine("OHBOI");
-                float d = Distance(functions, this, c.Center);
-                if (d < distance)
-                {
-                    smallest = c;
-                    distance = d;
-                }
-            }
-            if (smallest != Cluster)
-            {
-                if (smallest != null)
-                    smallest.Items.Remove(this);
-                //if (smallest == null)
-                //    Console.Error.WriteLine("UPDATECLUSTER SETTING TO NULL");
-                Cluster = smallest;
-                Cluster.Items.Add(this);
-                return true;
-            }
-            return false;
         }
 
         public static float Distance(DistanceFunction[] functions, ClusterNode a, ClusterNode b)
