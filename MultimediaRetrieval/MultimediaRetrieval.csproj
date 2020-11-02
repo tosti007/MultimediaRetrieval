@@ -93,6 +93,7 @@
     <Compile Include="Viewer\MeshViewer.cs" />
     <Compile Include="Viewer\Shader.cs" />
     <Compile Include="ANN.cs" />
+    <Compile Include="ClusterTree.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenTK.dll.config" />
