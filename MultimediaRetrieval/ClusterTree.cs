@@ -18,6 +18,7 @@ namespace MultimediaRetrieval
         public ClusterTree(DistanceFunction[] f, List<MeshStatistics> meshes, int k)
         {
             var builder = new ClusterTreeBuilder(f, meshes, k);
+            this.Functions = f;
             this.Clusters = builder.ClustersAsStats();
         }
 
