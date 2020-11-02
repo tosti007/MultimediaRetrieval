@@ -8,12 +8,14 @@ namespace MultimediaRetrieval
     {
         List<ClusterGroup> Clusters;
         List<ClusterNode> Nodes;
+        DistanceFunction[] Functions;
 
-        public ClusterTree(List<MeshStatistics> meshes, int k)
+        public ClusterTree(DistanceFunction[] f, List<MeshStatistics> meshes, int k)
         {
             if (meshes.Count < k)
                 throw new Exception("Cannot create a clustertree with more clusters than elements!");
 
+            Functions = f;
             Nodes = meshes.Select((m) => new ClusterNode(m)).ToList();
             Clusters = new List<ClusterGroup>(k)
             {
@@ -34,7 +36,7 @@ namespace MultimediaRetrieval
                             min = float.NegativeInfinity;
                             break;
                         }
-                        float d = ClusterNode.Distance(n, c.Center);
+                        float d = ClusterNode.Distance(Functions, n, c.Center);
                         if (d < min)
                             d = min;
                     }
@@ -52,16 +54,16 @@ namespace MultimediaRetrieval
             }
 
             foreach (var n in Nodes)
-                n.UpdateCluster(Clusters);
+                n.UpdateCluster(Functions, Clusters);
 
             bool changed = true;
             while (changed)
             {
                 changed = false;
                 foreach (var c in Clusters)
-                    changed |= c.UpdateCenter();
+                    changed |= c.UpdateCenter(Functions);
                 foreach (var n in Nodes)
-                    changed |= n.UpdateCluster(Clusters);
+                    changed |= n.UpdateCluster(Functions, Clusters);
             }
         }
 
@@ -81,7 +83,7 @@ namespace MultimediaRetrieval
         public IEnumerable<MeshStatistics> Search(FeatureVector query, int k)
         {
             var sorted = Clusters.AsParallel()
-                .OrderBy((c) => query.Distance(c.Center.Mesh.Features))
+                .OrderBy((c) => query.Distance(Functions, c.Center.Mesh.Features))
                 .AsSequential();
 
             foreach (var g in sorted)
@@ -112,7 +114,7 @@ namespace MultimediaRetrieval
             }
         }
 
-        public bool UpdateCenter()
+        public bool UpdateCenter(DistanceFunction[] functions)
         {
             float distance = float.PositiveInfinity;
             ClusterNode smallest = null;
@@ -120,7 +122,7 @@ namespace MultimediaRetrieval
             {
                 float sum = 0;
                 foreach (var n2 in Items)
-                    sum += ClusterNode.Distance(n1, n2);
+                    sum += ClusterNode.Distance(functions, n1, n2);
                 if (distance > sum)
                 {
                     distance = sum;
@@ -154,7 +156,7 @@ namespace MultimediaRetrieval
             _distances = new Dictionary<uint, float>();
         }
 
-        public bool UpdateCluster(List<ClusterGroup> clusters)
+        public bool UpdateCluster(DistanceFunction[] functions, List<ClusterGroup> clusters)
         {
             ClusterGroup smallest = null;
             float distance = float.PositiveInfinity;
@@ -162,7 +164,7 @@ namespace MultimediaRetrieval
             {
                 //if (c.Center == null)
                 //    Console.Error.WriteLine("OHBOI");
-                float d = Distance(this, c.Center);
+                float d = Distance(functions, this, c.Center);
                 if (d < distance)
                 {
                     smallest = c;
@@ -182,12 +184,12 @@ namespace MultimediaRetrieval
             return false;
         }
 
-        public static float Distance(ClusterNode a, ClusterNode b)
+        public static float Distance(DistanceFunction[] functions, ClusterNode a, ClusterNode b)
         {
-            if (a.Mesh.ID > b.Mesh.ID) return Distance(b, a);
+            if (a.Mesh.ID > b.Mesh.ID) return Distance(functions, b, a);
 
             if (!a._distances.ContainsKey(b.Mesh.ID))
-                a._distances.Add(b.Mesh.ID, FeatureVector.Distance(a.Mesh.Features, b.Mesh.Features));
+                a._distances.Add(b.Mesh.ID, FeatureVector.Distance(functions, a.Mesh.Features, b.Mesh.Features));
 
             return a._distances[b.Mesh.ID];
         }
