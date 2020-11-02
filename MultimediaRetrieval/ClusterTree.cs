@@ -122,8 +122,7 @@ namespace MultimediaRetrieval
                     smallest.Items.Remove(n);
                 //if (smallest == null)
                 //    Console.Error.WriteLine("UPDATECLUSTER SETTING TO NULL");
-                n.Cluster = smallest;
-                n.Cluster.Items.Add(n);
+                n.SetCluster(smallest);
                 return true;
             }
             return false;
@@ -214,25 +213,32 @@ namespace MultimediaRetrieval
             Items = new List<ClusterNode>();
             Center = n;
             if (n != null)
-            {
-                n.Cluster = this;
-                Items.Add(n);
-            }
+                n.SetCluster(this);
         }
     }
 
     public class ClusterNode
     {
         public MeshStatistics Mesh;
-        public ClusterGroup Cluster;
+        public ClusterGroup Cluster { get; private set; }
 
         public ClusterNode(MeshStatistics m) : this(m, null) { }
         public ClusterNode(MeshStatistics m, ClusterGroup cluster)
         {
             Mesh = m;
-            Cluster = cluster;
-            if (cluster != null)
-                Cluster.Items.Add(this);
+            SetCluster(cluster);
+        }
+
+        public void SetCluster(ClusterGroup c)
+        {
+            if (Cluster != c)
+            {
+                if (Cluster != null)
+                    Cluster.Items.Remove(this);
+                Cluster = c;
+                if (Cluster != null)
+                    Cluster.Items.Add(this);
+            }
         }
     }
 }
