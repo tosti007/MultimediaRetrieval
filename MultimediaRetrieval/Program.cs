@@ -171,7 +171,7 @@ namespace MultimediaRetrieval
     [Verb("query", HelpText = "Query a mesh, given a feature file.")]
     class QueryOptions
     {
-        [Value(0, MetaName = "path", Required = false, HelpText = "Mesh file path to view.")]
+        [Value(0, MetaName = "path", Required = false, HelpText = "Mesh file path or Mesh ID in database to use.")]
         public string InputMesh { get; set; }
 
         [Option('d', "database",
@@ -276,10 +276,22 @@ namespace MultimediaRetrieval
 
         public bool ParseInput(FeatureDatabase db, out FeatureVector query)
         {
-            query = new FeatureVector(Mesh.ReadMesh(InputMesh));
-            query.HistogramsAsPercentages();
-            query.Normalize(db.Average, db.StandardDev);
-            return true;
+            if (File.Exists(InputMesh))
+            {
+                query = new FeatureVector(Mesh.ReadMesh(InputMesh));
+                query.HistogramsAsPercentages();
+                query.Normalize(db.Average, db.StandardDev);
+                return true;
+            }
+
+            if (uint.TryParse(InputFile, out uint meshid))
+            {
+                query = db.meshes.Find((m) => m.ID == meshid).Features;
+                return true;
+            }
+
+            query = null;
+            return false;
         }
 
         public virtual int Execute()
