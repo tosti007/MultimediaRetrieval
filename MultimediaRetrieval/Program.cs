@@ -373,21 +373,51 @@ namespace MultimediaRetrieval
             if (!ParseInput() || !ParseInput(out FeatureDatabase db))
                 return 1;
 
-            Dictionary<MeshStatistics, float> results = new Dictionary<MeshStatistics, float>(db.meshes.Count);
-
-            foreach (MeshStatistics m in db.meshes)
-            {
+            var results = db.meshes.AsParallel().Select((m) => {
+                Console.WriteLine("Handling {0}", m.ID);
                 var answers = Search(db, m.Features).Select((r) => r.Item1.Classification);
-                var performance = Evaluate(m.Classification, answers);
-                results.Add(m, performance);
+                var perf = Evaluate(m.Classification, answers);
+                return (m.Classification, perf);
+            }).AsSequential();
+
+            var r_class = new Dictionary<string, ValueCounter>();
+            var r_total = new ValueCounter();
+            foreach (var (c, perf) in results)
+            {
+                if (!r_class.ContainsKey(c))
+                    r_class[c] = new ValueCounter();
+
+                r_class[c] += perf;
+                r_total += perf;
             }
+
+            Console.WriteLine("Total performance: {0}", r_total.Percentage);
+            foreach(var p in r_class)
+                Console.WriteLine("{0} performance: {1}", p.Key, p.Value.Percentage);
 
             return 0;
         }
 
         public float Evaluate(string c, IEnumerable<string> results)
         {
-            return 0;
+            int nrcorrect = results.Count((s) => s == c);
+            return nrcorrect / results.Count();
+        }
+
+        struct ValueCounter
+        {
+            public float Total { get; private set; }
+            public int Count { get; private set; }
+            public float Percentage { get => Total / Count; }
+
+            public static ValueCounter operator +(ValueCounter a, float b)
+            {
+                return new ValueCounter
+                {
+                    Total = a.Total + b,
+                    Count = a.Count + 1
+                };
+            }
         }
     }
 }
