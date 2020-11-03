@@ -391,9 +391,9 @@ namespace MultimediaRetrieval
                 r_total += perf;
             }
 
-            Console.WriteLine("Total performance: {0}", r_total.Percentage);
+            Console.WriteLine("Performance total: {0}", r_total.Percentage);
             foreach(var p in r_class)
-                Console.WriteLine("{0} performance: {1}", p.Key, p.Value.Percentage);
+                Console.WriteLine("Performance {0}: {1}", p.Key, p.Value.Percentage);
 
             return 0;
         }
