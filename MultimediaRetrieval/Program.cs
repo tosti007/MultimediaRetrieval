@@ -26,13 +26,14 @@ namespace MultimediaRetrieval
                 return options.Execute();
             }
 
-            return Parser.Default.ParseArguments<DistanceMethodOptions, ViewOptions, FeatureOptions, NormalizeOptions, QueryOptions>(args)
+            return Parser.Default.ParseArguments<DistanceMethodOptions, ViewOptions, FeatureOptions, NormalizeOptions, QueryOptions, EvaluateOptions>(args)
                 .MapResult(
                     (DistanceMethodOptions opts) => opts.Execute(),
                     (ViewOptions opts) => opts.Execute(),
                     (FeatureOptions opts) => opts.Execute(),
                     (NormalizeOptions opts) => opts.Execute(),
                     (QueryOptions opts) => opts.Execute(),
+                    (EvaluateOptions opts) => opts.Execute(),
                 errs => 1);
         }
     }
@@ -361,6 +362,32 @@ namespace MultimediaRetrieval
 
                 Console.WriteLine();
             }
+        }
+    }
+
+    [Verb("evaluate", HelpText = "Evaluate a mesh database for performance.")]
+    class EvaluateOptions : QueryOptions
+    {
+        public override int Execute()
+        {
+            if (!ParseInput() || !ParseInput(out FeatureDatabase db))
+                return 1;
+
+            Dictionary<MeshStatistics, float> results = new Dictionary<MeshStatistics, float>(db.meshes.Count);
+
+            foreach (MeshStatistics m in db.meshes)
+            {
+                var answers = Search(db, m.Features).Select((r) => r.Item1.Classification);
+                var performance = Evaluate(m.Classification, answers);
+                results.Add(m, performance);
+            }
+
+            return 0;
+        }
+
+        public float Evaluate(string c, IEnumerable<string> results)
+        {
+            return 0;
         }
     }
 }
