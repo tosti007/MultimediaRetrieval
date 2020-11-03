@@ -290,6 +290,8 @@ namespace MultimediaRetrieval
                 return true;
             }
 
+            Console.Error.WriteLine("Cannot read inputmesh!");
+            Console.Error.WriteLine("Should be a meshfile or a id of a mesh in the FeatureDatabase.");
             query = null;
             return false;
         }
