@@ -218,12 +218,12 @@ namespace MultimediaRetrieval
         public bool NewTree { get; set; }
 #endif
 
-        public int Execute()
+        public bool ParseInput()
         {
             if (InputT.HasValue && InputK.HasValue)
             {
                 Console.Error.WriteLine("T and K cannot both be set.");
-                return 1;
+                return false;
             }
 
             if (!InputT.HasValue && !InputK.HasValue)
@@ -235,18 +235,22 @@ namespace MultimediaRetrieval
             if (!DistanceFuncs.Any() || DistanceFuncs.Count() > 2)
             {
                 Console.Error.WriteLine("Method option can only contain 1 or 2 values!");
-                return 1;
+                return false;
             }
 
 #if Windows
             if (WithANN && !InputK.HasValue)
             {
                 Console.WriteLine("Unable to perform ANN, no k specified.");
-                return 1;
+                return false;
             }
 #endif
+            return true;
+        }
 
-            FeatureDatabase db = FeatureDatabase.ReadFrom(InputFile);
+        public bool ParseInput(out FeatureDatabase db)
+        {
+            db = FeatureDatabase.ReadFrom(InputFile);
 
             if (!string.IsNullOrWhiteSpace(InputDir))
                 db.Filter(InputDir);
@@ -266,11 +270,29 @@ namespace MultimediaRetrieval
                 db.Normalize();
                 db.FilterNanAndInf(Vectors);
             }
+            return true;
+        }
 
-            FeatureVector query = new FeatureVector(Mesh.ReadMesh(InputMesh));
+        public bool ParseInput(FeatureDatabase db, out FeatureVector query)
+        {
+            query = new FeatureVector(Mesh.ReadMesh(InputMesh));
             query.HistogramsAsPercentages();
             query.Normalize(db.Average, db.StandardDev);
+            return true;
+        }
 
+        public virtual int Execute()
+        {
+            if (!ParseInput() || !ParseInput(out FeatureDatabase db) || !ParseInput(db, out FeatureVector query))
+                return 1;
+
+            PrintResults(Search(db, query));
+
+            return 0;
+        }
+
+        public IEnumerable<(MeshStatistics, float)> Search(FeatureDatabase db, FeatureVector query)
+        {
 #if Windows
             //Do the same with KDTree:
             if (WithANN)
@@ -290,8 +312,7 @@ namespace MultimediaRetrieval
                 MeshStatistics[] results = ann.Search(query);
 
                 Console.WriteLine("Results from ANN (with our distance metric):");
-                PrintResults(GetDistanceAndSort(results, query));
-                return 0;
+                return GetDistanceAndSort(results, query);
             }
 #endif
 
@@ -305,9 +326,7 @@ namespace MultimediaRetrieval
             if (InputT.HasValue)
                 meshes = meshes.TakeWhile((arg) => arg.Item2 <= InputT.Value);
 
-            PrintResults(meshes);
-
-            return 0;
+            return meshes;
         }
 
         public IEnumerable<(MeshStatistics, float)> GetDistanceAndSort(IEnumerable<MeshStatistics> meshes, FeatureVector query)
