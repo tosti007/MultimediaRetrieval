@@ -428,55 +428,135 @@ namespace MultimediaRetrieval
             if (!ParseInput() || !ParseInput(out FeatureDatabase db))
                 return 1;
 
+            Measures.Init(db.meshes.Select((m) => m.Classification));
+
             // Foreach mesh, search the database with that mesh in parallel.
             var results = db.meshes.AsParallel().Select((m) => {
                 Console.WriteLine("Handling {0}", m.ID);
                 var answers = Search(db, m.Features).Select((r) => r.Item1.Classification);
-                var Performance = Evaluate(m.Classification, answers);
+                var Performance = new Measures(m.Classification, answers);
                 return (m.Classification, Performance);
             }).AsSequential();
 
             // We need both total and per class performance.
-            var r_class = new Dictionary<string, ValueCounter>();
-            var r_total = new ValueCounter();
+            var r_class = new Dictionary<string, Measures>();
+            var r_total = new Measures();
             foreach (var (c, perf) in results)
             {
                 if (!r_class.ContainsKey(c))
-                    r_class[c] = new ValueCounter();
+                    r_class[c] = new Measures();
 
                 r_class[c] += perf;
                 r_total += perf;
             }
 
-            int maxlength = Math.Max("total".Length, r_class.Keys.Select((c) => c.Length).Max());
+            List<string> func_names = new List<string>() {
+                "Precision",
+                "Recall",
+                "Accuracy",
+                "F1Score",
+                "Sensitivity",
+                "Specificity",
+            };
+            List<Func<Measures, float>> funcs = new List<Func<Measures, float>>() {
+                (x) => x.Precision,
+                (x) => x.Recall,
+                (x) => x.Accuracy,
+                (x) => x.F1Score,
+                (x) => x.Sensitivity,
+                (x) => x.Specificity,
+            };
 
-            Console.WriteLine("Performance {0}: {1}", "total".PadRight(maxlength), r_total.Percentage);
-            foreach(var p in r_class.OrderByDescending((p) => p.Value.Percentage))
-                Console.WriteLine("Performance {0}: {1}", p.Key.PadRight(maxlength), p.Value.Percentage);
+            #region PrettyPrintTable
+            string format;
+            int minlen;
+            Func<Measures, string> method;
+            if (AsCSV)
+            {
+                format = "{0},{1}";
+                minlen = 1;
+                method = (x) => string.Join(",", funcs.Select((f) => f(x)));
+                Console.WriteLine("Classification,{0}", string.Join(",", func_names));
+            }
+            else
+            {
+                const int columnwidth = 12;
+
+                format = "{0} : {1}";
+                minlen = Math.Max("total".Length, r_class.Keys.Select((c) => c.Length).Max());
+                method = (x) => string.Join(" ", funcs.Select((f, i) => f(x).ToString().PadRight(columnwidth)));
+
+                // Sort by largest classes first
+                r_class.OrderByDescending((p) => p.Value.TP + p.Value.FN);
+
+                // Pretty print the title and header
+                string title = "FeatureDatabase Performance Table";
+                string header = "Classification".PadLeft(minlen).PadRight(minlen + format.Length - 6); 
+                header += string.Join(" ", func_names.Select((s) => s.PadRight(columnwidth)));
+                Console.WriteLine(title.PadLeft((header.Length - title.Length) / 2 + title.Length));
+                Console.WriteLine(header);
+            }
+
+            Console.WriteLine(format, "total".PadLeft(minlen), method(r_total));
+            foreach(var p in r_class)
+                Console.WriteLine(format, p.Key.PadLeft(minlen), method(p.Value));
+            #endregion
 
             return 0;
         }
 
-        public float Evaluate(string c, IEnumerable<string> results)
+        public struct Measures
         {
-            int nrcorrect = results.Count((s) => s == c);
-            return nrcorrect / results.Count();
-        }
+            public static Dictionary<string, int> ClassesCount;
+            public static int NumberOfElements;
 
-        struct ValueCounter
-        {
-            public float Total { get; private set; }
-            public int Count { get; private set; }
-            public float Percentage { get => Total / Count; }
+            public int TP, FP, FN, TN;
 
-            public static ValueCounter operator +(ValueCounter a, float b)
+            public Measures(string c, IEnumerable<string> results)
             {
-                return new ValueCounter
+                TP = 0;
+                FP = 0;
+                // Wanneer je voor C# kiest in je project en alsnog python aan het schrijven bent.
+                foreach (var x in results)
+                    if (x == c)
+                        TP++;
+                    else
+                        FP++;
+                FN = ClassesCount[c] - TP;
+                TN = NumberOfElements - ClassesCount[c] - FP;
+            }
+
+            public static void Init(IEnumerable<string> classes)
+            {
+                ClassesCount = new Dictionary<string, int>();
+                NumberOfElements = 0;
+                foreach (var c in classes)
                 {
-                    Total = a.Total + b,
-                    Count = a.Count + 1
+                    if (!ClassesCount.ContainsKey(c))
+                        ClassesCount[c] = 0;
+
+                    ClassesCount[c] += 1;
+                    NumberOfElements += 1;
+                }
+            }
+
+            public static Measures operator +(Measures a, Measures b)
+            {
+                return new Measures
+                {
+                    TP = a.TP + b.TP,
+                    FP = a.FP + b.FP,
+                    FN = a.FN + b.FN,
+                    TN = a.TN + b.TN
                 };
             }
+
+            public float Precision   => (float)                       TP / (TP + FP);
+            public float Recall      => (float)                       TP / (TP + FN);
+            public float Accuracy    => (float)                (TP + TN) / (TP + FN + FP + TN);
+            public float F1Score     => (float) 2 * (Precision * Recall) / (Precision + Recall);
+            public float Sensitivity => (float)                       TP / (TP + FN);
+            public float Specificity => (float)                       TN / (FP + TN);
         }
     }
 }
