@@ -542,6 +542,10 @@ namespace MultimediaRetrieval
 
             public static Measure operator +(Measure a, Measure b)
             {
+                // To find a total of measures we have two options:
+                // 1) Calculate the function for each measure, average the results
+                // 2) Add the measures and calculate the function
+                // This _should_ be the same, and thus I added the + operator for easy totalling.
                 return new Measure
                 {
                     TP = a.TP + b.TP,
