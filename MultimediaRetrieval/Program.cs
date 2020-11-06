@@ -256,6 +256,12 @@ namespace MultimediaRetrieval
             ANN ann = null;
             if (WithANN)
             {
+                if (InputT.HasValue)
+                {
+                    Console.Error.WriteLine("T cannot be set with ANN set");
+                    return false;
+                }
+
                 ann = new ANN();
                 if (ANN.FileExists())
                 {
@@ -263,12 +269,6 @@ namespace MultimediaRetrieval
                     {
                         Console.Error.WriteLine("K cannot be set with ANN set");
                         Console.Error.WriteLine("If you want to change the K value, run normalize again.");
-                        return false;
-                    }
-
-                    if (InputT.HasValue)
-                    {
-                        Console.Error.WriteLine("T cannot be set with ANN set");
                         return false;
                     }
 
