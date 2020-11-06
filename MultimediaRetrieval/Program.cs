@@ -364,14 +364,16 @@ namespace MultimediaRetrieval
 
             if (KMedoids)
             {
-                Console.WriteLine("Using K-Medoids for searching");
+                Console.Write("Using K-Medoids for searching with distance method: ");
                 var tree = ClusterTree.ReadFrom(db, InputFile + "kmed");
+                Console.WriteLine(tree.Functions);
+                DistanceFuncs = tree.Functions;
                 selected = tree.Search(query);
             }
             else
                 selected = db.meshes;
 
-            IEnumerable<(MeshStatistics, float)> meshes = GetDistanceAndSort(db.meshes, query);
+            IEnumerable<(MeshStatistics, float)> meshes = GetDistanceAndSort(selected, query);
 
             if (InputK.HasValue)
                 meshes = meshes.Take(InputK.Value);
@@ -422,16 +424,19 @@ namespace MultimediaRetrieval
     {
         public override int Execute()
         {
+            // No need for checking the query input, as we don't use it anyhow.
             if (!ParseInput() || !ParseInput(out FeatureDatabase db))
                 return 1;
 
+            // Foreach mesh, search the database with that mesh in parallel.
             var results = db.meshes.AsParallel().Select((m) => {
                 Console.WriteLine("Handling {0}", m.ID);
                 var answers = Search(db, m.Features).Select((r) => r.Item1.Classification);
-                var perf = Evaluate(m.Classification, answers);
-                return (m.Classification, perf);
+                var Performance = Evaluate(m.Classification, answers);
+                return (m.Classification, Performance);
             }).AsSequential();
 
+            // We need both total and per class performance.
             var r_class = new Dictionary<string, ValueCounter>();
             var r_total = new ValueCounter();
             foreach (var (c, perf) in results)
@@ -443,9 +448,11 @@ namespace MultimediaRetrieval
                 r_total += perf;
             }
 
-            Console.WriteLine("Performance total: {0}", r_total.Percentage);
+            int maxlength = Math.Max("total".Length, r_class.Keys.Select((c) => c.Length).Max());
+
+            Console.WriteLine("Performance {0}: {1}", "total".PadRight(maxlength), r_total.Percentage);
             foreach(var p in r_class.OrderByDescending((p) => p.Value.Percentage))
-                Console.WriteLine("Performance {0}: {1}", p.Key, p.Value.Percentage);
+                Console.WriteLine("Performance {0}: {1}", p.Key.PadRight(maxlength), p.Value.Percentage);
 
             return 0;
         }
