@@ -263,7 +263,7 @@ namespace MultimediaRetrieval
             if (KMedoids && !File.Exists(InputFile + "kmed"))
             {
                 Console.Error.WriteLine("K-Mediods file does not exist yet, use normalize first.");
-                return 1;
+                return false;
             }
 
 #if Windows
