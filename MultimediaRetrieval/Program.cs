@@ -130,7 +130,7 @@ namespace MultimediaRetrieval
         //    30, 1,5
         [Option("tsne",
             Default = null,
-            HelpText = "(Default: if on 30,1.5) Use the tSNE algorithm to reduce the feature vector dimensionallity.")]
+            HelpText = "(Default: if on 80,0.5) Use the tSNE algorithm to reduce the feature vector dimensionallity.")]
         public string TSNE { get; set; }
 
         [Option('m', "method",
@@ -166,8 +166,8 @@ namespace MultimediaRetrieval
                 double p, t;
                 if (string.IsNullOrWhiteSpace(TSNE))
                 {
-                    p = 100;
-                    t = 2.5;
+                    p = 80;
+                    t = 0.5;
                 }
                 else
                 {
