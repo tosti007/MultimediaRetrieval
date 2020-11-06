@@ -428,23 +428,23 @@ namespace MultimediaRetrieval
             if (!ParseInput() || !ParseInput(out FeatureDatabase db))
                 return 1;
 
-            Measures.Init(db.meshes.Select((m) => m.Classification));
+            Measure.Init(db.meshes.Select((m) => m.Classification));
 
             // Foreach mesh, search the database with that mesh in parallel.
             var results = db.meshes.AsParallel().Select((m) => {
                 Console.WriteLine("Handling {0}", m.ID);
                 var answers = Search(db, m.Features).Select((r) => r.Item1.Classification);
-                var Performance = new Measures(m.Classification, answers);
+                var Performance = new Measure(m.Classification, answers);
                 return (m.Classification, Performance);
             }).AsSequential();
 
             // We need both total and per class performance.
-            var r_class = new Dictionary<string, Measures>();
-            var r_total = new Measures();
+            var r_class = new Dictionary<string, Measure>();
+            var r_total = new Measure();
             foreach (var (c, perf) in results)
             {
                 if (!r_class.ContainsKey(c))
-                    r_class[c] = new Measures();
+                    r_class[c] = new Measure();
 
                 r_class[c] += perf;
                 r_total += perf;
@@ -458,7 +458,7 @@ namespace MultimediaRetrieval
                 "Sensitivity",
                 "Specificity",
             };
-            List<Func<Measures, float>> funcs = new List<Func<Measures, float>>() {
+            List<Func<Measure, float>> funcs = new List<Func<Measure, float>>() {
                 (x) => x.Precision,
                 (x) => x.Recall,
                 (x) => x.Accuracy,
@@ -470,7 +470,7 @@ namespace MultimediaRetrieval
             #region PrettyPrintTable
             string format;
             int minlen;
-            Func<Measures, string> method;
+            Func<Measure, string> method;
             if (AsCSV)
             {
                 format = "{0},{1}";
@@ -505,14 +505,14 @@ namespace MultimediaRetrieval
             return 0;
         }
 
-        public struct Measures
+        public struct Measure
         {
             public static Dictionary<string, int> ClassesCount;
             public static int NumberOfElements;
 
             public int TP, FP, FN, TN;
 
-            public Measures(string c, IEnumerable<string> results)
+            public Measure(string c, IEnumerable<string> results)
             {
                 TP = 0;
                 FP = 0;
@@ -540,9 +540,9 @@ namespace MultimediaRetrieval
                 }
             }
 
-            public static Measures operator +(Measures a, Measures b)
+            public static Measure operator +(Measure a, Measure b)
             {
-                return new Measures
+                return new Measure
                 {
                     TP = a.TP + b.TP,
                     FP = a.FP + b.FP,
