@@ -559,14 +559,14 @@ namespace MultimediaRetrieval
             public Measure(string c, IEnumerable<string> results)
             {
                 TP = 0;
-                FP = 0;
+                FN = 0;
                 // Wanneer je voor C# kiest in je project en alsnog python aan het schrijven bent.
                 foreach (var x in results)
                     if (x == c)
                         TP++;
                     else
-                        FP++;
-                FN = ClassesCount[c] - TP;
+                        FN++;
+                FP = ClassesCount[c] - TP;
                 TN = NumberOfElements - ClassesCount[c] - FP;
             }
 
