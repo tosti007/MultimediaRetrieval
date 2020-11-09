@@ -501,7 +501,6 @@ namespace MultimediaRetrieval
                 "Recall",
                 "Accuracy",
                 "F1Score",
-                "Sensitivity",
                 "Specificity",
             };
             List<Func<Measure, float>> funcs = new List<Func<Measure, float>>() {
@@ -509,7 +508,6 @@ namespace MultimediaRetrieval
                 (x) => x.Recall,
                 (x) => x.Accuracy,
                 (x) => x.F1Score,
-                (x) => x.Sensitivity,
                 (x) => x.Specificity,
             };
 
@@ -605,7 +603,6 @@ namespace MultimediaRetrieval
             public float Recall      => (float)                       TP / (TP + FN);
             public float Accuracy    => (float)                (TP + TN) / (TP + FN + FP + TN);
             public float F1Score     => (float) 2 * (Precision * Recall) / (Precision + Recall);
-            public float Sensitivity => (float)                       TP / (TP + FN);
             public float Specificity => (float)                       TN / (FP + TN);
         }
     }
