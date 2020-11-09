@@ -240,7 +240,7 @@ namespace MultimediaRetrieval
         public bool NewTree { get; set; }
 #endif
 
-        public bool ParseInput()
+        public virtual bool ParseInput()
         {
             if (InputT.HasValue && InputK.HasValue)
             {
@@ -276,7 +276,7 @@ namespace MultimediaRetrieval
             return true;
         }
 
-        public bool ParseInput(out FeatureDatabase db)
+        public virtual bool ParseInput(out FeatureDatabase db)
         {
             db = FeatureDatabase.ReadFrom(InputFile);
 
@@ -301,7 +301,7 @@ namespace MultimediaRetrieval
             return true;
         }
 
-        public bool ParseInput(FeatureDatabase db, out FeatureVector query)
+        public virtual bool ParseInput(FeatureDatabase db, out FeatureVector query)
         {
             if (File.Exists(InputMesh))
             {
@@ -333,13 +333,15 @@ namespace MultimediaRetrieval
             return 0;
         }
 
-        public IEnumerable<(MeshStatistics, float)> Search(FeatureDatabase db, FeatureVector query)
+        public IEnumerable<(MeshStatistics, float)> Search(FeatureDatabase db, FeatureVector query, int? k = null)
         {
+            if (!k.HasValue)
+                k = InputK;
 #if Windows
             //Do the same with KDTree:
             if (WithANN)
             {
-                ANN ann = new ANN(db, InputK.Value);
+                ANN ann = new ANN(db, k.Value);
                 if (NewTree || !ANN.FileExists())
                 {
                     Console.WriteLine("Creating new ANN KDTree.");
@@ -358,8 +360,8 @@ namespace MultimediaRetrieval
             }
 #endif
 
-            //Fill a list of ID's to distances between the input feature vector and the database feature vectors.
-            //Sort the meshes in the database by distance and return the selected.
+                //Fill a list of ID's to distances between the input feature vector and the database feature vectors.
+                //Sort the meshes in the database by distance and return the selected.
             IEnumerable<MeshStatistics> selected;
 
             if (KMedoids)
@@ -375,8 +377,8 @@ namespace MultimediaRetrieval
 
             IEnumerable<(MeshStatistics, float)> meshes = GetDistanceAndSort(selected, query);
 
-            if (InputK.HasValue)
-                meshes = meshes.Take(InputK.Value);
+            if (k.HasValue)
+                meshes = meshes.Take(k.Value);
 
             if (InputT.HasValue)
                 meshes = meshes.TakeWhile((arg) => arg.Item2 <= InputT.Value);
