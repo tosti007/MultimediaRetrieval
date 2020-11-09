@@ -369,9 +369,9 @@ namespace MultimediaRetrieval
 
             if (KMedoids)
             {
-                Console.Write("Using K-Medoids for searching with distance method: ");
                 var tree = ClusterTree.ReadFrom(db, InputFile + "kmed");
-                Console.WriteLine(string.Join(" ", tree.Functions.Select((f) => f.ToString())));
+                if (!AsCSV)
+                    Console.WriteLine("Using K-Medoids for searching with distance method: {0}", string.Join(" ", tree.Functions.Select((f) => f.ToString())));
                 DistanceFuncs = tree.Functions;
                 selected = tree.Search(query);
             }
