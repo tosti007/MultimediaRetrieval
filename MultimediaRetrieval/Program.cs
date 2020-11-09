@@ -424,6 +424,39 @@ namespace MultimediaRetrieval
     [Verb("evaluate", HelpText = "Evaluate a mesh database for performance.")]
     class EvaluateOptions : QueryOptions
     {
+        [Option("firsttier",
+            Default = true,
+            HelpText = "Choose the K size automatically depending on the number of meshes with that class")]
+        public bool FirstTier { get; set; }
+
+        public override bool ParseInput()
+        {
+            var r = base.ParseInput();
+
+            if (FirstTier)
+            {
+                if (InputT.HasValue)
+                {
+                    Console.Error.WriteLine("Cannot use T value if firsttier is set.");
+                    return false;
+                }
+
+                if (KMedoids)
+                {
+                    Console.WriteLine("KMedoids is on. Query results will be extended to correct length.");
+                }
+
+#if Windows
+                if (WithANN)
+                {
+                    NewTree = true;
+                }
+#endif
+            }
+
+            return r;
+        }
+
         public override int Execute()
         {
             // No need for checking the query input, as we don't use it anyhow.
@@ -435,7 +468,14 @@ namespace MultimediaRetrieval
             // Foreach mesh, search the database with that mesh in parallel.
             var results = db.meshes.AsParallel().Select((m) => {
                 Console.WriteLine("Handling {0}", m.ID);
-                var answers = Search(db, m.Features).Select((r) => r.Item1.Classification);
+                int? k = FirstTier ? null : (int?)Measure.ClassesCount[m.Classification];
+                var answers = Search(db, m.Features, k).Select((r) => r.Item1.Classification);
+                if (KMedoids)
+                {
+                    var nr_missing = Measure.ClassesCount[m.Classification] - answers.Count();
+                    if (nr_missing > 0)
+                        answers = answers.Concat(Enumerable.Repeat("", nr_missing));
+                }
                 var Performance = new Measure(m.Classification, answers);
                 return (m.Classification, Performance);
             }).AsSequential();
