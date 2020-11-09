@@ -467,7 +467,8 @@ namespace MultimediaRetrieval
 
             // Foreach mesh, search the database with that mesh in parallel.
             var results = db.meshes.AsParallel().Select((m) => {
-                Console.WriteLine("Handling {0}", m.ID);
+                if (!AsCSV)
+                    Console.WriteLine("Handling {0}", m.ID);
                 int? k = FirstTier ? null : (int?)Measure.ClassesCount[m.Classification];
                 var answers = Search(db, m.Features, k).Select((r) => r.Item1.Classification);
                 if (KMedoids)
