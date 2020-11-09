@@ -333,10 +333,13 @@ namespace MultimediaRetrieval
             return 0;
         }
 
-        public IEnumerable<(MeshStatistics, float)> Search(FeatureDatabase db, FeatureVector query, int? k = null)
+        public IEnumerable<(MeshStatistics, float)> Search(FeatureDatabase db, FeatureVector query)
         {
-            if (!k.HasValue)
-                k = InputK;
+            return Search(db, query, InputK);
+        }
+
+        public IEnumerable<(MeshStatistics, float)> Search(FeatureDatabase db, FeatureVector query, int? k)
+        {
 #if Windows
             //Do the same with KDTree:
             if (WithANN)
@@ -368,7 +371,7 @@ namespace MultimediaRetrieval
             {
                 Console.Write("Using K-Medoids for searching with distance method: ");
                 var tree = ClusterTree.ReadFrom(db, InputFile + "kmed");
-                Console.WriteLine(tree.Functions);
+                Console.WriteLine(string.Join(" ", tree.Functions.Select((f) => f.ToString())));
                 DistanceFuncs = tree.Functions;
                 selected = tree.Search(query);
             }
@@ -469,7 +472,7 @@ namespace MultimediaRetrieval
             var results = db.meshes.AsParallel().Select((m) => {
                 if (!AsCSV)
                     Console.WriteLine("Handling {0}", m.ID);
-                int? k = FirstTier ? null : (int?)Measure.ClassesCount[m.Classification];
+                int? k = FirstTier ? (int?)Measure.ClassesCount[m.Classification] : null;
                 var answers = Search(db, m.Features, k).Select((r) => r.Item1.Classification);
                 if (KMedoids)
                 {
