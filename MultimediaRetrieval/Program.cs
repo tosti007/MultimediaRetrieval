@@ -317,7 +317,7 @@ namespace MultimediaRetrieval
                 return true;
             }
 
-            if (uint.TryParse(InputFile, out uint meshid))
+            if (uint.TryParse(InputMesh, out uint meshid))
             {
                 query = db.meshes.Find((m) => m.ID == meshid).Features;
                 return true;
