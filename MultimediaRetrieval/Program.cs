@@ -122,8 +122,8 @@ namespace MultimediaRetrieval
 
         [Option("medoids",
             Default = null,
-            HelpText = "Generate a K-Mediods cluster tree with [ARG] clusters and safe it to \"[OUTPUT]kmed\" file.")]
-        public int? KMedoids { get; set; }
+            HelpText = "Generate a K-Mediods cluster tree with [ARG] clusters and safe it to \"[OUTPUT]kmed\" file. If no k is given, it is set to the number of classes.")]
+        public string KMedoids { get; set; }
 
         // Good options:
         //   100, 2.5
@@ -155,9 +155,15 @@ namespace MultimediaRetrieval
             db.FilterNanAndInf(Vectors);
             db.WriteToFile(OutputFile);
 
-            if (KMedoids.HasValue)
+            if (KMedoids != null)
             {
-                var tree = new ClusterTree(DistanceFuncs.Parse(), db.meshes, KMedoids.Value);
+                int k;
+                if (string.IsNullOrWhiteSpace(KMedoids))
+                    k = db.meshes.Select((m) => m.Classification).Distinct().Count();
+                else
+                    k = int.Parse(KMedoids);
+                Console.WriteLine("Using {0} K-Medoids Clusters");
+                var tree = new ClusterTree(DistanceFuncs.Parse(), db.meshes, k);
                 tree.WriteToFile(OutputFile + "kmed");
             }
 
