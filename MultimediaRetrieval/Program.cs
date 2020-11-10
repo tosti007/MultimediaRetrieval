@@ -162,7 +162,7 @@ namespace MultimediaRetrieval
                     k = db.meshes.Select((m) => m.Classification).Distinct().Count();
                 else
                     k = int.Parse(KMedoids);
-                Console.WriteLine("Using {0} K-Medoids Clusters");
+                Console.WriteLine("Using {0} K-Medoids Clusters", k);
                 var tree = new ClusterTree(DistanceFuncs.Parse(), db.meshes, k);
                 tree.WriteToFile(OutputFile + "kmed");
             }
