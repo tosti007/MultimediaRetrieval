@@ -22,7 +22,6 @@ for i in $methods; do
 	$call query "$1" -m "$i" --csv -k 0 > "$outdir$i.csv"
 	for j in $methods; do
 		echo "Handling: $i and $j"
-		outfile=
 		$call query "$1" -m "$i" "$j" --csv -k 0 > "$outdir$i$j.csv"
 	done
 done
