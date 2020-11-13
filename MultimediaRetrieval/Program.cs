@@ -309,24 +309,16 @@ namespace MultimediaRetrieval
 
         public virtual bool ParseInput(FeatureDatabase db, out FeatureVector query)
         {
-            if (File.Exists(InputMesh))
-            {
-                query = new FeatureVector(Mesh.ReadMesh(InputMesh));
-                query.HistogramsAsPercentages();
-                query.Normalize(db.Average, db.StandardDev);
-                return true;
-            }
-
             if (uint.TryParse(InputMesh, out uint meshid))
             {
                 query = db.meshes.Find((m) => m.ID == meshid).Features;
                 return true;
             }
 
-            Console.Error.WriteLine("Cannot read inputmesh!");
-            Console.Error.WriteLine("Should be a meshfile or a id of a mesh in the FeatureDatabase.");
-            query = null;
-            return false;
+            query = new FeatureVector(Mesh.ReadMesh(InputMesh));
+            query.HistogramsAsPercentages();
+            query.Normalize(db.Average, db.StandardDev);
+            return true;
         }
 
         public virtual int Execute()
