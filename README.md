@@ -16,7 +16,7 @@ The project should be run in a certain order, where each step can be re-run at w
 
 > If the user is running on Linux a script can be used to automate the entire process of collecting the meshes and creating features with the command below.
 > Note: This create a new Python Virtual Environment in `MeshConverter/env`.
-> Note: This requires all requirements 
+> Note: This requires all requirements.
 ```bash
 $ scripts/autorun.sh
 ```
@@ -51,7 +51,7 @@ There are multiple distance functions available for querying. In order to evalua
 
 **``autorun_distance.sh``**
 
-This file takes one arguments, which should be a meshfile acceptable by the input of the query command of the C\# executable. This means it can be either a file path to a normalized meshfile or a mesh identifier. It can then be called, with MESH replaced with the correct argument, as:
+This file takes one arguments, which should be a meshfile acceptable by the input of the query command of the C\# executable. This means it can be either a file path to a normalized meshfile or a mesh identifier. It can then be called, with `MESH` replaced with the correct argument, as:
 ```bash
 $ scripts/autorun_distance.sh MESH
 ```
@@ -65,3 +65,28 @@ This file takes any number of output files created with either the `autorun_dist
 ```bash
 $ python scripts/plot_distance.py FILE_1 FILE_2 ... FILE_N
 ```
+
+### Plotting tSNE
+The tSNE implementation allows two hyper parameters to be tuned. In order to visualize the output of tSNE a `scripts/plot_tsne.py` python scripts was created. Additionally, the `scripts/autorun_tsne.sh` script was created to batch-process many possible parameters on a single feature file, which outputs all plotted images.
+Both files can be executed from any directory, but for now we will assume the root folder.
+
+> To create the tSNE output, please read the `normalize` function of the C\# executable.
+
+**``plot_tsne.py``**
+
+This scripts plots the output of a list of feature vectors that has been processed by tSNE. It takes up to 3 arguments:
+
+Position | Type      | Optional | Default | Description
+---------|-----------|----------|---------|------------
+1        | boolean   | False    | `<none>` | This denotes if the output should contain all possible classes, or only the top 5 in number of occurances.
+2        | file path | True     | `database/output.mrtsne` | The input `*.mrtsne` (csv) file that contains the featurevectors after tSNE.
+3        | file path | True     | `plots/step5_tsne_top5.jpg` or `plots/step5_tsne_all.jpg` | The output file to create/overwrite. The default filename depends wether argument 1 was true or false (respectively).
+
+The script can be executed as shown below, where ARGUMENTS is replaced with the arguments as described above.
+```bash
+$ python scripts/plot_tsne.py ARGUMENTS
+```
+
+**`autorun_tsne.sh`**
+
+This file runs multiple hyper parameters for tSNE and plots the results with `plot_tsne.py` containing all classes. This script does not take any arguments. It writes the output images to `plots/tsne/tsne_P_T.jpg` where P and T are replaced with the hyper parameters Perplexity and Theta respectively.
