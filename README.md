@@ -21,11 +21,8 @@ The project should be run in a certain order, where each step can be re-run at w
 $ scripts/autorun.sh
 ```
 
-## Step 1 - Preparing the database
-First we will need the required meshes. To create the database in full we need to do a few substeps.
-
-### Step 1.1 - Downloading the meshes
-The user can choose which database to use (or both), the supported options are:
+### Step 1 - Downloading the meshes
+First we will need the required meshes. The user can choose which database to use (or both), the supported options are:
  - [The Princeton Shape Benchmark](https://shape.cs.princeton.edu/benchmark/)
  - [Labeled PSB Dataset](https://people.cs.umass.edu/~kalo/papers/LabelMeshes/)
 
@@ -37,10 +34,10 @@ All archive files should be downloaded and extracted in `database/step0/[DATABAS
 $ scripts/download_meshes.sh
 ```
 
-### Step 1.2 - Parsing the databases and normalizing the meshes
+### Step 2 - Parsing the databases and normalizing the meshes
 With the selected databases extracted in the correct `database/step0` folder, we can start processing the meshes. This is further explained in the `Running the project` section of the `MeshConverter/README.md` file.
 
-## Step 2 - Using the database
+## Step 3 - Using the database
 The next step is to extract the features of the meshes and start using these features. This is further explained in the `Running the project` section of the `MultimediaRetrieval/README.md` file.
 
 ## Step N - Additional scripts
