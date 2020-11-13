@@ -77,7 +77,6 @@ class Options:
     outputdir = 'database/step2/'
     classes = ''
     parallel = True
-    runs = None
     arguments = []
 
     def __init__(self, defaultinputdir, defaultoutputdir, useinputdir=True):
@@ -88,10 +87,9 @@ class Options:
         -i,--input [inputdir]
         -o,--output [outputdir]
         -f,--file [classfile] <default [inputdir]/output.mr>
-        -n,--not-parallel <if this flag is given, handle files sequential instead of parallel>
-        -r,--runs [number of refinement runs] <otherwise minimal 100 vertices/faces>'''
+        -n,--not-parallel <if this flag is given, handle files sequential instead of parallel>'''
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "hni:o:f:r:", ["--help", "--not-parallel", "input=","output=", "file=", "runs="])
+            opts, args = getopt.getopt(sys.argv[1:], "hni:o:f:", ["--help", "--not-parallel", "input=","output=", "file="])
             self.arguments = args
         except getopt.GetoptError:
             print(helpline)
@@ -108,8 +106,6 @@ class Options:
                 self.classes = arg
             elif opt in ("-n", "--not-parallel"):
                 self.parallel = False
-            elif opt in ("-r", "--runs"):
-                self.runs = arg
 
         if self.classes == '':
             if useinputdir:
@@ -137,5 +133,4 @@ if __name__ == "__main__":
     print("outputdir", opts.outputdir)
     print("classes", opts.classes)
     print("parallel", opts.parallel)
-    print("runs", opts.runs)
     print("arguments", opts.arguments)
