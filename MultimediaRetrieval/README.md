@@ -28,7 +28,7 @@ $ msbuild MultimediaRetrieval
 ## Running the project
 Executing the build project differs for each platform, hence it is described here once. In later sections doing this execution is abbriviated as `mr.exe`.
 
-> Note: All commands listed in the following step accept the `-h` or `--help` flag as an argument, which displays some helptext on how to use the application or command.
+> Note: All commands listed in the following step accept the `--help` flag as an argument, which displays some helptext on how to use the application or command.
 
 **For Windows**
 More on this soon.
