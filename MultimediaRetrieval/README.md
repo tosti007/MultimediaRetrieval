@@ -63,10 +63,10 @@ The arguments for this command are:
 Argument          | Type      | Default                      | Description
 ------------------|-----------|------------------------------|------------
 `-d`,`--database` | directory | `database/step1/`            | Directory to filter the list of mesh features with, meaning if no such file exists with the corresponding id, the item is removed from the list.
-`-i`, `--input`   | file path | `database/step4/output.mr`   | File to read the feature list from.
-`-o`, `--output`  | file path | `database/output.mr`         | File path to write the normalized feature list to.
-`-v`, `--vector`  | `<none>`  | `off`                        | Print the feature vectors for meshes with bad feature-vectors after normalizing.
-`-m`, `--method`  | string    | `Euclidian Earthmovers`      | The distance function to use. This argument is further explained in the `Distance functions` section below. This does not work for tSNE.
+`-i`,`--input`    | file path | `database/step4/output.mr`   | File to read the feature list from.
+`-o`,`--output`   | file path | `database/output.mr`         | File path to write the normalized feature list to.
+`-v`,`--vector`   | `<none>`  | `off`                        | Print the feature vectors for meshes with bad feature-vectors after normalizing.
+`-m`,`--method`   | string    | `Euclidian Earthmovers`      | The distance function to use. This argument is further explained in the `Distance functions` section below. This does not work for tSNE.
 `--medoids`       | int       | `<none>` or `|C|` if `""`    | Generate a K-Mediods cluster tree with `[ARG]` clusters and safe it to `[OUTPUT]kmed` file. If k is an empty string (`""`), it is set to the number of classes.
 `--tsne`          | int,float | `<none>` or `80,0.5` if `""` | Use the tSNE algorithm to reduce the feature vector dimensionallity and safe it to `[OUTPUT]tsne` file. The parameters are seperated by a `,`. The first should be the Perplexity (int) and the second the Theta (float).
 
@@ -74,9 +74,6 @@ To execute this step use:
 ```bash
 % mr.exe normalize [ARGUMENTS]
 ```
-
-#### Distance functions
-More on this soon.
 
 ## Step 3 - Querying a mesh
 More on this soon.
@@ -103,3 +100,6 @@ To execute this step use:
 ```bash
 % mr.exe view [ARGUMENTS] [FILE]
 ```
+
+#### Distance functions
+More on this soon.
