@@ -38,11 +38,11 @@ $ autorun.sh
 
 For all steps 1 to 4 a few common arguments are possible, to eliminate repetition these arguments are listed here once. Note that in `step{n}` the `n` refers to the step number in the sections below (and thus the order of execution).
 
-Argument              | Type      | Optional | Default | Description
-----------------------|-----------|----------|---------|------------
-`-i`,`--input`        | directory | True     | `../database/step{n-1}/` | This is the output directory to read the meshfiles from.
-`-o`,`--output`       | directory | True     | `../database/step{n}/`   | This is the output directory to read the meshfiles to.
-`-n`,`--not-parallel` | `<none>`  | True     | False | By default all meshes are processed in parallel to increase speed. However, this is not always wanted and thus can be turned off.
+Argument              | Type      | Default                  | Description
+----------------------|-----------|--------------------------|------------
+`-i`,`--input`        | directory | `../database/step{n-1}/` | This is the output directory to read the meshfiles from.
+`-o`,`--output`       | directory | `../database/step{n}/`   | This is the output directory to read the meshfiles to.
+`-n`,`--not-parallel` | `<none>`  | False                    | By default all meshes are processed in parallel to increase speed. However, this is not always wanted and thus can be turned off.
 
 
 ## Step 1 - Parsing the databases
@@ -52,9 +52,9 @@ To reorder the extracted archives from the databases into our own folder and fil
 
 This step takes additional arguments as shown below:
 
-Argument      | Type      | Optional | Default | Description
---------------|-----------|----------|---------|------------
-`-f`,`--file` | file path | True     | `[inputdir]/output.mr` | This is the output file to write the ids and classes to.
+Argument      | Type      | Default                | Description
+--------------|-----------|------------------------|------------
+`-f`,`--file` | file path | `[inputdir]/output.mr` | This is the output file to write the ids and classes to.
 
 This step can be executed with:
 ```bash
