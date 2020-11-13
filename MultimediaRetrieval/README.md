@@ -80,17 +80,17 @@ More on this soon.
 
 The arguments for this command are:
 
-Argument             | Type      | Default                             | Description
----------------------|-----------|-------------------------------------|------------
-`[FILE]`             | file path | `<none>`                            | File to read the mesh to query on the feature list. If no input mesh is given, it will be read from `stdin`.
-`-d`,`--database`    | directory | `database/step1/`                   | Directory to filter the list of mesh features with, meaning if no such file exists with the corresponding id, the item is removed from the list.
-`-i`,`--input`       | file path | `database/step4/output.mr`          | File to read the feature list from.
-`-v`,`--vector`      | `<none>`  | `off`                               | Print the feature vectors for meshes with bad feature-vectors after normalizing.
-`-m`,`--method`      | string    | `Euclidian Earthmovers`             | The distance function to use. This argument is further explained in the `Distance functions` section below. This does not work for tSNE.
-`-k`,`--k_parameter` | int       | if no `t` is given 5, else `<none>` | The number of meshes to return. K and T cannot both be set.
-`-t`,`--t_parameter` | float     | `<none>`                            | Return the meshes with a distance less than or equal to t. `-k` and `-t` cannot both be set.
-`--csv`              | `<none>`  | `off`                               | Output the results as csv instead of text.
-`--medoids`          | `<none>`  | `off`                               | Use the K-Medoids tree created with the `normalize` command for searching. This is compatible with `-k` and `-t`.
+Argument             | Type             | Default                             | Description
+---------------------|------------------|-------------------------------------|------------
+`[FILE]`             | file path or int | `<none>`                            | File to read the mesh to query on the feature list. If a mesh id is given instead of file path, the feature list is searched for that id and it is used instead. If no input mesh is given, it will be read from `stdin`.
+`-d`,`--database`    | directory        | `database/step1/`                   | Directory to filter the list of mesh features with, meaning if no such file exists with the corresponding id, the item is removed from the list.
+`-i`,`--input`       | file path        | `database/step4/output.mr`          | File to read the feature list from.
+`-v`,`--vector`      | `<none>`         | `off`                               | Print the feature vectors for meshes with bad feature-vectors after normalizing.
+`-m`,`--method`      | string           | `Euclidian Earthmovers`             | The distance function to use. This argument is further explained in the `Distance functions` section below. This does not work for tSNE.
+`-k`,`--k_parameter` | int              | if no `t` is given 5, else `<none>` | The number of meshes to return. K and T cannot both be set.
+`-t`,`--t_parameter` | float            | `<none>`                            | Return the meshes with a distance less than or equal to t. `-k` and `-t` cannot both be set.
+`--csv`              | `<none>`         | `off`                               | Output the results as csv instead of text.
+`--medoids`          | `<none>`         | `off`                               | Use the K-Medoids tree created with the `normalize` command for searching. This is compatible with `-k` and `-t`.
 
 To execute this step use:
 ```bash
