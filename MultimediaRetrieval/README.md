@@ -52,7 +52,7 @@ Argument           | Type      | Default                    | Description
 
 To execute this step use:
 ```bash
-% mr.exe feature [ARGUMENTS]
+$ mr.exe feature [ARGUMENTS]
 ```
 
 ## Step 2 - Normalizing features
@@ -72,7 +72,7 @@ Argument          | Type      | Default                      | Description
 
 To execute this step use:
 ```bash
-% mr.exe normalize [ARGUMENTS]
+$ mr.exe normalize [ARGUMENTS]
 ```
 
 ## Step 3 - Querying a mesh
@@ -94,7 +94,7 @@ Argument             | Type             | Default                             | 
 
 To execute this step use:
 ```bash
-% mr.exe query [FILE] [ARGUMENTS]
+$ mr.exe query [FILE] [ARGUMENTS]
 ```
 
 ## Step 4 - Evaluating performance
@@ -116,7 +116,7 @@ Argument             | Type             | Default                     | Descript
 
 To execute this step use:
 ```bash
-% mr.exe evaluate [ARGUMENTS]
+$ mr.exe evaluate [ARGUMENTS]
 ```
 
 ## Step N - Viewing a mesh
@@ -130,7 +130,7 @@ Argument | Type      | Default  | Description
 
 To execute this step use:
 ```bash
-% mr.exe view [FILE]
+$ mr.exe view [FILE]
 ```
 
 #### Distance functions
