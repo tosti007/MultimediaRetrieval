@@ -62,10 +62,41 @@ $ python parse.py [ARGUMENTS]
 ```
 
 ## Step 2 - Cleaning the mesh files
-More on this soon.
+As we do not know the quality of the meshes, or the type of meshfiles, we need to do some rudimentary cleaning of the dataset. This is handled in the clean process. 
+
+This step can be executed with:
+```bash
+$ python clean.py [ARGUMENTS]
+```
 
 ## Step 3 - Refining the meshes
-More on this soon.
+Now all files are cleaned, uniform sampling of the mesh is required. This is done in the refine step. The refinement will take 2000 new vertices.
+
+> Note: Due to resampling a mesh can fail to be rebuild from the sample points. In this case the mesh is not placed in the output folder and it's id is printed to the screen. If `--input` and `--output` are equal the mesh is left as-is in the folder and will cause issues in following steps.
+
+This step can be executed with:
+```bash
+$ python refine.py [ARGUMENTS]
+```
 
 ## Step 4 - Normalizing the meshes
-More on this soon.
+Next up is normalizing the meshes. This is done in the following order:
+1. Move the barycenter to (0, 0, 0)
+2. Use PCA to rotate its longest two axis to X and Y.
+3. Flip the mesh so most mass holding half of the mesh in on the positive side of the axis.
+4. Scale the mesh so the AABB diagonal equals 1 
+
+This step can be executed with:
+```bash
+$ python normalize.py [ARGUMENTS]
+```
+
+## Using the whole pre-processing pipeline
+As described before we can run this whole pipeline on all meshes with a single command (`autorun.sh`), but we may want to apply this pipeline to just a single meshfile as well. This can come in handy for querying or viewing the results later on with a mesh that does not exist in the database just yet.
+
+This command executes all previously described steps on a single mesh in memory, so it will not be written to disk in between. The script takes one single mesh filepath as an argument to run the pipeline on. The script writes any normal output to `stderr` and writes the resulting meshfile to `stdout`, this allows the user to pipe the resulting mesh to either a file or other commands (such as the C\# executable's view command).
+
+To run the script use:
+```bash
+$ python pipeline.py [FILEPATH]
+```

@@ -40,7 +40,7 @@ def fill_holes(v, f, id):
 
     points, _, edges = tmvtk.poly_to_mesh_components(mesh)
     if edges is None:
-        print("No edges for mesh:", id)
+        print("No holes in mesh:", id)
         return Mesh(v, f)
 
     edges = [p for p in edges if p[0] != p[1]]
