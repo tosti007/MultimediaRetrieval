@@ -122,11 +122,15 @@ To execute this step use:
 ## Step N - Viewing a mesh
 More on this soon.
 
-> Note: If no input mesh is given, it will be read from `stdin`.
+The arguments for this command are:
+
+Argument | Type      | Default  | Description
+---------|-----------|----------|------------
+`[FILE]` | file path | `<none>` | File to read the mesh to query on the feature list. If no input mesh is given, it will be read from `stdin`.
 
 To execute this step use:
 ```bash
-% mr.exe view [ARGUMENTS] [FILE]
+% mr.exe view [FILE]
 ```
 
 #### Distance functions
