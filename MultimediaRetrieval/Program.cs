@@ -425,23 +425,17 @@ namespace MultimediaRetrieval
     [Verb("evaluate", HelpText = "Evaluate a mesh database for performance.")]
     class EvaluateOptions : QueryOptions
     {
-        [Option("firsttier",
-            Default = true,
-            HelpText = "Choose the K size automatically depending on the number of meshes with that class")]
-        public bool FirstTier { get; set; }
+        protected bool FirstTier = true;
 
         public override bool ParseInput()
         {
+            FirstTier = !(InputK.HasValue || InputT.HasValue);
+            int? k = InputK;
             var r = base.ParseInput();
 
             if (FirstTier)
             {
-                if (InputT.HasValue)
-                {
-                    Console.Error.WriteLine("Cannot use T value if firsttier is set.");
-                    return false;
-                }
-
+                InputK = k;
                 if (KMedoids)
                 {
                     Console.WriteLine("KMedoids is on. Query results will be extended to correct length.");
