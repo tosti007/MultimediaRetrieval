@@ -133,5 +133,24 @@ To execute this step use:
 $ mr.exe view [FILE]
 ```
 
-#### Distance functions
-More on this soon.
+## Distance functions
+Some commands may accept a `-m` or `--method` argument that denotes the functions used for computing distances between feature vectors. This argument accepts one of three patterns which, and their resulting behavior, are shown in the table below. In the patterns the `[F]` denotes a value of distance measure.
+
+Pattern   | Description   | Result
+----------|---------------|-------
+`<none>`  | No function   | The default distance measure is used, which is `Euclidian Earthmovers` unless mentioned otherwise.
+`[F]`     | One function  | The feature vector is interpreted as a single vector where the function is used once.
+`[F] [F]` | Two functions | The histograms are seen as single features. The first function is used on the global features and the second function is used per histogram where the distance value is defided by the number of bins in that histogram.
+
+There are multiple options to choose as functions, these are:
+
+- **Euclidan**, which is the same as the L2 metric.
+- **Cosine**
+- **Earthmovers**, this only makes sense to use on histograms.
+
+> Note: Distance functions are case-sensitive.
+
+> The possible distance functions can also be found by calling the `distancemethods` command on the executable, i.e.:
+```bash
+$ mr.exe distancmethods
+```
