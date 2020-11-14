@@ -5,17 +5,16 @@ This sub-project handles the feature extraction and lets you query on the featur
 C\# is used for the feature extraction and handling.
 
 **For Windows**
-> I don't use Windows, good luck. --- Brian Janssen
-
-For using the ANN algortihm additional C++ is required. More on this soon.
+The easiest way to build the project on Windows is to use [Visual Studio](https://visualstudio.microsoft.com/). 
 
 **For Linux**
 On Linux the project requires [MSBuild](https://github.com/dotnet/msbuild) for building the project and [Mono](https://www.mono-project.com/) for executing the executable. 
 
-
 ## Building the project
 **For Windows**
-More on this soon.
+Before you can build the actual project you will ned to build the ANN library. There is a solution file `MultimediaRetrieval/ANN/MS_Win32/ANN.sln` for the ANN C++ project. Build this solution, using the wrapper subproject as the build target. This will yield two DLL files: `MultimediaRetrieval/ANN/MS_Win32/Debug/wrapper.dll` and `MultimediaRetrieval/ANN/MS_Win32/bin/ANN.dll`. These are dependencies for the MultimediaRetrieval C\# project. The `wrapper.dll` should be found in this location by the Visual Studio, but the `ANN.dll` file should be copied to where the executable is run: Copy it to the `bin\Debug` folder.
+
+Now simply open the solution file `MultimediaRetrieval.sln` and build the project as you would any other Visual Studio solution.
 
 **For Linux**
 This repository already contains a compiled executable as a kickstart. Note this is the Linux version of the executable, so misses the ANN options.
@@ -31,7 +30,7 @@ Executing the build project differs for each platform, hence it is described her
 > Note: All commands listed in the following step accept the `--help` flag as an argument, which displays some helptext on how to use the application or command.
 
 **For Windows**
-More on this soon.
+After building, the executable can be located at `MultimediaRetrieval/bin/Debug/MultimediaRetrieval.exe`. If the ANN DLL is located in the same folder, the executable can be run via the command line as any other executable.
 
 **For Linux**
 After building, the executable can be located at `MultimediaRetrieval/bin/Debug/MultimediaRetrieval.exe`. In order to run it we will use [Mono](https://www.mono-project.com/) for easy compatability, this can be done as shown below, where we assume it is executed from the root folder.
@@ -40,7 +39,7 @@ $ mono MultimediaRetrieval/bin/Debug/MultimediaRetrieval.exe
 ```
 
 ## Step 1 - Extracting features
-More on this soon.
+This step reads the mesh files from a database folder. It assumes that the meshes in this database are fully normalised! (There will be errors if they are not normalized.) In addition, it reads the classes of the meshes from a class list (or a feature list). The features are then calculated per mesh and combined with the class list in a so-called feature list: This is the output file. This is a CSV document (albeit the `.mr` file extension) that contains the features for each mesh in the database.
 
 The arguments for this command are:
 
@@ -56,7 +55,7 @@ $ mr.exe feature [ARGUMENTS]
 ```
 
 ## Step 2 - Normalizing features
-More on this soon.
+This command normalizes the feature vectors contained in the feature files produced by the previous step. It has two additional features: It is possible to also generate a k-medoids clustering for the database or perform dimensionality reduction on the database using tSNE.
 
 The arguments for this command are:
 
@@ -76,7 +75,7 @@ $ mr.exe normalize [ARGUMENTS]
 ```
 
 ## Step 3 - Querying a mesh
-More on this soon.
+This command queries a mesh. This means that it takes the input mesh, compares it to the meshes in the given feature database and returns either the top k meshes, or the meshes closer than a specified distance. If the feature database is not yet normalized, it will normalize it in memory and give a warning. The distance function can be chosen, as well as the query method: normal, k-medoids or ANN.
 
 The arguments for this command are:
 
@@ -91,6 +90,8 @@ Argument             | Type             | Default                             | 
 `-t`,`--t_parameter` | float            | `<none>`                            | Return the meshes with a distance less than or equal to t. `-k` and `-t` cannot both be set.
 `--csv`              | `<none>`         | `off`                               | Output the results as csv instead of text.
 `--medoids`          | `<none>`         | `off`                               | Use the K-Medoids tree created with the `normalize` command for searching. This is compatible with `-k` and `-t`.
+`--ann`              | `<none>`         | `off`                               | Only on Windows: Use ANN to query the database. This will use the tree located at `kdtree.tree` if the `--newtree` parameter is set to off.
+`--newtree`          | `<none>`         | `off`                               | Only on Windows: Generate a new tree for this ANN query and save it in `kdtree.tree`. Only works in combination with ANN.
 
 To execute this step use:
 ```bash
@@ -98,7 +99,7 @@ $ mr.exe query [FILE] [ARGUMENTS]
 ```
 
 ## Step 4 - Evaluating performance
-More on this soon.
+This command evaluates the performance of the system as seen in the report, by combining the results of each mesh in a given feature database. The output consists of various quality metrics (Precision, Recall, Accuracy, F1Score, Specificity) both for the total database and for each specific class in the database.
 
 The arguments for this command are shown below. If no `-k` or `-t` option is set, then the `-k` value is chosen automatically. This value will vary per mesh, where it will be the number meshes with the same class.
 
@@ -120,7 +121,7 @@ $ mr.exe evaluate [ARGUMENTS]
 ```
 
 ## Step N - Viewing a mesh
-More on this soon.
+This step opens an OpenGL viewer window for a mesh that allows the user to inspect this mesh. The controls in this window are straightforward: The position of the camera is controlled using the WASD keys, and SPACE and SHIFT to move up and down respectively. The rotation is controlled using the arrow keys. Q and E can be used to zoom. The axes can be toggled using the Z button. The viewmode (edges, mesh, both edges and mesh) can be toggled using TAB.
 
 The arguments for this command are:
 
