@@ -461,7 +461,7 @@ namespace MultimediaRetrieval
             Measure.Init(db.meshes.Select((m) => m.Classification));
 
             // Foreach mesh, search the database with that mesh in parallel.
-            var results = db.meshes.AsParallel().Select((m) => {
+            Func<MeshStatistics, (String, Measure)> execution = (m) => {
                 if (!AsCSV)
                     Console.WriteLine("Handling {0}", m.ID);
                 int? k = FirstTier ? (int?)Measure.ClassesCount[m.Classification] : null;
@@ -474,7 +474,14 @@ namespace MultimediaRetrieval
                 }
                 var Performance = new Measure(m.Classification, answers);
                 return (m.Classification, Performance);
-            }).AsSequential();
+            };
+
+            //If we use ANN, we cannot execute this as parallel.
+            IEnumerable<(string, Measure)> results;
+            if(!WithANN)
+                results = db.meshes.AsParallel().Select(execution).AsSequential();
+            else
+                results = db.meshes.Select(execution);
 
             // We need both total and per class performance.
             var r_class = new Dictionary<string, Measure>();
